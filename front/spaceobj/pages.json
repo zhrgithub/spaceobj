@@ -24,7 +24,7 @@
             "path" : "pages/my/my",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "个人中心",
+                "navigationBarTitleText": "我的",
                 "enablePullDownRefresh": false
             }
             
@@ -33,7 +33,7 @@
             "path" : "pages/release/release",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "发布中心",
+                "navigationBarTitleText": "我的发布",
                 "enablePullDownRefresh": false
             }
             
@@ -42,7 +42,34 @@
             "path" : "pages/help/help",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "助力中心",
+                "navigationBarTitleText": "好友助力",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/projectDetail/projectDetail",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "项目详情",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/release/releaseProjectDetail/releaseProjectDetail",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "项目详情",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/help/helpProjectDetail/helpProjectDetail",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "项目详情",
                 "enablePullDownRefresh": false
             }
             
@@ -56,7 +83,7 @@
 	},
 	"tabBar": {
 	       "color": "#cdcdcd",
-	       "selectedColor": "#1296db",
+	       "selectedColor": "#49A8E7",
 	       "borderStyle": "black",
 	       "backgroundColor": "#ffffff",
 	       "height": "50px",
@@ -73,13 +100,13 @@
 				    "pagePath": "pages/release/release",
 				    "iconPath": "static/release.png",
 				    "selectedIconPath": "static/selectRelease.png",
-				    "text": "发布中心"
+				    "text": "我的发布"
 				},
 				 {
 				     "pagePath": "pages/help/help",
 				     "iconPath": "static/help.png",
 				     "selectedIconPath": "static/selectHelp.png",
-				     "text": "助力中心"
+				     "text": "好友助力"
 				}, 
 				{
 	           "pagePath": "pages/my/my",

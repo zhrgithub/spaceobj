@@ -1,4 +1,7 @@
 import App from './App'
+import VueClipboard from "vue-clipboard2";
+Vue.use(VueClipboard);
+
 
 // #ifndef VUE3
 import Vue from 'vue'

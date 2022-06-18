@@ -15,7 +15,7 @@
 		
 		<uni-popup ref="popup" background-color="#fff">
 			<view class="need-description-budget-style">
-				需求描述和预算
+				项目描述和预算
 			</view>
 			<view class="scroll-item-line-two-style"></view>
 			<view class="description-doller-style">
@@ -34,10 +34,10 @@
 		</uni-popup>
 		
 		<!-- 发布的列表 -->
-		<view class="project-list-style">
+		<view class="project-list-style" @click="toProjecDetail">
 			<view class="date-status-style">
 				<view class="date-style">
-					2022-06-16
+					2022-06-18
 				</view>
 				<view class="status-style">
 					审核中
@@ -47,42 +47,79 @@
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text style="color: seagreen;font-weight: bold;font-size: 16px;">需求内容：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手
+				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
 			</view>
 		</view>
 		
-		<view class="project-list-style">
+		<view class="project-list-style" @click="toProjecDetail">
 			<view class="date-status-style">
 				<view class="date-style">
-					2022-06-16
+					2022-06-17
 				</view>
-				<view class="status-style">
-					审核中
+				<view class="status-pass-style">
+					发布成功
 				</view>
 				<view class="detail-style">
 					查看详情
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text style="color: seagreen;font-weight: bold;font-size: 16px;">需求内容：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手
+				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
 			</view>
 		</view>
 		
-		<view class="project-list-style">
+		<view class="project-list-style" @click="toProjecDetail">
 			<view class="date-status-style">
 				<view class="date-style">
 					2022-06-16
 				</view>
-				<view class="status-style">
-					审核中
+				<view class="status-refuse-style">
+					发布失败
 				</view>
 				<view class="detail-style">
 					查看详情
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text style="color: seagreen;font-weight: bold;font-size: 16px;">需求内容：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手
+				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
 			</view>
+		</view> 
+		
+		<view class="project-list-style" @click="toProjecDetail">
+			<view class="date-status-style">
+				<view class="date-style">
+					2022-06-16
+				</view>
+				<view class="status-cancel-style">
+					已取消
+				</view>
+				<view class="detail-style">
+					查看详情
+				</view>
+			</view>
+			<view class="brief-information-style">
+				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
+			</view>
+		</view>
+		
+		<view class="project-list-style" @click="toProjecDetail">
+			<view class="date-status-style">
+				<view class="date-style">
+					2022-06-16
+				</view>
+				<view class="status-cancel-style">
+					已取消
+				</view>
+				<view class="detail-style">
+					查看详情
+				</view>
+			</view>
+			<view class="brief-information-style">
+				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
+			</view>
+		</view>
+		<view class="space-line-style">
+			
 		</view>
 		
 		
@@ -111,16 +148,25 @@
 				duration:2000
 			   })
 			},
+			toProjecDetail(){
+				uni.navigateTo({
+					url:'/pages/release/releaseProjectDetail/releaseProjectDetail'
+				})
+			},
 		}
 	}
 </script>
 
 <style scoped>
+	.space-line-style{
+		width: 100%;
+		height: 200rpx;
+	}
 	.project-list-style{
 		width: 96%;
 		margin-left: 2%;
-		height: 210rpx;
-		box-shadow: darkgray 1px 0px 5px 1px;
+		height: 280rpx;
+		box-shadow: darkgray 0px 0px 2px 0px;
 		border-radius: 10rpx;
 		margin-top: 30rpx;
 	}
@@ -135,7 +181,7 @@
 	.brief-information-style{
 		width: 96%;
 		margin-left: 2%;
-		height: 65%;
+		height: 60%;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -143,32 +189,71 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		display: -webkit-box;
-		-webkit-line-clamp: 3;
+		-webkit-line-clamp: 4;
 		-webkit-box-orient: vertical;
 		font-size: 15px;
 	}
 	
 	.date-style{
 		width: 30%;
-		background-color: #1296db;
+		background-color: #49A8E7;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
 		border-radius: 10rpx;
-		height: 70%;
+		height: 60%;
 		font-size: 14px;
 	}
 	
 	.status-style{
 		width: 30%;
-		background-color: #1296db;
+		background-color: #49A8E7;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
 		border-radius: 10rpx;
-		height: 70%;
+		height: 60%;
+		margin-left: 3%;
+		margin-right: 3%;
+		font-size: 14px;
+	}
+	.status-pass-style{
+		width: 30%;
+		background-color: #7CBF80;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		border-radius: 10rpx;
+		height: 60%;
+		margin-left: 3%;
+		margin-right: 3%;
+		font-size: 14px;
+	}
+	.status-refuse-style{
+		width: 30%;
+		background-color: #E26C65;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		border-radius: 10rpx;
+		height: 60%;
+		margin-left: 3%;
+		margin-right: 3%;
+		font-size: 14px;
+	}
+	.status-cancel-style{
+		width: 30%;
+		background-color: #AAACB7;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		border-radius: 10rpx;
+		height: 60%;
 		margin-left: 3%;
 		margin-right: 3%;
 		font-size: 14px;
@@ -176,26 +261,26 @@
 	
 	.detail-style{
 		width: 30%;
-		background-color: #1296db;
+		background-color: #EBA54B;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
 		border-radius: 10rpx;
-		height: 70%;
+		height: 60%;
 		font-size: 14px;
 	}
 	.button-style{
 		width: 90%;
 		margin-left: 5%;
-		height: 180rpx;
+		height: 150rpx;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 	}
 	.button-style button{
 		width: 40%;
-		background-color: #1296db;
+		background-color: #49A8E7;
 		color: white;
 	}
 	.button-space{
@@ -207,7 +292,7 @@
 		display: flex;
 		align-items: center;
 		margin-top: 30rpx;
-		box-shadow: #1296db 1px 0px 5px 1px;
+		box-shadow: darkgray 0px 0px 2px 0px;
 		border-radius: 10px;
 	}
 	.description-style textarea{
@@ -222,7 +307,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: #1296db 1px 0px 5px 1px;
+		box-shadow: darkgray 0px 0px 2px 0px;
 		margin-top: 30rpx;
 		border-radius: 10px;
 	}
@@ -231,7 +316,7 @@
 	}
 	.description-doller-style{
 		width: 100%;
-		height: 600rpx;
+		height: 700rpx;
 	}
 .release-background-style{
 	width: 100%;
@@ -274,16 +359,16 @@
 	height: 100rpx;
 	position: fixed;
 	z-index: 2;
-	bottom: 80px;
+	bottom: 120px;
 	right: 40px;
-	background-color: #1296db;
+	background-color: #49A8E7;
 	color: white;
 	font-size: 15px;
 	border-radius: 100%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: #1296db 1px 0px 5px 1px;
+	box-shadow: #49A8E7 1px 0px 5px 1px;
 }
 .need-description-budget-style{
 	width: 100%;

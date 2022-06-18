@@ -77,7 +77,7 @@
 				headImage:"/static/photo.jpg",
 				nickName:"空间对象",
 				titleContext:"天下熙熙攘攘皆为利来天下攘攘熙熙皆为利往",
-				aboutMe:"Java工程师",
+				aboutMe:"张泓锐",
 				link:"13362620045"
 			}
 		},
@@ -96,17 +96,16 @@
 		},
 		methods: {
 			aboutMeFun(){
-				uni.showToast({
-					title:that.aboutMe,
-					icon:'none',
-					duration: 2000
+				uni.showModal({
+					showCancel:false,
+					content:that.aboutMe
 				})
 			},
 			linkMe(){
-				uni.showToast({
-					title:that.link,
-					icon:'none',
-					duration: 2000
+				
+				uni.showModal({
+					showCancel:false,
+					content:that.link
 				})
 			},
 		}
@@ -132,7 +131,7 @@
 		height: 400px;
 		background-color: white;
 		border-radius: 10rpx;
-		box-shadow:darkgrey 1px 0px 1px 1px;
+		box-shadow:darkgrey 1px 0px 50px 0px;
 		margin-top: 10%;
 		margin-left: 20%;
 	}
@@ -197,7 +196,7 @@
 		border-radius: 10rpx;
 		margin-top: -25%;
 		margin-left: 50%;
-		box-shadow: darkgrey 1px 1px 1px 1px;
+		box-shadow: darkgray 1px 0px 50px 0px;
 	}
 	.header-style{
 		width: 100%;
