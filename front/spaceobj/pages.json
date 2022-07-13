@@ -4,11 +4,8 @@
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "spaceObj",
-				"enablePullDownRefresh": false,
-				"navigationStyle":"custom",
-				"app-plus":{
-					"titleView":false
-				}
+				"enablePullDownRefresh": false
+				
 			}
 		}
 	    ,{
@@ -74,8 +71,27 @@
             }
             
         }
+        ,{
+            "path" : "pages/login/login",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/editUser/editUser",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
     ],
 	"globalStyle": {
+		"navigationStyle": "custom",
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#F8F8F8",
