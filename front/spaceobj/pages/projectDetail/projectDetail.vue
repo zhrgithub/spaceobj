@@ -130,8 +130,8 @@
 					uni.showModal({
 						cancelText: "放弃",
 						title: "温馨提示",
-						content: "您需要分享好友助力获取",
-						confirmText: "立即分享",
+						content: "您需要分享好友助力链接获取",
+						confirmText: "复制链接",
 						confirmColor: "black",
 						success(e) {
 							if (e.confirm) {

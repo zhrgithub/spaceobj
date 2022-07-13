@@ -38,7 +38,7 @@
 		
 		<view class="edit-background-style" >
 			<view class="change-tips">
-				ip属地
+				位置
 			</view>
 			<view class="change-input-style">
 				广东深圳

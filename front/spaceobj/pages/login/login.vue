@@ -29,7 +29,7 @@
 				邮箱验证
 			</view>
 			<view class="email-verification-hint-style">
-				请您先用邮箱<text style="font-weight: bold;margin-left: 5rpx;margin-right: 5rpx;">test@163.com</text>
+				请您先用邮箱<text style="font-weight: bold;margin-left: 5rpx;margin-right: 5rpx;">testtesttesttest@163.com</text>
 				发邮件，然后点击“我已发送”按钮
 			</view>
 			<view class="send-email-panel-style">
@@ -145,6 +145,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		margin-top: 100rpx;
 	}
 
 	.login-background-style button {
@@ -192,6 +193,7 @@
 
 	.copy-button-style {
 		width: 20%;
+		margin-left: 10%;
 		height: 60rpx;
 		font-size: 14px;
 		display: flex;
