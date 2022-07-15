@@ -77,7 +77,7 @@
 					<uni-link href="https://item.jd.com/100010599633.html#crumb-wrap" showUnderLine="false">
 						<view class="commodity-image-description-background-style">
 							<view class="commodity-image-background-style">
-								<image src="/static/bg.jpg" mode=""></image>
+								<image src="https://img13.360buyimg.com/n1/jfs/t1/180386/10/10394/148552/60d012f9Ed0a2ad10/ad4326c6c4e2a90d.jpg" mode=""></image>
 							</view>
 							<view class="description-background-style">
 								<view class="title-description-style">

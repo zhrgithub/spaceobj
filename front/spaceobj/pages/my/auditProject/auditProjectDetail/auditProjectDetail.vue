@@ -22,7 +22,7 @@
 
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
-					IP属地：深圳
+					IP属地：广东深圳
 				</view>
 				<view class="project-numer-style">
 					用户名：张三
@@ -40,10 +40,9 @@
 
 		</view>
 		<view class="btn-background-style">
-			<button @click="getUserInfo">立即联系</button>
-
+			<button @click="refuse">拒绝</button>
+			<button @click="approve">通过</button>
 		</view>
-
 	</view>
 </template>
 
@@ -59,76 +58,49 @@
 				inviteValue: 0, //邀请值
 				//用户已经获取过
 				getStatus: false,
+				dataMessge: "www.spaceobj.com",
 			}
 		},
 		created() {
 			that = this;
 		},
 		methods: {
-			getUserInfo() {
-				if (this.projectStatus == 0) {
-					uni.showModal({
-						title: "温馨提示",
-						content: "已成交，甲方隐藏联系方式",
-						confirmText: "确定",
-						showCancel: false,
-						confirmColor: "black",
-						success(e) {
-
+			refuse() {
+				uni.showModal({
+					title: '拒绝通过',
+					editable: true,
+					success(e) {
+						if (e.confirm) {
+							console.log(e.content)
 						}
-					})
-
-				} else {
-
-					if (that.getStatus) {
-						uni.showModal({
-							title: "联系方式",
-							content: "13362620045",
-							showCancel: false
-						})
-						return;
 					}
-					if (that.helpValue >= 10 || that.inviteValue >= 1) {
-						uni.showModal({
-							title: "联系方式",
-							content: "13362620045",
-							showCancel: false
-						})
-						that.helpValue -= 10;
-						that.inviteValue -= 1;
-						that.getStatus = true;
-						return;
-					}
-					uni.showModal({
-						cancelText: "放弃",
-						title: "温馨提示",
-						content: "您需要分享好友助力获取",
-						confirmText: "立即分享",
-						confirmColor: "black",
-						success(e) {
-							if (e.confirm) {
-								uni.setClipboardData({
-									data: that.dataMessge,
-									success: function () {
-										console.log('success');
-									},
-									fail() {
-										uni.showToast({
-											title:'复制失败'
-										})
-									}
-								});
-							}
+				})
+			},
+			approve() {
+				uni.showModal({
+					content:'确认通过？',
+					success(e) {
+						if(e.confirm){
+							uni.showToast({
+								icon:"none",
+								title:'提交成功'
+							})
 						}
-					})
-				}
-
+					}
+				})
 			}
+
 		}
 	}
 </script>
 
 <style scoped>
+	.main-content-right {
+		width: 100%;
+		height: 200rpx;
+		display: none;
+	}
+
 	.project-detail-background-style {
 		width: 100%;
 		height: 100%;
@@ -190,12 +162,14 @@
 		width: 96%;
 		height: 280rpx;
 		margin-left: 2%;
-		margin-top: 80rpx;
 		margin-bottom: 500rpx;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 
 	.btn-background-style button {
-		width: 100%;
+		width: 40%;
 		background-color: #49A8E7;
 		color: white;
 		height: 100rpx;

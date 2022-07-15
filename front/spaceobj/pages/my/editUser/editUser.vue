@@ -9,7 +9,7 @@
 			</view>
 		</view>
 
-		<view class="edit-background-style" >
+		<view class="edit-background-style">
 			<view class="change-tips">
 				昵称
 			</view>
@@ -18,7 +18,7 @@
 			</view>
 		</view>
 
-		<view class="edit-background-style" >
+		<view class="edit-background-style">
 			<view class="change-tips">
 				手机号
 			</view>
@@ -27,7 +27,7 @@
 			</view>
 		</view>
 
-		<view class="edit-background-style" >
+		<view class="edit-background-style">
 			<view class="change-tips">
 				邮箱
 			</view>
@@ -35,8 +35,15 @@
 				<input type="text" placeholder="哈哈哈">
 			</view>
 		</view>
-		
-		<view class="edit-background-style" >
+		<view class="edit-background-style">
+			<view class="change-tips">
+				实名状态
+			</view>
+			<view class="change-input-style">
+				未实名
+			</view>
+		</view>
+		<view class="edit-background-style">
 			<view class="change-tips">
 				位置
 			</view>
@@ -45,8 +52,10 @@
 			</view>
 		</view>
 
+
+
 		<view class="save-btn-style">
-			<button>保存</button>
+			<button @click="logout">退出登录</button> <button>保存</button>
 		</view>
 
 		<uni-popup ref="popup" background-color="#fff">
@@ -62,6 +71,8 @@
 </template>
 
 <script>
+	var that;
+	import app from '@/App.vue'
 	export default {
 		data() {
 			return {
@@ -69,9 +80,18 @@
 				selectPhotoList: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 			}
 		},
+		created() {
+			that = this;
+		},
 		methods: {
 			editPhoto() {
 				this.$refs.popup.open('bottom');
+			},
+			logout() {
+				app.globalData.loginStatus = false;
+				uni.switchTab({
+					url: '/pages/my/my'
+				})
 			}
 		}
 	}
@@ -96,7 +116,8 @@
 		border-radius: 10rpx;
 		box-shadow: darkgray 0px 0px 2px 0px;
 	}
-	.edit-background-style{
+
+	.edit-background-style {
 		width: 96%;
 		margin-left: 2%;
 		height: 110rpx;
@@ -163,7 +184,7 @@
 	}
 
 	.save-btn-style button {
-		width: 90%;
+		width: 30%;
 		height: 90%;
 		background-color: #49A8E7;
 		color: #fff;

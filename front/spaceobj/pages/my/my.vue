@@ -22,6 +22,18 @@
 				<text class="address-background-style">位置：广东深圳</text>
 			</view>
 		</view>
+
+		<!-- 实名认证 -->
+		<view class="invite-value-background-style">
+			<view class="link-us-style">
+				实名认证：未实名
+			</view>
+
+			<view class="invite-btn-stye" @click="userVerified">
+				去认证
+			</view>
+		</view>
+
 		<!-- 邀请链接 -->
 		<view class="invite-value-background-style">
 			<view class="invite-tips-style">
@@ -43,7 +55,7 @@
 				客服微信
 			</view>
 
-			<view class="invite-btn-stye">
+			<view class="invite-btn-stye" @click="copyWeChat">
 				复制
 			</view>
 		</view>
@@ -58,25 +70,109 @@
 			</view>
 		</view>
 
-		<view class="sign-out-btn-style" v-if="loginStatus">
-			<button @click="logout">退出登录</button>
+		<!-- 日志管理 -->
+		<view class="invite-value-background-style">
+			<view class="link-us-style">
+				日志管理
+			</view>
+
+			<view class="invite-btn-stye" @click="logManagement">
+				查看日志
+			</view>
 		</view>
+
+		<!-- 用户管理 -->
+		<view class="invite-value-background-style">
+			<view class="link-us-style">
+				用户管理
+			</view>
+
+			<view class="invite-btn-stye" @click="userManagement">
+				查看用户
+			</view>
+		</view>
+
+		<!-- 实名管理 -->
+		<view class="invite-value-background-style">
+			<view class="link-us-style">
+				实名管理
+			</view>
+
+			<view class="invite-btn-stye" @click="userVerifiedMangeMent">
+				审核实名
+			</view>
+		</view>
+
+		<!-- 项目管理 -->
+		<view class="invite-value-background-style">
+			<view class="link-us-style">
+				项目管理
+			</view>
+
+			<view class="invite-btn-stye" @click="auditProject">
+				审核项目
+			</view>
+		</view>
+		
+		<!-- 头像管理 -->
+		<view class="invite-value-background-style">
+			<view class="link-us-style">
+				头像管理
+			</view>
+		
+			<view class="invite-btn-stye" @click="photoManagement">
+				管理头像
+			</view>
+		</view>
+		
+		<!-- 广告投放 -->
+		<view class="invite-value-background-style">
+			<view class="link-us-style">
+				广告投放
+			</view>
+		
+			<view class="invite-btn-stye" @click="advertiseManagement">
+				广告管理
+			</view>
+		</view>
+		
+		<!-- 其它管理 -->
+		<view class="invite-value-background-style">
+			<view class="link-us-style">
+				其它管理
+			</view>
+		
+			<view class="invite-btn-stye" @click="otherManagement">
+				管理
+			</view>
+		</view>
+		<view class="space-line-style">
+			
+		</view>
+
+		
 
 	</view>
 </template>
 
 <script>
 	var that;
+	import app from '@/App.vue'
 	export default {
 		data() {
 			return {
 				loginStatus: true,
 				loginPhoto: '/static/photo.jpg',
-				loginName: 'spaceobj3232323233232'
+				loginName: 'spaceobj'
 			}
 		},
 		created() {
 			that = this;
+		},
+		onShow() {
+			this.timer = setTimeout(() => {
+				that.loginStatus = app.globalData.loginStatus
+			}, 200)
 		},
 		methods: {
 			toLogin() {
@@ -90,8 +186,53 @@
 					url: '/pages/my/editUser/editUser'
 				})
 			},
-			logout() {
-				that.loginStatus = false;
+			auditProject(){
+				uni.navigateTo({
+					url:'/pages/my/auditProject/auditProject'
+				})
+			},
+			logManagement(){
+				uni.navigateTo({
+					url:'/pages/my/logManagement/logManagement'
+				})
+			},
+			userManagement(){
+				uni.navigateTo({
+					url:'/pages/my/userManageMent/userManageMent'
+				})
+			},
+			userVerified(){
+				uni.navigateTo({
+					url:'/pages/my/userVerified/userVerified'
+				})
+			},
+			photoManagement(){
+				uni.navigateTo({
+					url:'/pages/my/photoManagement/photoManagement'
+				})
+			},
+			advertiseManagement(){
+				uni.navigateTo({
+					url:'/pages/my/advertiseManagement/advertiseManagement'
+				})
+			},
+			userVerifiedMangeMent(){
+				uni.navigateTo({
+					url:'/pages/my/userVerifiedMangeMent/userVerifiedMangeMent'
+				})
+			},
+			otherManagement(){
+				uni.navigateTo({
+					url:'/pages/my/otherManagement/otherManagement'
+				})
+			},
+			copyWeChat(){
+				uni.setClipboardData({
+					data: 'hello',
+					success: function () {
+						console.log('success');
+					}
+				});
 			}
 		}
 	}
@@ -102,6 +243,10 @@
 		width: 100%;
 		height: 100%;
 		position: absolute;
+	}
+	.space-line-style{
+		width: 100%;
+		height: 200rpx;
 	}
 
 	.login-background-style {
@@ -220,21 +365,5 @@
 		height: 80rpx;
 		font-size: 10px;
 		color: #666;
-	}
-
-	.sign-out-btn-style {
-		width: 100%;
-		height: 110rpx;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		position: fixed;
-		bottom: 120rpx;
-	}
-
-	.sign-out-btn-style button {
-		width: 90%;
-		background-color: #666;
-		color: #fff;
 	}
 </style>

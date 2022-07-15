@@ -70,28 +70,17 @@
 		},
 		methods: {
 			onCopy() {
-				//复制-h5
-				that.$copyText(that.dataMessge).then(function(e) {
-					console.log(e)
-					uni.showToast({
-						title: "助力链接已复制到剪切板，快去分享吧",
-						icon: "none",
-						duration: 3000
-					})
-					// alert('Copied='+ e.text)
-				}, function(e) {
-					// alert('Can not copy',e.text)
-					uni.showToast({
-						title: "复制失败！",
-						icon: "none",
-						duration: 3000
-					})
-					console.log(e)
-				})
-				//APP复制
-				//TODO
-				//小程序复制
-				//TODO
+				uni.setClipboardData({
+					data: that.dataMessge,
+					success: function () {
+						console.log('success');
+					},
+					fail() {
+						uni.showToast({
+							title:'复制失败'
+						})
+					}
+				});
 			},
 			getUserInfo() {
 				if (this.projectStatus == 0) {

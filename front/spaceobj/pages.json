@@ -75,7 +75,7 @@
             "path" : "pages/login/login",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "",
+                "navigationBarTitleText": "登录",
                 "enablePullDownRefresh": false
             }
             
@@ -84,7 +84,97 @@
             "path" : "pages/my/editUser/editUser",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "",
+                "navigationBarTitleText": "编辑信息",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/auditProject/auditProject",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "项目管理",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/logManagement/logManagement",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "日志管理",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/userManageMent/userManageMent",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "用户管理",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/userVerified/userVerified",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "实名认证",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/photoManagement/photoManagement",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "头像管理",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/advertiseManagement/advertiseManagement",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "广告投放",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/userVerifiedMangeMent/userVerifiedMangeMent",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "实名管理",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/auditProject/auditProjectDetail/auditProjectDetail",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "项目详情",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/otherManagement/otherManagement",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "其它管理",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/my/logManagement/logDetail/logDetail",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "日志详情",
                 "enablePullDownRefresh": false
             }
             

@@ -55,17 +55,23 @@
 </template>
 
 <script>
+	import app from '@/App.vue'
+	var that;
 	export default {
 		data() {
 			return {
 				stepStatus: 0,
 			}
 		},
+		created() {
+			that = this;
+		},
 		methods: {
 			toLogin() {
 				this.stepStatus = 1;
 			},
 			sendOk() {
+				app.globalData.loginStatus = true;
 				uni.showToast({
 					title: '登录成功，正在跳转',
 					icon: "none"

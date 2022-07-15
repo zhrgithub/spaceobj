@@ -40,7 +40,7 @@
 
 		</view>
 		<view class="btn-background-style">
-			<button style="width: 40%;" @click="cancelRelease">取消发布</button>
+			<button style="width: 40%;" @click="cancelRelease">删除</button>
 			<button style="width: 40%;margin-left: 10%;" @click="repeatRelease('bottom')">重新发布</button>
 		</view>
 		<!-- 重新发布 -->
