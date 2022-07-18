@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="generate.JdAdvertisDao">
+  <resultMap id="BaseResultMap" type="generate.JdAdvertis">
+    <id column="jd_ad_id" jdbcType="BIGINT" property="jdAdId" />
+    <result column="jd_ad_hyperlink" jdbcType="VARCHAR" property="jdAdHyperlink" />
+    <result column="jd_ad_image_link" jdbcType="VARCHAR" property="jdAdImageLink" />
+    <result column="jd_ad_name" jdbcType="VARCHAR" property="jdAdName" />
+    <result column="jd_ad_store_name" jdbcType="VARCHAR" property="jdAdStoreName" />
+    <result column="jd_ad_coupon" jdbcType="VARCHAR" property="jdAdCoupon" />
+    <result column="jd_ad_price" jdbcType="DECIMAL" property="jdAdPrice" />
+    <result column="jd_ad_comment_num" jdbcType="VARCHAR" property="jdAdCommentNum" />
+    <result column="jd_ad_create_time" jdbcType="TIMESTAMP" property="jdAdCreateTime" />
+    <result column="jd_ad_update_time" jdbcType="TIMESTAMP" property="jdAdUpdateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    jd_ad_id, jd_ad_hyperlink, jd_ad_image_link, jd_ad_name, jd_ad_store_name, jd_ad_coupon, 
+    jd_ad_price, jd_ad_comment_num, jd_ad_create_time, jd_ad_update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jd_advertis
+    where jd_ad_id = #{jdAdId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from jd_advertis
+    where jd_ad_id = #{jdAdId,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="jd_ad_id" keyProperty="jdAdId" parameterType="generate.JdAdvertis" useGeneratedKeys="true">
+    insert into jd_advertis (jd_ad_hyperlink, jd_ad_image_link, jd_ad_name, 
+      jd_ad_store_name, jd_ad_coupon, jd_ad_price, 
+      jd_ad_comment_num, jd_ad_create_time, jd_ad_update_time
+      )
+    values (#{jdAdHyperlink,jdbcType=VARCHAR}, #{jdAdImageLink,jdbcType=VARCHAR}, #{jdAdName,jdbcType=VARCHAR}, 
+      #{jdAdStoreName,jdbcType=VARCHAR}, #{jdAdCoupon,jdbcType=VARCHAR}, #{jdAdPrice,jdbcType=DECIMAL}, 
+      #{jdAdCommentNum,jdbcType=VARCHAR}, #{jdAdCreateTime,jdbcType=TIMESTAMP}, #{jdAdUpdateTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="jd_ad_id" keyProperty="jdAdId" parameterType="generate.JdAdvertis" useGeneratedKeys="true">
+    insert into jd_advertis
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="jdAdHyperlink != null">
+        jd_ad_hyperlink,
+      </if>
+      <if test="jdAdImageLink != null">
+        jd_ad_image_link,
+      </if>
+      <if test="jdAdName != null">
+        jd_ad_name,
+      </if>
+      <if test="jdAdStoreName != null">
+        jd_ad_store_name,
+      </if>
+      <if test="jdAdCoupon != null">
+        jd_ad_coupon,
+      </if>
+      <if test="jdAdPrice != null">
+        jd_ad_price,
+      </if>
+      <if test="jdAdCommentNum != null">
+        jd_ad_comment_num,
+      </if>
+      <if test="jdAdCreateTime != null">
+        jd_ad_create_time,
+      </if>
+      <if test="jdAdUpdateTime != null">
+        jd_ad_update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="jdAdHyperlink != null">
+        #{jdAdHyperlink,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdImageLink != null">
+        #{jdAdImageLink,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdName != null">
+        #{jdAdName,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdStoreName != null">
+        #{jdAdStoreName,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdCoupon != null">
+        #{jdAdCoupon,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdPrice != null">
+        #{jdAdPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="jdAdCommentNum != null">
+        #{jdAdCommentNum,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdCreateTime != null">
+        #{jdAdCreateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="jdAdUpdateTime != null">
+        #{jdAdUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="generate.JdAdvertis">
+    update jd_advertis
+    <set>
+      <if test="jdAdHyperlink != null">
+        jd_ad_hyperlink = #{jdAdHyperlink,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdImageLink != null">
+        jd_ad_image_link = #{jdAdImageLink,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdName != null">
+        jd_ad_name = #{jdAdName,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdStoreName != null">
+        jd_ad_store_name = #{jdAdStoreName,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdCoupon != null">
+        jd_ad_coupon = #{jdAdCoupon,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdPrice != null">
+        jd_ad_price = #{jdAdPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="jdAdCommentNum != null">
+        jd_ad_comment_num = #{jdAdCommentNum,jdbcType=VARCHAR},
+      </if>
+      <if test="jdAdCreateTime != null">
+        jd_ad_create_time = #{jdAdCreateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="jdAdUpdateTime != null">
+        jd_ad_update_time = #{jdAdUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where jd_ad_id = #{jdAdId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="generate.JdAdvertis">
+    update jd_advertis
+    set jd_ad_hyperlink = #{jdAdHyperlink,jdbcType=VARCHAR},
+      jd_ad_image_link = #{jdAdImageLink,jdbcType=VARCHAR},
+      jd_ad_name = #{jdAdName,jdbcType=VARCHAR},
+      jd_ad_store_name = #{jdAdStoreName,jdbcType=VARCHAR},
+      jd_ad_coupon = #{jdAdCoupon,jdbcType=VARCHAR},
+      jd_ad_price = #{jdAdPrice,jdbcType=DECIMAL},
+      jd_ad_comment_num = #{jdAdCommentNum,jdbcType=VARCHAR},
+      jd_ad_create_time = #{jdAdCreateTime,jdbcType=TIMESTAMP},
+      jd_ad_update_time = #{jdAdUpdateTime,jdbcType=TIMESTAMP}
+    where jd_ad_id = #{jdAdId,jdbcType=BIGINT}
+  </update>
+</mapper>
