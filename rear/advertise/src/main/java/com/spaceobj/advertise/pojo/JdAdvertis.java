@@ -33,4 +33,5 @@ public class JdAdvertis implements Serializable {
 
     @TableField(value = "jd_ad_comment_num")
     private String jdAdCommentNum;
+
 }

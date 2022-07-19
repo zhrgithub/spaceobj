@@ -34,7 +34,6 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
     private static final Logger LOG = LoggerFactory.getLogger(JdAdvertiseServiceImpl.class);
 
-
     @Override
     public ResultData findList() {
 
@@ -49,8 +48,9 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
                 //可以使用pipeLine来提升性能
                 list = redisTemplate.opsForList().range(JDAdvertiseList, 0, -1);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             LOG.error("查询广告数据异常");
+            e.printStackTrace();
             return ResultData.error("服务器异常");
         }
         return ResultData.success().setData("jd_advertise_list", list);
@@ -58,6 +58,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
     @Override
     public ResultData saveAdvertis(JdAdvertis jdAdvertis) {
+
         int result = jdAdvertisMapper.insert(jdAdvertis);
         return null;
     }
