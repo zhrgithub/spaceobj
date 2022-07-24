@@ -30,7 +30,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     /**
      * 京东广告列表
      */
-    private static final String JDAdvertiseList = "jd_advertise_list";
+    private static final String JD_ADVERTISE_LIST = "jd_advertise_list";
 
     private static final Logger LOG = LoggerFactory.getLogger(JdAdvertiseServiceImpl.class);
 
@@ -39,14 +39,14 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
         List<JdAdvertis> list = null;
         try {
-            Long size = redisTemplate.opsForList().size(JDAdvertiseList);
+            Long size = redisTemplate.opsForList().size(JD_ADVERTISE_LIST);
             if (size == 0) {
                 QueryWrapper queryWrapper = new QueryWrapper();
                 list = jdAdvertisMapper.selectList(queryWrapper);
                 redisTemplate.opsForList().rightPushAll("jd_advertise_list", list.toArray());
             } else {
                 //可以使用pipeLine来提升性能
-                list = redisTemplate.opsForList().range(JDAdvertiseList, 0, -1);
+                list = redisTemplate.opsForList().range(JD_ADVERTISE_LIST, 0, -1);
             }
         } catch (Exception e) {
             LOG.error("查询广告数据异常");
