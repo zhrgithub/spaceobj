@@ -1,0 +1,29 @@
+package com.spaceobj.user.constent;
+
+public interface RestCode {
+
+    /**
+     * 服务器响应失败
+     */
+    int ERROR = -1;
+
+    /**
+     * 未授权登录响应
+     */
+    int UN_AUTHORIZE = 0;
+
+    /**
+     * 服务器成功响应
+     */
+    int SUCCESS = 1;
+
+    /**
+     * 服务器繁忙
+     */
+    int busy = 2;
+
+    /**
+     * 操作频繁，请稍后重试
+     */
+    int frequently = 3;
+}
