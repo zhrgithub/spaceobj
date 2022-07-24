@@ -32,6 +32,16 @@ public class IpLimiting {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdAdvertiseServiceImpl.class);
 
+    /**
+     * 最大请求次数
+     */
+    private static final int MAX_REQUEST_TIME = 5;
+
+    /**
+     * 恶意请求次数
+     */
+    private static final int MALICIOUS_REQUESTS = 10;
+
     @Pointcut("execution(public * com.spaceobj..controller.*.*(..))")
     public void doIpLimit() {
 
@@ -51,18 +61,18 @@ public class IpLimiting {
             //TODO
 
             // 如果是请求次数超过10次的，直接返回服务器异常
-            if (redisTemplate.hasKey(ip) && (int) redisTemplate.boundValueOps(ip).get() >= 8) {
+            if (redisTemplate.hasKey(ip) && (int) redisTemplate.boundValueOps(ip).get() >= MALICIOUS_REQUESTS) {
                 pjp = new ServiceProceedingJoinPoint(ResultData.busy());
                 LOG.info("ip:{}", ip);
                 return pjp.proceed();
             }
 
-            //可以将用户的ip和每秒请求的次数放入Redis中，如果当前用户每秒请求次数超过5次，请求频繁，请稍后重试！！；
+            //可以将用户的ip和每秒请求的次数放入Redis中，如果当前用户每秒请求次数超过最大请求次数，返回请求频繁，请稍后重试！！；
             if (redisTemplate.hasKey(ip)) {
 
-                redisTemplate.opsForValue().set(ip, (int) redisTemplate.boundValueOps(ip).get() + 1, 1, TimeUnit.SECONDS);
-                //如果请求次数大于等于10次，1天后解封
-                if ((int) redisTemplate.boundValueOps(ip).get() >= 8) {
+                redisTemplate.opsForValue().increment(ip);
+                //如果请求次数大于等于攻击次数，1天后解封
+                if ((int) redisTemplate.boundValueOps(ip).get() >= MALICIOUS_REQUESTS) {
                     LOG.info("ip:{}", ip);
                     redisTemplate.opsForValue().set(ip, (int) redisTemplate.boundValueOps(ip).get(), 1, TimeUnit.DAYS);
                     pjp = new ServiceProceedingJoinPoint(ResultData.busy());
@@ -73,13 +83,14 @@ public class IpLimiting {
                 redisTemplate.opsForValue().set(ip, 1, 1, TimeUnit.SECONDS);
             }
 
-            if ((int) redisTemplate.boundValueOps(ip).get() > 3) {
+            if ((int) redisTemplate.boundValueOps(ip).get() > MAX_REQUEST_TIME) {
                 pjp = new ServiceProceedingJoinPoint(ResultData.frequently());
                 return pjp.proceed();
             }
             return pjp.proceed();
         } catch (Exception e) {
-            LOG.error("广告服务的ip切面拦截异常");
+            LOG.error("广告服务ip切面拦截异常",e.getMessage());
+            e.printStackTrace();
             pjp = new ServiceProceedingJoinPoint(ResultData.error("服务器异常"));
             return pjp.proceed();
         }
