@@ -1,5 +1,6 @@
 package com.spaceobj.advertise.aop;
 
+import com.spaceobj.advertise.constent.ServiceProceedingJoinPoint;
 import com.spaceobj.advertise.service.impl.JdAdvertiseServiceImpl;
 import com.spaceobj.advertise.utils.ResultData;
 import org.aspectj.lang.ProceedingJoinPoint;

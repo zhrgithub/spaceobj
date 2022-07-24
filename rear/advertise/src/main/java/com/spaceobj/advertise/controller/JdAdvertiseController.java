@@ -1,5 +1,6 @@
 package com.spaceobj.advertise.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.spaceobj.advertise.service.JdAdvertiseService;
 import com.spaceobj.advertise.utils.ResultData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class JdAdvertiseController {
 
     @GetMapping(value = "list")
     public ResultData list(){
+
+        System.out.println(StpUtil.isLogin()+","+StpUtil.getLoginId()+","+StpUtil.getPermissionList()+","+StpUtil.getRoleList());
+
         return jdAdvertiseService.findList();
     }
 }

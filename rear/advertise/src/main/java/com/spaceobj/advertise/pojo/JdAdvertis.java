@@ -7,7 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-@TableName(value = "jd_advertis")
+@TableName(value = "jd_advertise")
 public class JdAdvertis implements Serializable {
 
     @TableField(value = "jd_ad_Id")
