@@ -5,13 +5,14 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Data
 @TableName(value = "jd_advertise")
 public class JdAdvertis implements Serializable {
 
     @TableField(value = "jd_ad_Id")
-    private long jdAdId;
+    private Integer jdAdId;
 
     @TableField(value = "jd_ad_hyperlink")
     private String jdAdHyperlink;
@@ -29,7 +30,7 @@ public class JdAdvertis implements Serializable {
     private String jdAdCoupon;
 
     @TableField(value = "jd_ad_price")
-    private double jdAdPrice;
+    private BigDecimal jdAdPrice;
 
     @TableField(value = "jd_ad_comment_num")
     private String jdAdCommentNum;

@@ -23,9 +23,6 @@ public class JdAdvertiseController {
 
     @GetMapping(value = "list")
     public ResultData list(){
-
-        System.out.println(StpUtil.isLogin()+","+StpUtil.getLoginId()+","+StpUtil.getPermissionList()+","+StpUtil.getRoleList());
-
         return jdAdvertiseService.findList();
     }
 }
