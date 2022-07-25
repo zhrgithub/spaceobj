@@ -6,12 +6,15 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * @author zhr
+ */
 @Data
 @TableName(value = "sys_user")
 public class SysUser implements Serializable {
 
-  @TableField(value = "id")
-  private long id;
+  @TableField(value = "user_id")
+  private long userId;
 
   @TableField(value = "account")
   private String account;
@@ -27,6 +30,9 @@ public class SysUser implements Serializable {
 
   @TableField(value = "phone_number")
   private String phoneNumber;
+
+  @TableField(value = "invitation_value")
+  private long invitationValue;
 
   @TableField(value = "user_type")
   private String userType;
