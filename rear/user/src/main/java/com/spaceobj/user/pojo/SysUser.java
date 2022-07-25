@@ -14,7 +14,7 @@ import java.io.Serializable;
 public class SysUser implements Serializable {
 
   @TableField(value = "user_id")
-  private long userId;
+  private Integer userId;
 
   @TableField(value = "account")
   private String account;
@@ -31,8 +31,11 @@ public class SysUser implements Serializable {
   @TableField(value = "phone_number")
   private String phoneNumber;
 
+  @TableField(value = "assist_value")
+  private Integer assistValue;
+
   @TableField(value = "invitation_value")
-  private long invitationValue;
+  private Integer invitationValue;
 
   @TableField(value = "user_type")
   private String userType;
