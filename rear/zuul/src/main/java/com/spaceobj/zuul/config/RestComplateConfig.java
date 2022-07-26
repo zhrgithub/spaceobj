@@ -11,7 +11,11 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestComplateConfig {
 
-    //实例化 RestTemplate 实例
+    /**
+     * 实例化 RestTemplate 实例
+     *
+     * @return
+     */
     @Bean
     public RestTemplate restTemplate() {
 
