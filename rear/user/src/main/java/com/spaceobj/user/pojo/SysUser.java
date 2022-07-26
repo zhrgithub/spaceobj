@@ -1,6 +1,5 @@
 package com.spaceobj.user.pojo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -69,7 +68,9 @@ public class SysUser implements Serializable {
   @TableField(value = "ip_territory")
   private String ipTerritory;
 
+  @TableField(value = "edit_info_times")
+  private Integer editInfoTimes;
+
   @TableField(value = "device_type")
   private String deviceType;
-
 }

@@ -2,7 +2,7 @@ package com.spaceobj.user.constent;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.spaceobj.user.pojo.Message;
+import com.spaceobj.user.utils.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;

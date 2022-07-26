@@ -1,4 +1,4 @@
-package com.spaceobj.user.pojo;
+package com.spaceobj.user.utils;
 
 import lombok.Data;
 

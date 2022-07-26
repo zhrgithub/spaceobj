@@ -1,12 +1,11 @@
 package com.spaceobj.user.service.impl;
 
+import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.SysUserService;
-import com.spaceobj.user.utils.ResultData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   private static final Logger LOG = LoggerFactory.getLogger(SysUserServiceImpl.class);
 
   @Override
-  public ResultData findList() {
+  public SaResult findList(String searchValue) {
     List<SysUser> list = null;
     try {
       Long size = redisTemplate.opsForList().size(SysUserList);
@@ -50,30 +49,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     } catch (Exception e) {
       LOG.error("查询用户数据异常");
       e.printStackTrace();
-      return ResultData.error("用户服务器异常");
+      return SaResult.error("用户服务器异常");
     }
-    return ResultData.success().setData("sys_user_list", list);
+    return SaResult.ok().setData(list);
   }
 
 
   @Override
-  public ResultData updateSysUser(SysUser sysUser) {
+  public SaResult updateSysUser(SysUser sysUser, Integer operateType) {
 
     return null;
-  }
-
-  @Override
-  public ResultData addUser(SysUser sysUser) {
-    Integer result = 0;
-//    sysUser.setAccount(IdWorker.get32UUID());
-    result= sysUserMapper.insert(sysUser);
-//    System.out.println(sysUser.toString());
-
-    String message = "新增成功";
-    if (result==0){
-      message = "新增失败";
-    }
-    return ResultData.success().setMessage(message);
   }
 
 }

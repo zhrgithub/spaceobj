@@ -1,11 +1,12 @@
 package com.spaceobj.user.service.impl;
 
+import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.CustomerUserService;
-import com.spaceobj.user.utils.ResultData;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author zhr_java@163.com
@@ -15,31 +16,50 @@ import org.springframework.stereotype.Service;
 public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements CustomerUserService {
 
     @Override
-    public ResultData createEmailCode(String account) {
+    public SaResult loginOrRegister(Integer operateType, String email, String password, String phoneNumber) {
 
         return null;
     }
 
     @Override
-    public ResultData loginOrRegisterByEmailCode(String phoneNumber, String account, String emailCode) {
+    public SaResult loginOut() {
 
         return null;
     }
 
     @Override
-    public ResultData logout(String account) {
+    public SaResult getUserInfo() {
 
         return null;
     }
 
     @Override
-    public ResultData getUserInfo(String account) {
+    public SaResult updateUserInfo(SysUser user) {
 
         return null;
     }
 
     @Override
-    public ResultData updateUserInfo(SysUser user) {
+    public SaResult sendMailCode(String account) {
+
+        return null;
+    }
+
+
+    @Override
+    public SaResult resetPassword(String account, String emailCode, String newPassword) {
+
+        return null;
+    }
+
+    @Override
+    public SaResult realName(SysUser user) {
+
+        return null;
+    }
+
+    @Override
+    public SaResult uploadFile(MultipartFile multipartFile) {
 
         return null;
     }

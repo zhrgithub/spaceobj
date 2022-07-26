@@ -1,0 +1,25 @@
+package com.spaceobj.user.pojo;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
+import java.io.Serializable;
+
+/**
+ * @author zhr
+ */
+@Data
+@TableName(value = "sys_photo")
+public class SysPhoto implements Serializable {
+
+  @TableId(value = "user_id")
+  private long photoId;
+
+  @TableField(value = "photo_url")
+  private String photoUrl;
+
+
+
+}
