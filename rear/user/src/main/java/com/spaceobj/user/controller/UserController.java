@@ -2,6 +2,10 @@ package com.spaceobj.user.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.spaceobj.user.pojo.SysUser;
+import com.spaceobj.user.service.SysUserService;
+import com.spaceobj.user.utils.ResultData;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("user")
 public class UserController {
+    @Autowired
+    private SysUserService sysUserService;
 
     // 会话登录接口
     @RequestMapping("doLogin")
@@ -33,6 +39,13 @@ public class UserController {
 
         return SaResult.ok("test成功");
     }
+
+    @RequestMapping("addUser")
+    public ResultData addUser(SysUser sysUser){
+        return sysUserService.addUser(sysUser);
+    }
+
+
 
 
 

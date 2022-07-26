@@ -17,7 +17,6 @@ public interface SysUserService extends IService<SysUser> {
    */
   ResultData findList();
 
-
   /**
    * 修改系统用户
    *
@@ -26,4 +25,11 @@ public interface SysUserService extends IService<SysUser> {
    */
   ResultData updateSysUser(SysUser sysUser);
 
+  /**
+   * 新增用户
+   *
+   * @param sysUser
+   * @return
+   */
+  ResultData addUser(SysUser sysUser);
 }

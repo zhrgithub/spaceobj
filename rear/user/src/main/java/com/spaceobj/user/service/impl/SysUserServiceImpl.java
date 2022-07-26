@@ -1,6 +1,7 @@
 package com.spaceobj.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
@@ -60,4 +61,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     return null;
   }
+
+  @Override
+  public ResultData addUser(SysUser sysUser) {
+    Integer result = 0;
+//    sysUser.setAccount(IdWorker.get32UUID());
+    result= sysUserMapper.insert(sysUser);
+//    System.out.println(sysUser.toString());
+
+    String message = "新增成功";
+    if (result==0){
+      message = "新增失败";
+    }
+    return ResultData.success().setMessage(message);
+  }
+
 }

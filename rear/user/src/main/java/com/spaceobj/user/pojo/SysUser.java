@@ -1,6 +1,8 @@
 package com.spaceobj.user.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -13,7 +15,7 @@ import java.io.Serializable;
 @TableName(value = "sys_user")
 public class SysUser implements Serializable {
 
-  @TableField(value = "user_id")
+  @TableId(value = "user_id")
   private Integer userId;
 
   @TableField(value = "account")
