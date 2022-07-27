@@ -1,5 +1,7 @@
 package com.spaceobj.user.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.constent.KafKaTopics;
 import com.spaceobj.user.service.kafka.KafkaSender;
 import com.spaceobj.user.utils.ReceiveEmail;
@@ -19,15 +21,28 @@ public class TestController {
 
   @Autowired private KafkaSender kafkaSender;
 
-  @GetMapping("sendMessage/{msg}")
-  public void sendMessage(@PathVariable("msg") String msg) {
+  @GetMapping("test2")
+  public SaResult test2() {
+
+    return SaResult.ok();
+  }
+
+
+
+
+
+  @GetMapping("sendMessage")
+  public void sendMessage() {
+
+    String str = (String) StpUtil.getTokenInfo().loginId;
+    System.out.println(str);
 
     ReceiveEmail receiveEmail =
-        ReceiveEmail.builder()
-            .receiverEmail("2923038658@qq.com")
-            .title("spaceobj")
-            .content("邮箱验证码：323643")
-            .build();
+            ReceiveEmail.builder()
+                    .receiverEmail("2923038658@qq.com")
+                    .title("spaceobj")
+                    .content("邮箱验证码：323643")
+                    .build();
 
     kafkaSender.send(receiveEmail.getGson(), KafKaTopics.EMAIL_VERIFICATION_CODE);
   }

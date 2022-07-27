@@ -27,7 +27,7 @@ public class StpInterfaceImpl implements StpInterface {
         System.out.println("loginId: "+loginId);
         // 本list仅做模拟，实际项目中要根据具体业务逻辑来查询权限
         List<String> list = new ArrayList<String>();
-        list.add("admin");
+//        list.add("admin");
         return list;
     }
 
@@ -39,7 +39,7 @@ public class StpInterfaceImpl implements StpInterface {
     System.out.println("loginId2:"+loginId);
         // 本list仅做模拟，实际项目中要根据具体业务逻辑来查询角色
         List<String> list = new ArrayList<String>();
-        list.add("admin");
+//        list.add("admin");
         return list;
     }
 

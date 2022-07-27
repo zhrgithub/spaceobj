@@ -13,7 +13,7 @@ import java.util.Optional;
  */
 @Component
 @Slf4j
-public class KafkaConsumer {
+public class KafkaUserConsumer {
 
   @KafkaListener(topics = {"hello2"})
   public void listen(ConsumerRecord<?, ?> record) {
