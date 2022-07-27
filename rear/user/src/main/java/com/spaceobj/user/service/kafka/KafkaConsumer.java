@@ -1,4 +1,4 @@
-package com.spaceobj.user.constent;
+package com.spaceobj.user.service.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

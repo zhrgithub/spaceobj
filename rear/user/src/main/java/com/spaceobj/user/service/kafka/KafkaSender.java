@@ -1,4 +1,4 @@
-package com.spaceobj.user.constent;
+package com.spaceobj.user.service.kafka;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
