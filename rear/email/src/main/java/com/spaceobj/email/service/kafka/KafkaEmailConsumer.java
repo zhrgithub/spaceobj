@@ -1,9 +1,10 @@
-package com.spaceobj.email.constent;
+package com.spaceobj.email.service.kafka;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.spaceobj.email.constent.KafKaTopics;
 import com.spaceobj.email.pojo.SysEmail;
 import com.spaceobj.email.service.SysEmailService;
 import com.spaceobj.email.util.Email;
