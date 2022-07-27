@@ -2,6 +2,7 @@ package com.spaceobj.advertise.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 
 @Data
 @TableName(value = "jd_advertise")
+@Builder
 public class JdAdvertis implements Serializable {
 
     @TableField(value = "jd_ad_Id")
