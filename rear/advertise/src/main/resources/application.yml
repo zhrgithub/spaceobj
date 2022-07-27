@@ -16,7 +16,7 @@ spring:
     host: 127.0.0.1
     port: 6380
     password:
-    database: 0
+    database: 1
     timeout: 20s
     lettuce:
       pool:
@@ -57,7 +57,7 @@ sa-token:
   is-log: false
   # 配置 Sa-Token 单独使用的 Redis 连接
   alone-redis:
-    database: 1
+    database: 0
     host: 127.0.0.1
     port: 6380
     password:

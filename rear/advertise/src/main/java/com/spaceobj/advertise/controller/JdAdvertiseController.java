@@ -1,8 +1,7 @@
 package com.spaceobj.advertise.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.advertise.service.JdAdvertiseService;
-import com.spaceobj.advertise.utils.ResultData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +21,7 @@ public class JdAdvertiseController {
     private JdAdvertiseService jdAdvertiseService;
 
     @GetMapping(value = "list")
-    public ResultData list(){
+    public SaResult list(){
         return jdAdvertiseService.findList();
     }
 }

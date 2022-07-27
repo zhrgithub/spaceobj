@@ -1,6 +1,6 @@
-package com.spaceobj.advertise.constent;
+package com.spaceobj.advertise.utils;
 
-import com.spaceobj.advertise.utils.ResultData;
+import cn.dev33.satoken.util.SaResult;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.SourceLocation;
@@ -12,11 +12,11 @@ import org.aspectj.runtime.internal.AroundClosure;
  */
 public class ServiceProceedingJoinPoint implements ProceedingJoinPoint {
 
-    ResultData result = null;
+    SaResult saResult = null;
 
-    public ServiceProceedingJoinPoint(ResultData content) {
+    public ServiceProceedingJoinPoint(SaResult saResult) {
 
-        this.result = content;
+        this.saResult = saResult;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class ServiceProceedingJoinPoint implements ProceedingJoinPoint {
     @Override
     public Object proceed() throws Throwable {
 
-        return result;
+        return saResult;
     }
 
 

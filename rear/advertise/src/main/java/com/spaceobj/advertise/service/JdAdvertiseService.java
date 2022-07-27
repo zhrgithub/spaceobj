@@ -1,8 +1,8 @@
 package com.spaceobj.advertise.service;
 
+import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spaceobj.advertise.pojo.JdAdvertis;
-import com.spaceobj.advertise.utils.ResultData;
 
 /**
  * @author zhr_java@163.com
@@ -15,7 +15,7 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
      *
      * @return
      */
-    ResultData findList();
+    SaResult findList();
 
     /**
      * 新增广告内容
@@ -24,7 +24,7 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
      *
      * @return
      */
-    ResultData saveAdvertis(JdAdvertis jdAdvertis);
+    SaResult saveAdvertis(JdAdvertis jdAdvertis);
 
     /**
      * 删除广告内容
@@ -33,7 +33,7 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
      *
      * @return
      */
-    ResultData deleteAdvertis(String id);
+    SaResult deleteAdvertis(String id);
 
     /**
      * 修改广告内容
@@ -42,6 +42,6 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
      *
      * @return
      */
-    ResultData updateAdvertis(JdAdvertis jdAdvertis);
+    SaResult updateAdvertis(JdAdvertis jdAdvertis);
 
 }
