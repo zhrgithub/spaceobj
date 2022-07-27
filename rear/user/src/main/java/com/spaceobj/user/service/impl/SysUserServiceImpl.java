@@ -29,7 +29,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   private RedisTemplate redisTemplate;
 
   /** 系统用户列表 */
-  private static final String SysUserList = "sys_user_list";
+  private static final String SYS_USER_LIST = "sys_user_list";
 
   private static final Logger LOG = LoggerFactory.getLogger(SysUserServiceImpl.class);
 
@@ -37,14 +37,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult findList(String searchValue) {
     List<SysUser> list = null;
     try {
-      Long size = redisTemplate.opsForList().size(SysUserList);
+      Long size = redisTemplate.opsForList().size(SYS_USER_LIST);
       if (size == 0) {
         QueryWrapper queryWrapper = new QueryWrapper();
         list = sysUserMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().rightPushAll("sys_user_list", list.toArray());
+        redisTemplate.opsForList().rightPushAll(SYS_USER_LIST, list.toArray());
       } else {
         //可以使用pipeLine来提升性能
-        list = redisTemplate.opsForList().range(SysUserList, 0, -1);
+        list = redisTemplate.opsForList().range(SYS_USER_LIST, 0, -1);
       }
     } catch (Exception e) {
       LOG.error("查询用户数据异常");

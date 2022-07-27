@@ -49,8 +49,5 @@ public class UserController {
     return SaResult.ok("test成功");
   }
 
-  @RequestMapping("addUser")
-  public SaResult addUser(SysUser sysUser) {
-    return sysUserService.addUser(sysUser);
-  }
+
 }
