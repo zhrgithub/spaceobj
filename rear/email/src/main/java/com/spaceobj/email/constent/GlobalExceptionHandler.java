@@ -17,28 +17,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  /**
-   * kafka通信异常
-   *
-   * @param ex
-   */
-    @ExceptionHandler(KafkaException.class)
-    @ResponseBody
-    public void notLoginException(KafkaException ex) {
-      log.error("kafka通信异常");
-    }
-
-  /**
-   * 空指针校验
-   *
-   * @param ex
-   */
-  @ExceptionHandler(NullPointerException.class)
-  @ResponseBody
-  public void nullPointerException(NullPointerException ex) {
-
-    log.error("空指针异常");
-  }
 
   /**
    * 全局异常拦截
