@@ -3,7 +3,6 @@ package com.spaceobj.email.pojo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Builder;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -28,6 +27,9 @@ public class SysEmail implements Serializable {
   @TableField(value = "email_password")
   @NotBlank
   private String emailPassword;
+
+  /** 返回账户名称前缀 */
+  private String emailAccountName;
 
   /**
    * 获取账号名称

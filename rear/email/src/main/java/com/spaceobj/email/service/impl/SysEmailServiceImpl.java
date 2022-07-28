@@ -49,8 +49,7 @@ public class SysEmailServiceImpl extends ServiceImpl<SysEmailMapper, SysEmail>
       }
     } catch (Exception e) {
       LOG.error("查询邮箱数据异常");
-      e.printStackTrace();
-      return SaResult.error("发件箱列表异常");
+      return SaResult.error("发件箱列表异常").setData(list);
     }
     return SaResult.ok().setData(list);
   }

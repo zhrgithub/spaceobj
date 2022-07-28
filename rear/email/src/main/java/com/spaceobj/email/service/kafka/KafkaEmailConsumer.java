@@ -68,7 +68,6 @@ public class KafkaEmailConsumer {
     // fromJson
     Message messageResult =
         gson.fromJson(message.toString(), new TypeToken<Message>() {}.getType());
-
     return new Gson().fromJson(messageResult.getMsg(), Email.class);
   }
 
@@ -78,11 +77,16 @@ public class KafkaEmailConsumer {
    * @return
    */
   private SysEmail getSysEmail() {
-    List<SysEmail> emailList = (List<SysEmail>) sysEmailService.findList().getData();
-    System.out.println(emailList);
-    SecureRandom random = new SecureRandom();
-    Integer num = random.nextInt(emailList.size());
-
+    List<SysEmail> emailList = null;
+    Integer num = null;
+    try {
+      emailList = (List<SysEmail>) sysEmailService.findList().getData();
+      SecureRandom random = new SecureRandom();
+      num = random.nextInt(emailList.size());
+    } catch (Exception e) {
+      log.error("空指针异常");
+      return new SysEmail();
+    }
     return emailList.get(num);
   }
 
@@ -95,8 +99,8 @@ public class KafkaEmailConsumer {
     SysEmail sysEmail = getSysEmail();
     Email email = getEmail(message);
     if (StringUtils.isBlank(sysEmail.getEmailAccount())
-            || StringUtils.isBlank(sysEmail.getEmailAccountName())
-            || StringUtils.isBlank(sysEmail.getEmailPassword())){
+        || StringUtils.isBlank(sysEmail.getEmailAccountName())
+        || StringUtils.isBlank(sysEmail.getEmailPassword())) {
       log.error("邮件发送参数错误！停止发送！");
       return;
     }
@@ -112,6 +116,7 @@ public class KafkaEmailConsumer {
 
     } else {
       SendMail.sendMails(email);
+      log.info("发送成功");
     }
   }
 }
