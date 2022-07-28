@@ -21,12 +21,4 @@ public class ReceiveEmail {
   /** 内容 */
   private String content;
 
-  public String getGson() {
-    // 使用new方法
-    Gson gson = new Gson();
-    // toJson 将bean对象转换为json字符串
-    return gson.toJson(this, ReceiveEmail.class);
-  }
-
-
 }

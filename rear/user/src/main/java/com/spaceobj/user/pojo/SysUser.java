@@ -3,8 +3,6 @@ package com.spaceobj.user.pojo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.google.gson.Gson;
-import com.spaceobj.user.utils.ReceiveEmail;
 import lombok.Builder;
 import lombok.Data;
 
@@ -19,7 +17,7 @@ import java.io.Serializable;
 public class SysUser implements Serializable {
 
   @TableId(value = "user_id")
-  private Integer userId;
+  private String userId;
 
   @TableField(value = "account")
   private String account;

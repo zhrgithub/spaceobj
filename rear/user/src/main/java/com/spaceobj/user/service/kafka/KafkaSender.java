@@ -3,6 +3,7 @@ package com.spaceobj.user.service.kafka;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.spaceobj.user.utils.Message;
+import com.spaceobj.user.utils.ReceiveEmail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -28,14 +29,17 @@ public class KafkaSender {
     this.kafkaTemplate = kafkaTemplate;
   }
 
-  private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+  private Gson gsonBuilder = new GsonBuilder().disableHtmlEscaping().create();
+  private Gson gson = new Gson();
 
-  public void send(String msg,String topicName) {
+  public void send(Object obj, String topicName) {
     Message message = new Message();
 
     message.setId(System.currentTimeMillis());
+
+    String msg = gson.toJson(obj, obj.getClass());
     message.setMsg(msg);
     message.setSendTime(new Date());
-    kafkaTemplate.send(topicName, gson.toJson(message));
+    kafkaTemplate.send(topicName, gsonBuilder.toJson(message));
   }
 }

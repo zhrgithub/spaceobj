@@ -44,6 +44,6 @@ public class TestController {
                     .content("邮箱验证码：323643")
                     .build();
 
-    kafkaSender.send(receiveEmail.getGson(), KafKaTopics.EMAIL_VERIFICATION_CODE);
+    kafkaSender.send(receiveEmail, KafKaTopics.EMAIL_VERIFICATION_CODE);
   }
 }
