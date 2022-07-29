@@ -1,5 +1,6 @@
 package com.spaceobj.user.service.kafka;
 
+import com.spaceobj.user.constent.KafKaTopics;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,7 +16,7 @@ import java.util.Optional;
 @Slf4j
 public class KafkaUserConsumer {
 
-  @KafkaListener(topics = {"hello2"})
+  @KafkaListener(topics = {KafKaTopics.AUDIT_NOTICE})
   public void listen(ConsumerRecord<?, ?> record) {
 
     Optional.ofNullable(record.value())

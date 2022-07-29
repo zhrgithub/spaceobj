@@ -39,7 +39,8 @@ public interface CustomerUserService extends IService<SysUser> {
 
   /**
    * 修改用户信息，要比较当前登录账户的cookie是否和提交的账号ID一致，
-   * 根据用户的账号，先把数据缓存到Redis中，判断用户本月剩余修改次数是否大于0，大于0可以继续修改，先刷新缓存为修改中， 禁止重复提交，然后同步到消息队列，然后刷新缓存，小于0本月禁止修改，
+   * 根据用户的账号，先把数据缓存到Redis中，判断用户本月剩余修改次数是否大于0，大于0可以继续修改，先刷新缓存为修改中，
+   * 禁止重复提交，然后同步到消息队列，然后刷新缓存，小于0本月禁止修改，
    * 设置定时任务每月一号刷新次数为3
    *
    * <p>校验请求参数：头像、昵称、手机号、邮箱，其余设置为空
@@ -55,6 +56,8 @@ public interface CustomerUserService extends IService<SysUser> {
   /**
    * 发送验证码
    *
+   *校验当前系统中是否存在这个账户
+   *
    * @param account
    * @return
    */
@@ -62,6 +65,8 @@ public interface CustomerUserService extends IService<SysUser> {
 
   /**
    * 通过邮件验证码修改
+   *
+   *
    *
    * @param account 用户的邮箱也是用户的账户
    * @param emailCode
@@ -73,6 +78,8 @@ public interface CustomerUserService extends IService<SysUser> {
 
 
   /**
+   *
+   *
    * 先缓存到Redis，变成审核状态，消息队列持久化到MySQL，通过任务调度判断超过十个人，则邮件通知管理员审核，
    * 审核后，消息队列通知先持久化，然后刷新缓存，邮件通知用户审核通过
    *
@@ -85,6 +92,8 @@ public interface CustomerUserService extends IService<SysUser> {
 
   /**
    * 文件上传
+   *
+   * 校验是否登录
    *
    * @param multipartFile
    * @return

@@ -1,6 +1,5 @@
 package com.spaceobj.user.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.constent.KafKaTopics;
 import com.spaceobj.user.service.kafka.KafkaSender;
@@ -8,7 +7,6 @@ import com.spaceobj.user.utils.ReceiveEmail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -33,10 +31,6 @@ public class TestController {
 
   @GetMapping("sendMessage")
   public void sendMessage() {
-
-    String str = (String) StpUtil.getTokenInfo().loginId;
-    System.out.println(str);
-
     ReceiveEmail receiveEmail =
             ReceiveEmail.builder()
                     .receiverEmail("2923038658@qq.com")
