@@ -82,8 +82,8 @@ public class IpLimiting {
       }
       return pjp.proceed();
     } catch (Exception e) {
-      e.printStackTrace();
-      pjp = new ServiceProceedingJoinPoint(SaResult.error("服务器异常"));
+      LOG.error(e.getMessage());
+      pjp = new ServiceProceedingJoinPoint(SaResult.error(e.getMessage()));
       return pjp.proceed();
     }
   }
