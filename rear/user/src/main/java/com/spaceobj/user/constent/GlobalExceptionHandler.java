@@ -2,6 +2,7 @@ package com.spaceobj.user.constent;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.util.SaResult;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
@@ -19,6 +20,19 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 public class GlobalExceptionHandler {
 
   Log logger = LogFactory.getLog(GlobalExceptionHandler.class);
+
+
+  /**
+   * 非空校验
+   *
+   * @param ex
+   * @return
+   */
+  @ExceptionHandler(SaTokenException.class)
+  @ResponseBody
+  public SaResult notLoginException(SaTokenException ex) {
+    return SaResult.error(ex.getMessage());
+  }
 
   /**
    * 登录校验

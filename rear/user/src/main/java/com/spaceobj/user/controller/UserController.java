@@ -5,9 +5,13 @@ import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author zhr_java@163.com
@@ -15,25 +19,23 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("user")
+@CrossOrigin(origins = "http://localhost",maxAge = 3600)
 public class UserController {
   @Autowired private SysUserService sysUserService;
 
-  /**
-   * 会话登录接口
-   *
-   * @param name
-   * @param pwd
-   * @return
-   */
-  @RequestMapping("doLogin")
-  public SaResult doLogin(String name, String pwd) {
+
+  @PostMapping("doLogin")
+  public SaResult doLogin(String phoneNumber) {
+
+    StpUtil.login(phoneNumber);
+    return SaResult.ok("登录成功");
     // 第一步：比对前端提交的账号名称、密码
-    if ("zhang".equals(name) && "123456".equals(pwd)) {
-      // 第二步：根据账号id，进行登录
-      StpUtil.login(10001);
-      return SaResult.ok("登录成功");
-    }
-    return SaResult.error("登录失败");
+//    if ("13362620045".equals(phoneNumber) && "zhr_java@163.com".equals(email)&&"123456".equals(password)) {
+//      // 第二步：根据账号id，进行登录
+//      StpUtil.login(email);
+//      return SaResult.ok("登录成功");
+//    }
+//    return SaResult.error("登录失败");
   }
 
   @RequestMapping("test")
