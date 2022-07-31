@@ -47,9 +47,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         list = redisTemplate.opsForList().range(SYS_USER_LIST, 0, -1);
       }
     } catch (Exception e) {
-      LOG.error("查询用户数据异常");
-      e.printStackTrace();
-      return SaResult.error("用户服务器异常");
+      LOG.error(e.getMessage());
+      return SaResult.error(e.getMessage());
     }
     return SaResult.ok().setData(list);
   }
