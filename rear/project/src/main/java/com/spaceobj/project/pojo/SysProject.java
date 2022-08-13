@@ -3,8 +3,10 @@ package com.spaceobj.project.pojo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
 import java.io.Serializable;
@@ -15,6 +17,8 @@ import java.io.Serializable;
 @Data
 @Builder
 @TableName(value = "sys_project")
+@AllArgsConstructor
+@NoArgsConstructor
 public class SysProject implements Serializable {
 
   @TableId(value = "p_id")
