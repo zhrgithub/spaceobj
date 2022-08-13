@@ -6,6 +6,7 @@ import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.util.SaResult;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,6 +32,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(SaTokenException.class)
   @ResponseBody
   public SaResult notLoginException(SaTokenException ex) {
+    return SaResult.error(ex.getMessage());
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  @ResponseBody
+  public SaResult notLoginException(HttpRequestMethodNotSupportedException ex) {
     return SaResult.error(ex.getMessage());
   }
 

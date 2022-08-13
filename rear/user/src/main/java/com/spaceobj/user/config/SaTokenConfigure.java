@@ -1,9 +1,10 @@
-package com.spaceobj.user.aop;
+package com.spaceobj.user.config;
 
 import cn.dev33.satoken.interceptor.SaRouteInterceptor;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -13,6 +14,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class SaTokenConfigure implements WebMvcConfigurer {
+
+  @Override
+  public void addCorsMappings(CorsRegistry registry) {
+
+    registry
+        .addMapping("/**") // 拦截所有的请求
+        .allowedOrigins("*") // 可跨域的域名，可以为 *
+        .allowCredentials(true)
+        .allowedMethods("*") // 允许跨域的方法，可以单独配置
+        .allowedHeaders("*"); // 允许跨域的请求头，可以单独配置
+  }
 
   /**
    * 注册拦截器
@@ -37,6 +49,6 @@ public class SaTokenConfigure implements WebMvcConfigurer {
         .addPathPatterns("/**")
 
         /** 放开拦截的接口 */
-        .excludePathPatterns(new String[] {"/user/doLogin", "/test2"});
+        .excludePathPatterns(new String[] {"/user/doLogin"});
   }
 }

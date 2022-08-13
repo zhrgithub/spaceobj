@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
  */
 @RestController
 @RequestMapping("user")
-@CrossOrigin(origins = "http://localhost",maxAge = 3600)
 public class UserController {
   @Autowired private SysUserService sysUserService;
 
