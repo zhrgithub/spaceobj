@@ -2,19 +2,22 @@ package com.spaceobj.advertise.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @TableName(value = "jd_advertise")
 @Builder
 public class JdAdvertis implements Serializable {
 
     @TableField(value = "jd_ad_Id")
-    private Integer jdAdId;
+    private Long jdAdId;
 
     @TableField(value = "jd_ad_hyperlink")
     private String jdAdHyperlink;

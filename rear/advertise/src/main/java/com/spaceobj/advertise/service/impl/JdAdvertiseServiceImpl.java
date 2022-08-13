@@ -50,7 +50,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return SaResult.error("服务器异常");
+            return SaResult.error("广告列表查询异常");
         }
         return SaResult.ok().setData(list);
     }

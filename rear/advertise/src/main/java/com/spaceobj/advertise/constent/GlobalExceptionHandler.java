@@ -1,6 +1,7 @@
 package com.spaceobj.advertise.constent;
 
 import cn.dev33.satoken.util.SaResult;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -10,6 +11,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * 序列化异常
+     * @param e
+     * @return
+     */
+    @ExceptionHandler
+    public SaResult handlerException(SerializationException e) {
+        return SaResult.error(e.getMessage());
+    }
 
     /**
      * 全局异常拦截
