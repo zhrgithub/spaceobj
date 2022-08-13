@@ -3,8 +3,10 @@ package com.spaceobj.projectHelp.pojo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -13,6 +15,8 @@ import org.hibernate.validator.constraints.NotBlank;
 @Data
 @Builder
 @TableName(value = "project_help")
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProjectHelp {
 
   @TableId(value = "hp_id")
