@@ -1,7 +1,9 @@
 package com.spaceobj.other.pojo;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
 import java.io.Serializable;
@@ -12,18 +14,9 @@ import java.io.Serializable;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Other implements Serializable {
-
-    public Other() {
-
-    }
-
-    public Other(String wechat, String downloadUrl) {
-
-        this.wechat = wechat;
-        this.downloadUrl = downloadUrl;
-    }
-
     /**
      * 客服微信
      */
