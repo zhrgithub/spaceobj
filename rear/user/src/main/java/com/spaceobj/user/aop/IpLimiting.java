@@ -50,7 +50,7 @@ public class IpLimiting {
         return pjp.proceed();
       }
 
-      // 如果是请求次数超过10次的，直接返回服务器异常
+      // 如果是请求ip超过最大请求次数，直接返回服务器繁忙
       if (redisTemplate.hasKey(ip)
           && (int) redisTemplate.boundValueOps(ip).get() >= MALICIOUS_REQUESTS) {
         pjp = new ServiceProceedingJoinPoint(SaResult.ok("服务器繁忙"));

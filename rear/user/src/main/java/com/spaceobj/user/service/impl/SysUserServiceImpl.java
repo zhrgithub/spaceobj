@@ -22,11 +22,9 @@ import java.util.List;
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     implements SysUserService {
 
-  @Autowired
-  private SysUserMapper sysUserMapper;
+  @Autowired private SysUserMapper sysUserMapper;
 
-  @Autowired
-  private RedisTemplate redisTemplate;
+  @Autowired private RedisTemplate redisTemplate;
 
   /** 系统用户列表 */
   private static final String SYS_USER_LIST = "sys_user_list";
@@ -43,7 +41,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         list = sysUserMapper.selectList(queryWrapper);
         redisTemplate.opsForList().rightPushAll(SYS_USER_LIST, list.toArray());
       } else {
-        //可以使用pipeLine来提升性能
+        // 可以使用pipeLine来提升性能 TODO
         list = redisTemplate.opsForList().range(SYS_USER_LIST, 0, -1);
       }
     } catch (Exception e) {
@@ -53,11 +51,17 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     return SaResult.ok().setData(list);
   }
 
-
   @Override
   public SaResult updateSysUser(SysUser sysUser, Integer operateType) {
+    Integer result = -1;
+    try {
+      result = sysUserMapper.updateById(sysUser);
+      redisTemplate.delete(SYS_USER_LIST);
+    } catch (RuntimeException e) {
+      LOG.error("updateSysUSer failed", e.getMessage());
+      return SaResult.error(e.getMessage()).setData(result);
+    }
 
-    return null;
+    return SaResult.ok().setData(result);
   }
-
 }

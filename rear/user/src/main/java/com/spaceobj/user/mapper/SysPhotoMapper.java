@@ -2,13 +2,13 @@ package com.spaceobj.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.spaceobj.user.pojo.SysPhoto;
-import org.springframework.stereotype.Component;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * @author zhr_java@163.com
  * @date 2022/7/27 00:30
  */
-@Component
+@Mapper
 public interface SysPhotoMapper extends BaseMapper<SysPhoto> {
 
 }

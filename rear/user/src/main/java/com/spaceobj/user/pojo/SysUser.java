@@ -21,10 +21,16 @@ import java.io.Serializable;
 public class SysUser implements Serializable {
 
   @TableId(value = "user_id")
-  private String userId;
+  private Long userId;
+
+  @TableField(value = "invite_user_id")
+  private Long inviteUserId;
 
   @TableField(value = "account")
   private String account;
+
+  @TableField(value = "email_code")
+  private String emailCode;
 
   @TableField(value = "password")
   private String password;
@@ -60,13 +66,19 @@ public class SysUser implements Serializable {
   private String photoUrl;
 
   @TableField(value = "online_status")
-  private String onlineStatus;
+  private Integer onlineStatus;
+
+  @TableField(value = "user_info_edit_status")
+  private Integer userInfoEditStatus;
 
   @TableField(value = "id_card_num")
   private String idCardNum;
 
+  @TableField(value = "id_card_pic")
+  private String idCardPic;
+
   @TableField(value = "real_name_status")
-  private String realNameStatus;
+  private Integer realNameStatus;
 
   @TableField(value = "ip")
   private String ip;
@@ -77,8 +89,16 @@ public class SysUser implements Serializable {
   @TableField(value = "edit_info_times")
   private Integer editInfoTimes;
 
+  @TableField(value = "send_code_times")
+  private Integer sendCodeTimes;
+
+  @TableField(value = "release_project_times")
+  private Integer releaseProjectTimes;
+
+  @TableField(value = "project_help_times")
+  private Integer projectHelpTimes;
+
+
   @TableField(value = "device_type")
   private String deviceType;
-
-
 }
