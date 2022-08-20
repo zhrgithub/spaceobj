@@ -8,13 +8,18 @@
 			<view class="phone-email-background-style">
 				<view class="phone-background-style">
 					<view class="phone-style">
-						<input type="text" maxlength="18" placeholder="请输入手机号/微信">
+						<input type="number" maxlength="11" placeholder="请输入手机号" @input="getphoneNumber">
 					</view>
 				</view>
 
 				<view class="phone-background-style">
 					<view class="phone-style">
-						<input type="text" maxlength="11" placeholder="请输入邮箱号">
+						<input type="text" maxlength="20" placeholder="请输入邮箱号" @input="getEmail">
+					</view>
+				</view>
+				<view class="phone-background-style">
+					<view class="phone-style">
+						<input type="text" maxlength="18" placeholder="请输入密码" @input="getPassword">
 					</view>
 				</view>
 			</view>
@@ -29,7 +34,8 @@
 				邮箱验证
 			</view>
 			<view class="email-verification-hint-style">
-				请您先用邮箱<text style="font-weight: bold;margin-left: 5rpx;margin-right: 5rpx;">testtesttesttest@163.com</text>
+				请您先用邮箱<text
+					style="font-weight: bold;margin-left: 5rpx;margin-right: 5rpx;">testtesttesttest@163.com</text>
 				发邮件，然后点击“我已发送”按钮
 			</view>
 			<view class="send-email-panel-style">
@@ -56,19 +62,93 @@
 
 <script>
 	import app from '@/App.vue'
+	import api from '@/common/api.js'
+	import {
+		login,
+		test
+	} from '@/common/indexApi.js'
+	import $ from '@/common/jquery-3.5.1.min.js'
 	var that;
 	export default {
 		data() {
 			return {
 				stepStatus: 0,
+				phoneNumber: null,
+				email: null,
+				password: null
 			}
 		},
 		created() {
 			that = this;
 		},
+
+		onShow() {
+
+			this.timer = setTimeout(() => {
+				var cookie = uni.getStorageSync('token')
+				console.log(cookie)
+			}, 200)
+
+		},
 		methods: {
+			getphoneNumber(e) {
+				that.phoneNumber = e.detail.value;
+			},
+			getEmail(e) {
+				that.email = e.detail.value;
+			},
+			getPassword(e) {
+				that.password = e.detail.value;
+			},
+
 			toLogin() {
-				this.stepStatus = 1;
+				// this.stepStatus = 1;
+
+				console.log(that.phoneNumber, that.email, that.password)
+
+				// login({
+				// 	phoneNumber:"666666"
+				// }).then((res)=>{
+				// 	console.log(res)
+				// })
+
+				api.post({
+					phoneNumber: "666666",
+				}, api.LOGIN).then(res => {
+					console.log(res)
+
+					api.get({}, api.TEST2).then(res => {
+						console.log(res)
+
+
+
+					})
+
+
+				})
+				// $.ajax({
+				// 	type: 'post',
+				// 	url: "http://localhost:8083/user/doLogin",
+				// 	async: true,
+				// 	data: {
+				// 		phoneNumber: "666666",
+				// 	},
+				// 	contentType: "application/x-www-form-urlencoded",
+				// 	dataType: "json",
+				// 	complete: function(data, textStatus, request) {
+				// 		console.log(data,textStatus,request)
+				// 		var token = request.getResponseHeader("satoken");
+				// 		console.log(token)
+				// 	},
+				// 	//ajax请求错误处理函数
+				// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+				// 		//ajax请求或响应出错
+				// 		if (XMLHttpRequest.status !== 200 || XMLHttpRequest.readyState !== 4) {
+				// 			console.log("请求出错")
+				// 		}
+				// 	}
+				// });
+
 			},
 			sendOk() {
 				app.globalData.loginStatus = true;
@@ -77,16 +157,16 @@
 					icon: "none"
 				})
 				uni.switchTab({
-					url:'/pages/my/my'
+					url: '/pages/my/my'
 				})
 			},
-			copyContent(){
+			copyContent() {
 				uni.showToast({
 					title: '已复制内容',
 					icon: "none"
 				})
 			},
-			copyEmail(){
+			copyEmail() {
 				uni.showToast({
 					title: '已复制收件箱',
 					icon: "none"
