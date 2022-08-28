@@ -17,13 +17,16 @@ public class SaTokenConfigure implements WebMvcConfigurer {
 
   @Override
   public void addCorsMappings(CorsRegistry registry) {
-
     registry
-        .addMapping("/**") // 拦截所有的请求
-        .allowedOrigins("*") // 可跨域的域名，可以为 *
+        // 拦截所有的请求
+        .addMapping("/**")
+        // 可跨域的域名，可以为 *
+        .allowedOrigins("*")
         .allowCredentials(true)
-        .allowedMethods("*") // 允许跨域的方法，可以单独配置
-        .allowedHeaders("*"); // 允许跨域的请求头，可以单独配置
+        // 允许跨域的方法，可以单独配置
+        .allowedMethods("*")
+        // 允许跨域的请求头，可以单独配置
+        .allowedHeaders("*");
   }
 
   /**
@@ -41,14 +44,14 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                 (req, res, handler) -> {
 
                   /** 拦截所有接口 */
-                  SaRouter.match("/**", r -> StpUtil.checkLogin());
+                  // SaRouter.match("/**", r -> StpUtil.checkLogin());
 
                   /** 二次拦截，权限认证 -- 不同模块认证不同权限 */
                   SaRouter.match("/user/test", r -> StpUtil.checkPermission("admin"));
                 }))
-        .addPathPatterns("/**")
+        .addPathPatterns("/**");
 
-        /** 放开拦截的接口 */
-        .excludePathPatterns(new String[] {"/user/doLogin"});
+    /** 放开拦截的接口 */
+    // .excludePathPatterns(new String[] {"/user/doLogin","/test2"});
   }
 }

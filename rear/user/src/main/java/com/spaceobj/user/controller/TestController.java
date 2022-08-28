@@ -2,11 +2,13 @@ package com.spaceobj.user.controller;
 
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.constent.KafKaTopics;
+import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.kafka.KafkaSender;
 import com.spaceobj.user.utils.ReceiveEmail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -22,7 +24,7 @@ public class TestController {
   @GetMapping("test2")
   public SaResult test2() {
 
-    return SaResult.ok();
+    return SaResult.ok().setData("12121");
   }
 
 
@@ -40,4 +42,15 @@ public class TestController {
 
     kafkaSender.send(receiveEmail, KafKaTopics.EMAIL_VERIFICATION_CODE);
   }
+
+  @PostMapping("testConvertTarget")
+  public void testConvertTargert(){
+
+    SysUser sysUser = SysUser.builder().username("测试").password("hahaha").deviceType("iphone13 pro 5T").build();
+    kafkaSender.send(sysUser, KafKaTopics.USER_UPDATE);
+  }
+
+
+
+
 }

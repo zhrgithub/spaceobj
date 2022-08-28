@@ -20,7 +20,7 @@ public interface CustomerUserService extends IService<SysUser> {
    * @param password 密码
    * @param phoneNumber 电话
    * @param ipTerritory ip属地
-   * @param device_type 设备类型
+   * @param deviceType 设备类型
    *
    * @return
    */

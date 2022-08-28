@@ -3,6 +3,7 @@ package com.spaceobj.user.controller;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.service.CustomerUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,4 +24,16 @@ public class CustomerUserController {
     public SaResult uploadFile(@RequestPart("file") MultipartFile file){
         return customerUserService.uploadFile(file);
     }
+
+    @PostMapping("loginOrRegister")
+    public SaResult loginOrRegister(Integer operateType,
+                                    String email,
+                                    String password,
+                                    String phoneNumber,
+                                    String ip,
+                                    String ipTerritory,
+                                    String deviceType){
+        return customerUserService.loginOrRegister(operateType,email,password,phoneNumber,ip,ipTerritory,deviceType);
+    }
+
 }
