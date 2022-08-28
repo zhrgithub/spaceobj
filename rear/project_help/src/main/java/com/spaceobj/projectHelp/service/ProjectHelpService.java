@@ -30,4 +30,12 @@ public interface ProjectHelpService extends IService<ProjectHelp> {
    * @return
    */
   SaResult updateProjectHelpNumber(String projectId);
+
+  /**
+   * 查询发布的项目助力列表；
+   * 设置分页：分页查询；
+   *
+   * @return
+   */
+  SaResult projectHelpList();
 }
