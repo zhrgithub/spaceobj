@@ -3,10 +3,6 @@ package com.spaceobj.user.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.spaceobj.user.pojo.SysUser;
-
-import java.io.Serializable;
-import java.lang.reflect.Type;
 
 /**
  * @author zhr_java@163.com
