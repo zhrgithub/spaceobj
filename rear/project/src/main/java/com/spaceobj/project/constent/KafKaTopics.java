@@ -9,9 +9,18 @@ public class KafKaTopics {
   /** 邮箱验证码 */
   public static final String EMAIL_VERIFICATION_CODE = "email_verification_code";
 
-    /** 待审核通知 */
-  public static final String AUDIT_NOTICE = "audit_notice";
+  /**
+   * 新增项目
+   */
+  public static final String ADD_PROJECT = "add_project";
 
-    /** 审核结果通知 */
-  public static final String AUDIT_RESULT_NOTICE = "audit_result_notice";
+  /**
+   * 修改项目
+   */
+  public static final String UPDATE_PROJECT = "update_project";
+
+  /**
+   * 项目浏览次数
+   */
+  public static final String VIEWS_PROJECT = "views_project";
 }

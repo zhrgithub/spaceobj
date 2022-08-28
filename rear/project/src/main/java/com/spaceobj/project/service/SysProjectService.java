@@ -13,8 +13,6 @@ public interface SysProjectService extends IService<SysProject> {
   /**
    * 创建项目：生成唯一的UUID（这里的UUID要和项目ID区分），变成审核状态，然后存储到Redis缓存中，消息队列通知MySQL， 然后返回给用户数据，持久化完毕，根据UUID刷新项目ID
    *
-   * 校验请求用户的id是否和当前登录用户一样，校验ip属地是否和用户请求的ip属地一样
-   *
    * @param sysProject
    * @return
    */
@@ -25,7 +23,7 @@ public interface SysProjectService extends IService<SysProject> {
    * 给用户返回Redis中的数据，持久化完毕，待审核项目大于10条邮件通知管理员审核，如果是删除，根据项目UUID修改项目为删除状态，
    * 然后再通过消息队列通知持久化，给用户返回新的列表数据，不需要管理员审核，项目删除或者已成交要通知助力表隐藏
    *
-   * 校验项目发起人id是否和当前登录用户的id一样，ip属地是否一样
+   * <p>通过定时任务提醒管理员审核项目：消息队列先持久化，然后再刷新缓存，然后邮件通知用户审核通过
    *
    * @param sysProject
    * @return
@@ -33,58 +31,45 @@ public interface SysProjectService extends IService<SysProject> {
   SaResult updateProject(SysProject sysProject);
 
   /**
-   * 普通用户在首页查询的项目是审核通过的，不包括用户联系方式的
+   * 管理员审核项目
    *
-   * @param content
+   * @param project
    * @return
    */
-  SaResult findList(String content);
+  SaResult auditProject(SysProject project);
 
   /**
-   * 根据发布者id查询项目: 我的发布：根据用户账户查看自己发布的项目,必须经过校验是否为当前登录用户
+   * 普通用户在首页查询的项目是审核通过的，不包括用户联系方式的； 设置分页查询
+   * 项目类型：0表示首页所有已经审核通过的信息，1表示查看自己发布的项目信息（网关要校验是否为当前登录用户），2表示管理员查询的项目信息 设置查询条件：项目id，预算，项目内容
    *
-   * @param releaseUserId
+   * @param currentPage 当前页
+   * @param pageSize 每页数量
+   * @param content 查询内容
+   * @param projectType 项目类型
+   * @param userId 用户id
    * @return
    */
-  SaResult findListByReleaseUserId(String releaseUserId);
+  SaResult findList(
+      Integer currentPage, Integer pageSize, String content, Integer projectType, String userId);
 
   /**
    * 项目浏览量：根据项目的ID通过消息队列对持久层的浏览量数据修改，然后存储到缓存
    *
-   * 校验项目中是否存在这个id
+   * <p>校验项目中是否存在这个id
    *
    * @param projectId
    * @return
    */
-  SaResult addPageViews(String projectId);
-
+  void addPageViews(String projectId);
 
   /**
+   * 判断是否为其本人发布的, 判断项目状态是否为审核通过，判断用户是否实名，判断助力表是否有该数据，判断用户助力表中是否已经获取到，
+   * 判断用户的邀请值是否大于0，大于0可以直接获取，消息队列通知MySQL的也要减1，然后缓存减1，判断助力表中是否有该数据，有则更新，没有就在助力表添加该用户已获取数据， 否则返回助力链接
    *
-   * 判断项目状态是否为审核通过，判断是否为其本人发布的，获取项目联系方式:先判断用户是否实名，判断用户助力表中是否已经获取到，
-   * 如果没有获取到，那么判断用户的邀请值是否大于0，大于0可以直接获取，消息队列通知MySQL的也要减1，然后缓存减1，助力表添加数据，
-   * 否则返回助力链接
-   *
-   * 校验项目id是否真实存在
+   * <p>校验项目id是否真实存在
    *
    * @param projectId
    * @return
    */
-  SaResult getPhoneNumberByProjectId(String projectId);
-
-  /**
-   * 管理员审核项目：消息队列先持久化，然后再刷新缓存，然后邮件通知用户审核通过
-   *
-   * @param sysProject
-   * @return
-   */
-  SaResult auditProject(SysProject sysProject);
-
-  /**
-   * 管理员查询项目：管理员可以根据用户提供的项目ID从Redis缓存中查询指定的项目，根据项目状态查询Redis中待审核的项目， 也可以查询Redis全部的项目
-   *
-   * @param sysProject
-   * @return
-   */
-  SaResult findListForAdmin(SysProject sysProject);
+  SaResult getPhoneNumberByProjectId(String projectId,String userId);
 }

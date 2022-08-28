@@ -1,8 +1,8 @@
-package com.spaceobj.project.service.kafka;
+package com.spaceobj.project.constent;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.spaceobj.project.util.Message;
+import com.spaceobj.project.dto.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author zhr
@@ -53,9 +54,10 @@ public class SysProject implements Serializable {
   @NotBlank(message = "用户昵称是必填项")
   private String nickname;
 
-  /**
-   * 审核内容
-   */
+  /** 审核内容 */
   @TableField(value = "p_message")
   private String message;
+
+  @TableField(value = "create_time")
+  private Date createTime;
 }
