@@ -3,7 +3,7 @@ package com.spaceobj.user.controller;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.service.CustomerUserService;
-import com.spaceobj.user.vo.LoginOrRegisterVo;
+import com.spaceobj.user.dto.LoginOrRegisterDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,10 +28,10 @@ public class CustomerUserController {
     }
 
     @PostMapping("loginOrRegister")
-    public SaResult loginOrRegister(LoginOrRegisterVo loginOrRegisterVo){
+    public SaResult loginOrRegister(LoginOrRegisterDto loginOrRegisterVo){
 
         LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
-        //此处需要将Vo转化成bo
+        //此处需要将Dto转化成bo
         return customerUserService.loginOrRegister(loginOrRegisterBo);
     }
 

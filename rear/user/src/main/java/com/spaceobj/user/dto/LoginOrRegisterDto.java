@@ -1,4 +1,4 @@
-package com.spaceobj.user.vo;
+package com.spaceobj.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginOrRegisterVo {
+public class LoginOrRegisterDto {
 
 
     /** 操作类型 */
