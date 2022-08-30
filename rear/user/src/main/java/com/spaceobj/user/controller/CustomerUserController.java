@@ -1,7 +1,9 @@
 package com.spaceobj.user.controller;
 
 import cn.dev33.satoken.util.SaResult;
+import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.service.CustomerUserService;
+import com.spaceobj.user.vo.LoginOrRegisterVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,14 +28,11 @@ public class CustomerUserController {
     }
 
     @PostMapping("loginOrRegister")
-    public SaResult loginOrRegister(Integer operateType,
-                                    String email,
-                                    String password,
-                                    String phoneNumber,
-                                    String ip,
-                                    String ipTerritory,
-                                    String deviceType){
-        return customerUserService.loginOrRegister(operateType,email,password,phoneNumber,ip,ipTerritory,deviceType);
+    public SaResult loginOrRegister(LoginOrRegisterVo loginOrRegisterVo){
+
+        LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
+        //此处需要将Vo转化成bo
+        return customerUserService.loginOrRegister(loginOrRegisterBo);
     }
 
 }

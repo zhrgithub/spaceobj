@@ -41,7 +41,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         list = sysUserMapper.selectList(queryWrapper);
         redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, list.toArray());
       } else {
-        // 此处建议使用pipeLine来提升性能 TODO
+        // 此处建议使用pipeLine来提升性能
         list = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       }
     } catch (Exception e) {
