@@ -2,6 +2,7 @@ package com.spaceobj.user.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.pojo.SysUser;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,23 +16,11 @@ public interface CustomerUserService extends IService<SysUser> {
    * 登录/注册 先判断是登录还是注册还是修改， 0、登录：需要提供账号、密码，返回token ； 1、注册：验新增用户的账号是否唯一，缓存中没有就先存储缓存中，
    * 消息队列通知MySQL，然后返回给客户token，持久化完毕，消息队列根据账号刷新缓存中的用户ID，如果邀请者Id不为空， 消息队列通知MySQL给邀请者的邀请值加1，随后刷新邀请者的缓存
    *
-   * @param operateType 操作类型
-   * @param email 账户
-   * @param password 密码
-   * @param phoneNumber 电话
-   * @param ipTerritory ip属地
-   * @param deviceType 设备类型
+   * @param loginOrRegisterBo 登录或者注册参数
    *
    * @return
    */
-  SaResult loginOrRegister(
-      Integer operateType,
-      String email,
-      String password,
-      String phoneNumber,
-      String ip,
-      String ipTerritory,
-      String deviceType);
+  SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo);
 
   /**
    * 退出登录，根据当前登录账号的cookie退出登录

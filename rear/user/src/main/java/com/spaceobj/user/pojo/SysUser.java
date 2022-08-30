@@ -21,10 +21,10 @@ import java.io.Serializable;
 public class SysUser implements Serializable {
 
   @TableId(value = "user_id")
-  private Long userId;
+  private String userId;
 
   @TableField(value = "invite_user_id")
-  private Long inviteUserId;
+  private String inviteUserId;
 
   @TableField(value = "account")
   private String account;

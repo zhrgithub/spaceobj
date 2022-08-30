@@ -4,6 +4,7 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.constent.OperationType;
+import com.spaceobj.user.constent.RedisKey;
 import com.spaceobj.user.mapper.SysPhotoMapper;
 import com.spaceobj.user.pojo.SysPhoto;
 import com.spaceobj.user.service.PhotoService;
@@ -28,7 +29,6 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
 
   @Autowired private SysPhotoMapper sysPhotoMapper;
 
-  public static final String SYS_PHOTO_LIST = "sys_photo_list";
 
   @Override
   public SaResult addOrUpdate(SysPhoto photo, Integer operation) {
@@ -42,7 +42,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
         result = sysPhotoMapper.updateById(photo);
       }
       if (result == 1) {
-        redisTemplate.delete(SYS_PHOTO_LIST);
+        redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
         LOG.info("Photo addOrUpdate successfully");
       }
     } catch (Exception e) {
@@ -57,7 +57,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
     Integer result = -1;
     try {
       result = sysPhotoMapper.deleteById(id);
-      redisTemplate.delete(SYS_PHOTO_LIST);
+      redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
     } catch (RuntimeException e) {
       LOG.error("Photo delete failed", e.getMessage());
       return SaResult.error(e.getMessage()).setData(result);
@@ -71,15 +71,15 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
     List<SysPhoto> list = null;
 
     try {
-      Long size = redisTemplate.opsForList().size(SYS_PHOTO_LIST);
+      Long size = redisTemplate.opsForList().size(RedisKey.SYS_PHOTO_LIST);
       if (size == 0) {
         QueryWrapper<SysPhoto> queryWrapper = new QueryWrapper<>();
         synchronized (this) {
           list = sysPhotoMapper.selectList(queryWrapper);
-          redisTemplate.opsForList().leftPushAll(SYS_PHOTO_LIST, list.toArray());
+          redisTemplate.opsForList().leftPushAll(RedisKey.SYS_PHOTO_LIST, list.toArray());
         }
       } else {
-        list = redisTemplate.opsForList().range(SYS_PHOTO_LIST, 0, -1);
+        list = redisTemplate.opsForList().range(RedisKey.SYS_PHOTO_LIST, 0, -1);
       }
     } catch (RuntimeException e) {
       LOG.error("Photo list failed", e.getMessage());

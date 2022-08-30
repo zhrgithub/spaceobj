@@ -3,6 +3,7 @@ package com.spaceobj.user.service.impl;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.user.constent.RedisKey;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.SysUserService;
@@ -26,8 +27,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Autowired private RedisTemplate redisTemplate;
 
-  /** 系统用户列表 */
-  private static final String SYS_USER_LIST = "sys_user_list";
+
 
   private static final Logger LOG = LoggerFactory.getLogger(SysUserServiceImpl.class);
 
@@ -35,14 +35,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult findList(String searchValue) {
     List<SysUser> list = null;
     try {
-      Long size = redisTemplate.opsForList().size(SYS_USER_LIST);
+      Long size = redisTemplate.opsForList().size(RedisKey.SYS_USER_LIST);
       if (size == 0) {
         QueryWrapper queryWrapper = new QueryWrapper();
         list = sysUserMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().rightPushAll(SYS_USER_LIST, list.toArray());
+        redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, list.toArray());
       } else {
-        // 可以使用pipeLine来提升性能 TODO
-        list = redisTemplate.opsForList().range(SYS_USER_LIST, 0, -1);
+        // 此处建议使用pipeLine来提升性能 TODO
+        list = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       }
     } catch (Exception e) {
       LOG.error(e.getMessage());
@@ -56,7 +56,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     Integer result = -1;
     try {
       result = sysUserMapper.updateById(sysUser);
-      redisTemplate.delete(SYS_USER_LIST);
+      redisTemplate.delete(RedisKey.SYS_USER_LIST);
     } catch (RuntimeException e) {
       LOG.error("updateSysUSer failed", e.getMessage());
       return SaResult.error(e.getMessage()).setData(result);

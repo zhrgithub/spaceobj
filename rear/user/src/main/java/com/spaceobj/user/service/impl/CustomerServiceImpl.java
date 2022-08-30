@@ -3,6 +3,7 @@ package com.spaceobj.user.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.constent.KafKaTopics;
 import com.spaceobj.user.constent.OperationType;
 import com.spaceobj.user.constent.Regexes;
@@ -24,6 +25,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import sun.net.util.IPAddressUtil;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -41,46 +43,39 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Autowired private KafkaSender kafkaSender;
 
   @Override
-  public SaResult loginOrRegister(
-      Integer operateType,
-      String email,
-      String password,
-      String phoneNumber,
-      String ip,
-      String ipTerritory,
-      String deviceType) {
+  public SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo) {
 
     // 校验ip是否合法
     String requestIp = getIpAddress();
-    if (!isIpAddressCheck(requestIp) || !requestIp.equals(ip)) {
+    if (!isIpAddressCheck(requestIp) || !requestIp.equals(loginOrRegisterBo.getIp())) {
       redisTemplate.opsForValue().set(requestIp, 10, 1, TimeUnit.DAYS);
       return SaResult.error("非法操作，设备已锁定");
     }
     // 校验邮箱
-    if (!Pattern.matches(Regexes.REGEX_EMAIL, email)) {
+    if (!Pattern.matches(Regexes.REGEX_EMAIL, loginOrRegisterBo.getEmail())) {
       return SaResult.error("邮箱格式错误");
     }
     // 校验密码
-    if (!Pattern.matches(Regexes.REGEX_PASSWORD, password)) {
+    if (!Pattern.matches(Regexes.REGEX_PASSWORD, loginOrRegisterBo.getPassword())) {
       return SaResult.error("密码格式错误");
     }
     // 校验电话号码
-    if (!Pattern.matches(Regexes.REGEX_PHONE, phoneNumber)) {
+    if (!Pattern.matches(Regexes.REGEX_PHONE, loginOrRegisterBo.getPhoneNumber())) {
       return SaResult.error("电话格式错误");
     }
 
     try {
 
-      if (operateType.equals(OperationType.LOGIN)) {
-        if (redisTemplate.hasKey(email)) {
-          SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(email);
-          if (sysUser.getPassword().equals(password)) {
-            sysUser.setIp(ip);
-            sysUser.setIpTerritory(ipTerritory);
-            sysUser.setDeviceType(deviceType);
+      if (loginOrRegisterBo.getOperateType().equals(OperationType.LOGIN)) {
+        if (redisTemplate.hasKey(loginOrRegisterBo.getEmail())) {
+          SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginOrRegisterBo.getEmail());
+          if (sysUser.getPassword().equals(loginOrRegisterBo.getPassword())) {
+            sysUser.setIp(loginOrRegisterBo.getIp());
+            sysUser.setIpTerritory(loginOrRegisterBo.getIpTerritory());
+            sysUser.setDeviceType(loginOrRegisterBo.getDeviceType());
             // 更新用户当前登录信息
             kafkaSender.send(sysUser, KafKaTopics.USER_UPDATE);
-            StpUtil.login(email);
+            StpUtil.login(loginOrRegisterBo.getEmail());
             return SaResult.ok("登录成功").setData(sysUser);
           } else {
             return SaResult.error("密码不正确");
@@ -89,25 +84,27 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           return SaResult.error("账号错误或者未注册");
         }
 
-      } else if (operateType.equals(OperationType.ADD)) {
+      } else if (loginOrRegisterBo.getOperateType().equals(OperationType.ADD)) {
         // 用户注册校验，是否已经创建过
-        if (redisTemplate.hasKey(email)) {
+        if (redisTemplate.hasKey(loginOrRegisterBo.getEmail())) {
           return SaResult.error("请勿重复注册");
         }
         SysUser sysUser =
             SysUser.builder()
-                .account(email)
-                .password(password)
-                .ip(ip)
-                .phoneNumber(phoneNumber)
-                .ipTerritory(ipTerritory)
-                .deviceType(deviceType)
+                .userId(UUID.randomUUID().toString())
+                .inviteUserId(loginOrRegisterBo.getInviteUserId())
+                .account(loginOrRegisterBo.getEmail())
+                .password(loginOrRegisterBo.getPassword())
+                .ip(loginOrRegisterBo.getIp())
+                .phoneNumber(loginOrRegisterBo.getPhoneNumber())
+                .ipTerritory(loginOrRegisterBo.getIpTerritory())
+                .deviceType(loginOrRegisterBo.getDeviceType())
                 .build();
         // 注册用户存储到Redis
-        redisTemplate.opsForValue().set(email, sysUser);
+        redisTemplate.opsForValue().set(loginOrRegisterBo.getEmail(), sysUser);
         // 消息队列通知MySQL
         kafkaSender.send(sysUser, KafKaTopics.USER_REGISTER);
-        StpUtil.login(email);
+        StpUtil.login(loginOrRegisterBo.getEmail());
         return SaResult.ok("注册成功，正在跳转");
       } else {
         // 逻辑参数校验错误
