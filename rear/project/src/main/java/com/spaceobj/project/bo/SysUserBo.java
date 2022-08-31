@@ -16,9 +16,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class SysUserBo implements Serializable {
 
-  private Long userId;
+  private String userId;
 
-  private Long inviteUserId;
+  private String inviteUserId;
 
   private String account;
 

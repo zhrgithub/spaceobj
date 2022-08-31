@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * @author zhr
  */
@@ -18,15 +20,15 @@ public class ProjectHelpBo {
 
   private long pId;
 
-  private long createUserId;
+  private String createUserId;
 
-  private long hpNumber;
+  private Integer hpNumber;
 
   private String pContent;
 
-  private double pPrice;
+  private BigDecimal pPrice;
 
-  private long pReleaseUserId;
+  private String pReleaseUserId;
 
-  private long hpStatus;
+  private Integer hpStatus;
 }

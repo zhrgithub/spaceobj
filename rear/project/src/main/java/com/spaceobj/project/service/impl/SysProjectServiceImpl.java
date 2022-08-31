@@ -37,7 +37,14 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
   Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
 
+  /** 项目列表 */
   public static final String PROJECT_LIST = "project_list";
+
+  /** 项目助力列表 */
+  public static final String PROJECT_HELP_LIST = "project_help_list";
+
+  /** 系统用户列表 */
+  private static final String SYS_USER_LIST = "sys_user_list";
 
   @Override
   public SaResult addProject(SysProject sysProject) {
@@ -222,10 +229,19 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                       p -> {
                         return Long.valueOf(projectId).equals(p.getPId());
                       });
-      SysUserBo sysUserBo = (SysUserBo) redisTemplate.opsForValue().get(userId);
+
+      List<SysUserBo> sysUserBos = redisTemplate.opsForList().range(SYS_USER_LIST, 0, -1);
+      List<SysUserBo> resultSysUserBos =
+          (List<SysUserBo>)
+              sysUserBos.stream()
+                  .filter(
+                      user -> {
+                        return user.getUserId().equals(userId);
+                      });
+      SysUserBo sysUserBo = resultSysUserBos.get(0);
       // 如果项目发布人id和userId相同，直接返回用户联系方式
       if (sysProject.getReleaseUserId().equals(userId)) {
-        return SaResult.ok().setData(sysUserBo.getAccount());
+        return SaResult.ok().setData(sysUserBo.getPhoneNumber());
       }
       //  判断当前用户是否已经实名认证
       if (!(sysUserBo.getRealNameStatus() == 1)) {
@@ -235,15 +251,58 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (!(sysProject.getStatus() == 1)) {
         return SaResult.error("项目未通过审核，无法获取");
       }
-      // 判断用户的邀请值是否大于0
+
       // 判断该用户的助力列表中是否有该项目数据
       // 判断是否已经获取到该项目联系人
+      List<ProjectHelpBo> projectHelpBoList =
+          redisTemplate.opsForList().range(PROJECT_HELP_LIST, 0, -1);
+      projectHelpBoList.stream()
+          .filter(
+              hp -> {
+                return hp.getCreateUserId().equals(userId)
+                    && Long.valueOf(projectId).equals(hp.getPId());
+              });
+      if (projectHelpBoList.size() > 0) {
+        ProjectHelpBo helpBo = projectHelpBoList.get(0);
+        if (helpBo.getHpStatus() == 1) {
+          return SaResult.ok().setData(sysUserBo.getPhoneNumber());
+        }
+      }
 
+      // 判断用户的邀请值大于0
+      if (sysUserBo.getInvitationValue() > 0) {
+        //  邀请值减一，如果项目助力列表中没有该项目，那么设置成已经获取到，如果没有，那么新增到项目助力列表并设置成已经获取到的状态
+        sysUserBo.setInvitationValue(sysUserBo.getInvitationValue() - 1);
+        ProjectHelpBo helpBo;
+        if (projectHelpBoList.size() > 0) {
+          helpBo = projectHelpBoList.get(0);
+          helpBo.setHpNumber(10);
+          // 通知项目助力服务更新数据
+          kafkaSender.send(helpBo, KafKaTopics.UPDATE_HELP_PROJECT);
+        } else {
+          helpBo =
+              ProjectHelpBo.builder()
+                  .hpId(UUID.randomUUID().toString())
+                  .pId(sysProject.getPId())
+                  .createUserId(userId)
+                  .hpNumber(10)
+                  .pContent(sysProject.getContent())
+                  .pPrice(sysProject.getPrice())
+                  .pReleaseUserId(sysProject.getReleaseUserId())
+                  .hpStatus(1)
+                  .build();
+          // 通知项目助力服务新增数据
+          kafkaSender.send(helpBo, KafKaTopics.ADD_HELP_PROJECT);
+        }
+        // 消息队列发送用户信息
+        kafkaSender.send(sysUserBo, KafKaTopics.UPDATE_USER);
+
+        return SaResult.ok().setData(sysUserBo.getPhoneNumber());
+      }
+      return SaResult.error("请分享项目助力链接获取");
     } catch (Exception e) {
       LOG.error("get phone number by projectId error", e.getMessage());
       return SaResult.error("获取联系方式失败，服务器异常");
     }
-
-    return null;
   }
 }

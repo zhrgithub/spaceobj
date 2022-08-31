@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -34,7 +35,7 @@ public class SysProject implements Serializable {
 
   @TableField(value = "p_price")
   @NotBlank(message = "预算是必填项")
-  private double price;
+  private BigDecimal price;
 
   @TableField(value = "p_release_user_id")
   @NotBlank(message = "用户ID是必填项")

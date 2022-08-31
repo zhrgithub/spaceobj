@@ -9,18 +9,21 @@ public class KafKaTopics {
   /** 邮箱验证码 */
   public static final String EMAIL_VERIFICATION_CODE = "email_verification_code";
 
-  /**
-   * 新增项目
-   */
+  /** 新增项目 */
   public static final String ADD_PROJECT = "add_project";
 
-  /**
-   * 修改项目
-   */
+  /** 修改项目 */
   public static final String UPDATE_PROJECT = "update_project";
 
-  /**
-   * 项目浏览次数
-   */
+  /** 项目浏览次数 */
   public static final String VIEWS_PROJECT = "views_project";
+
+  /** 修改用户信息 */
+  public static final String UPDATE_USER = "update_user";
+
+  /** 项目助力列表更新信息 */
+  public static final String UPDATE_HELP_PROJECT = "update_help_project";
+
+  /** 项目助力列表新增信息 */
+  public static final String ADD_HELP_PROJECT = "add_help_project";
 }
