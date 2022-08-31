@@ -16,7 +16,7 @@ import java.util.Optional;
 @Slf4j
 public class KafkaUserConsumer {
 
-  @KafkaListener(topics = {KafKaTopics.AUDIT_NOTICE})
+  @KafkaListener(topics = {KafKaTopics.ADD_HELP_PROJECT})
   public void listen(ConsumerRecord<?, ?> record) {
 
     Optional.ofNullable(record.value())

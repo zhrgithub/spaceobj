@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.project.bo.ProjectHelpBo;
 import com.spaceobj.project.bo.SysUserBo;
 import com.spaceobj.project.constent.KafKaTopics;
+import com.spaceobj.project.constent.RedisKey;
 import com.spaceobj.project.mapper.SysProjectMapper;
 import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.service.SysProjectService;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,14 +37,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
   Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
 
-  /** 项目列表 */
-  public static final String PROJECT_LIST = "project_list";
 
-  /** 项目助力列表 */
-  public static final String PROJECT_HELP_LIST = "project_help_list";
-
-  /** 系统用户列表 */
-  private static final String SYS_USER_LIST = "sys_user_list";
 
   @Override
   public SaResult addProject(SysProject sysProject) {
@@ -58,7 +51,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       sysProject.setUuid(uuid);
       // 设置成审核中
       sysProject.setStatus(0);
-      redisTemplate.opsForList().rightPush(PROJECT_LIST, sysProject);
+      redisTemplate.opsForList().rightPush(RedisKey.PROJECT_LIST, sysProject);
 
       kafkaSender.send(sysProject, KafKaTopics.ADD_PROJECT);
       return SaResult.ok().setData(sysProject);
@@ -75,7 +68,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
         // 从缓存中获取数据
         List<SysProject> cacheProject =
-            (List<SysProject>) redisTemplate.opsForValue().get(PROJECT_LIST);
+            (List<SysProject>) redisTemplate.opsForValue().get(RedisKey.PROJECT_LIST);
         // 如果当前项目是在审核中那么返回不可重复修改
         SysProject checkCacheProject =
             (SysProject)
@@ -105,8 +98,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                       k.setStatus(0);
                     }
                   });
-          redisTemplate.delete(PROJECT_LIST);
-          redisTemplate.opsForList().leftPush(PROJECT_LIST, cacheProject);
+          redisTemplate.delete(RedisKey.PROJECT_LIST);
+          redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, cacheProject);
           //  发送消息队列持久化修改数据
           kafkaSender.send(sysProject, KafKaTopics.UPDATE_PROJECT);
         } else {
@@ -141,14 +134,14 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       Integer currentPage, Integer pageSize, String content, Integer projectType, String userId) {
     try {
       List<SysProject> list;
-      long size = redisTemplate.opsForList().size(PROJECT_LIST);
-      if (size == 0) {
+      long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
+      if (Long.valueOf(size) == 0) {
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("create_time");
         list = sysProjectMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().leftPush(PROJECT_LIST, list);
+        redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, list);
       } else {
-        list = redisTemplate.opsForList().range(PROJECT_LIST, 0, -1);
+        list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       }
 
       // 查询首页信息
@@ -213,13 +206,13 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       List<SysProject> list;
       SysProject sysProject;
-      long size = redisTemplate.opsForList().size(PROJECT_LIST);
+      long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
         list = sysProjectMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().leftPush(PROJECT_LIST, list);
+        redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, list);
       } else {
-        list = redisTemplate.opsForList().range(PROJECT_LIST, 0, -1);
+        list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       }
 
       sysProject =
@@ -230,7 +223,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                         return Long.valueOf(projectId).equals(p.getPId());
                       });
 
-      List<SysUserBo> sysUserBos = redisTemplate.opsForList().range(SYS_USER_LIST, 0, -1);
+      List<SysUserBo> sysUserBos = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       List<SysUserBo> resultSysUserBos =
           (List<SysUserBo>)
               sysUserBos.stream()
@@ -255,7 +248,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 判断该用户的助力列表中是否有该项目数据
       // 判断是否已经获取到该项目联系人
       List<ProjectHelpBo> projectHelpBoList =
-          redisTemplate.opsForList().range(PROJECT_HELP_LIST, 0, -1);
+          redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
       projectHelpBoList.stream()
           .filter(
               hp -> {

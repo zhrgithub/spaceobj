@@ -6,9 +6,6 @@ package com.spaceobj.project.constent;
  */
 public class KafKaTopics {
 
-  /** 邮箱验证码 */
-  public static final String EMAIL_VERIFICATION_CODE = "email_verification_code";
-
   /** 新增项目 */
   public static final String ADD_PROJECT = "add_project";
 
