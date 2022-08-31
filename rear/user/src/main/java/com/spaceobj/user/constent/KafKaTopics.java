@@ -18,10 +18,10 @@ public class KafKaTopics {
   /**
    * 用户注册
    */
-  public static final String USER_REGISTER = "user_register";
+  public static final String ADD_USER = "add_user";
 
   /**
    * 修改用户信息
    */
-  public static final String USER_UPDATE = "user_update";
+  public static final String UPDATE_USER = "update_user";
 }

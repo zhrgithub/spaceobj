@@ -37,7 +37,7 @@ public class KafkaCustomerUserConsumer {
    *
    * @param record
    */
-  @KafkaListener(topics = {KafKaTopics.USER_REGISTER})
+  @KafkaListener(topics = {KafKaTopics.ADD_USER})
   public void userRegister(ConsumerRecord<?, ?> record) {
 
     Optional.ofNullable(record.value())
@@ -66,7 +66,7 @@ public class KafkaCustomerUserConsumer {
    *
    * @param record
    */
-  @KafkaListener(topics = {KafKaTopics.USER_UPDATE})
+  @KafkaListener(topics = {KafKaTopics.UPDATE_USER})
   public void userUpdate(ConsumerRecord<?, ?> record) {
 
     Optional.ofNullable(record.value())

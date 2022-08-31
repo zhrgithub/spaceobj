@@ -74,7 +74,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             sysUser.setIpTerritory(loginOrRegisterBo.getIpTerritory());
             sysUser.setDeviceType(loginOrRegisterBo.getDeviceType());
             // 更新用户当前登录信息
-            kafkaSender.send(sysUser, KafKaTopics.USER_UPDATE);
+            kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
             StpUtil.login(loginOrRegisterBo.getEmail());
             return SaResult.ok("登录成功").setData(sysUser);
           } else {
@@ -103,7 +103,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 注册用户存储到Redis
         redisTemplate.opsForValue().set(loginOrRegisterBo.getEmail(), sysUser);
         // 消息队列通知MySQL
-        kafkaSender.send(sysUser, KafKaTopics.USER_REGISTER);
+        kafkaSender.send(sysUser, KafKaTopics.ADD_USER);
         StpUtil.login(loginOrRegisterBo.getEmail());
         return SaResult.ok("注册成功，正在跳转");
       } else {
@@ -185,7 +185,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       sysUser.setNickName(user.getNickName());
       sysUser.setPhoneNumber(user.getPhoneNumber());
       // 发送到kafka,如果MySQL修改成功，那么刷新缓存
-      kafkaSender.send(sysUser, KafKaTopics.USER_UPDATE);
+      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
       return SaResult.ok("提交成功");
     } catch (RuntimeException e) {
       LOG.error("updateUserInfo failed", e.getMessage());
@@ -254,7 +254,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         sysUser.setPassword(newPassword);
         redisTemplate.opsForValue().set(account, sysUser);
         // kafka通知MySQL修改
-        kafkaSender.send(sysUser, KafKaTopics.USER_UPDATE);
+        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         return SaResult.ok("密码修改成功");
       }
       return SaResult.error("密码修改失败");
@@ -297,7 +297,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 缓存设置为审核中
       redisTemplate.opsForValue().set(loginId, sysUser);
       // 消息队列通知MySQL修改用户实名状态，定时任务检测当前实名状态是否大于十个，大于十个审核需求，那么邮件通知管理员审核
-      kafkaSender.send(sysUser, KafKaTopics.USER_UPDATE);
+      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
       return SaResult.ok("提交成功");
 
     } catch (RuntimeException e) {
