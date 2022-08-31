@@ -1,6 +1,5 @@
-package com.spaceobj.user.utils;
+package com.spaceobj.projectHelp.bo;
 
-import com.google.gson.Gson;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,7 +9,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ReceiveEmail {
+public class ReceiveEmailBo {
 
   /** 收件人邮箱 */
   private String receiverEmail;

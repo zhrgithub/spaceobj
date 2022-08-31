@@ -28,7 +28,7 @@ public class ProjectHelp {
 
   @TableField(value = "create_user_id")
   @NotBlank(message = "创建者ID是必填项")
-  private long createUserId;
+  private String createUserId;
 
   @TableField(value = "hp_number")
   private long hpNumber;
@@ -43,8 +43,8 @@ public class ProjectHelp {
 
   @TableField(value = "p_release_user_id")
   @NotBlank(message = "项目发布人ID是必填项")
-  private long pReleaseUserId;
+  private String pReleaseUserId;
 
   @TableField(value = "hp_status")
-  private long hpStatus;
+  private Integer hpStatus;
 }
