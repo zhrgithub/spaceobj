@@ -47,11 +47,11 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
             } else {
                 list = redisTemplate.opsForList().range(JD_ADVERTISE_LIST, 0, -1);
             }
+            return SaResult.ok().setData(list);
         } catch (Exception e) {
             LOG.error("search advertise list error", e.getMessage());
             return SaResult.error("广告列表查询异常");
         }
-        return SaResult.ok().setData(list);
     }
 
     @Override
@@ -78,9 +78,9 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
         try {
             int result = jdAdvertisMapper.deleteById(id);
-            if(result==1){
+            if (result == 1) {
                 this.updateRedis();
-            }else {
+            } else {
                 LOG.error("Logic delete advertise error !");
             }
             return SaResult.ok("删除成功！");
@@ -92,15 +92,16 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
     @Override
     public SaResult updateAdvertise(JdAdvertis jdAdvertis) {
+
         try {
-            int result  = jdAdvertisMapper.updateById(jdAdvertis);
-            if(result==1){
+            int result = jdAdvertisMapper.updateById(jdAdvertis);
+            if (result == 1) {
                 this.updateRedis();
-            }else {
+            } else {
                 LOG.error("Logic update advertise error !");
             }
             return SaResult.ok("广告更新成功");
-        }catch (Exception e){
+        } catch (Exception e) {
             LOG.error("Logic update advertise error !", e.getMessage());
             return SaResult.error("广告更新失败！服务器异常！");
         }
