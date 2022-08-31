@@ -45,33 +45,75 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
                 list = jdAdvertisMapper.selectList(queryWrapper);
                 redisTemplate.opsForList().rightPushAll(JD_ADVERTISE_LIST, list.toArray());
             } else {
-                //可以使用pipeLine来提升性能
                 list = redisTemplate.opsForList().range(JD_ADVERTISE_LIST, 0, -1);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("search advertise list error", e.getMessage());
             return SaResult.error("广告列表查询异常");
         }
         return SaResult.ok().setData(list);
     }
 
     @Override
-    public SaResult saveAdvertis(JdAdvertis jdAdvertis) {
+    public SaResult saveAdvertise(JdAdvertis jdAdvertis) {
 
-        int result = jdAdvertisMapper.insert(jdAdvertis);
+        try {
+            int result = jdAdvertisMapper.insert(jdAdvertis);
+            if (result == 1) {
+                //刷新缓存
+                this.updateRedis();
+            } else {
+                LOG.error("Logic add advertise error");
+            }
+        } catch (Exception e) {
+            LOG.error("add advertise error", e.getMessage());
+            return SaResult.error("新增广告失败,服务器异常！");
+        }
+
         return null;
     }
 
     @Override
-    public SaResult deleteAdvertis(String id) {
+    public SaResult deleteAdvertise(String id) {
 
-        return null;
+        try {
+            int result = jdAdvertisMapper.deleteById(id);
+            if(result==1){
+                this.updateRedis();
+            }else {
+                LOG.error("Logic delete advertise error !");
+            }
+            return SaResult.ok("删除成功！");
+        } catch (Exception e) {
+            LOG.error("delete advertise error !", e.getMessage());
+            return SaResult.error("删除广告失败，服务器异常！");
+        }
     }
 
     @Override
-    public SaResult updateAdvertis(JdAdvertis jdAdvertis) {
+    public SaResult updateAdvertise(JdAdvertis jdAdvertis) {
+        try {
+            int result  = jdAdvertisMapper.updateById(jdAdvertis);
+            if(result==1){
+                this.updateRedis();
+            }else {
+                LOG.error("Logic update advertise error !");
+            }
+            return SaResult.ok("广告更新成功");
+        }catch (Exception e){
+            LOG.error("Logic update advertise error !", e.getMessage());
+            return SaResult.error("广告更新失败！服务器异常！");
+        }
+    }
 
-        return null;
+    /** 刷新Redis缓存 */
+    private void updateRedis() {
+
+        redisTemplate.delete(JD_ADVERTISE_LIST);
+        List<JdAdvertis> jdAdvertiseList;
+        QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
+        jdAdvertiseList = jdAdvertisMapper.selectList(queryWrapper);
+        redisTemplate.opsForList().rightPushAll(JD_ADVERTISE_LIST, jdAdvertiseList.toArray());
     }
 
 }

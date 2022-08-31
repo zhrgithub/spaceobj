@@ -24,7 +24,7 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
      *
      * @return
      */
-    SaResult saveAdvertis(JdAdvertis jdAdvertis);
+    SaResult saveAdvertise(JdAdvertis jdAdvertis);
 
     /**
      * 删除广告内容
@@ -33,7 +33,7 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
      *
      * @return
      */
-    SaResult deleteAdvertis(String id);
+    SaResult deleteAdvertise(String id);
 
     /**
      * 修改广告内容
@@ -42,6 +42,6 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
      *
      * @return
      */
-    SaResult updateAdvertis(JdAdvertis jdAdvertis);
+    SaResult updateAdvertise(JdAdvertis jdAdvertis);
 
 }
