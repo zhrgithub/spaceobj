@@ -14,4 +14,9 @@ public class KafKaTopics {
 
   /** 审核结果通知 */
   public static final String AUDIT_RESULT_NOTICE = "audit_result_notice";
+
+
+
+  /** 项目助力成功邮箱通知 */
+  public static final String HELP_PROJECT_SUCCESSFUL = "help_project_successful";
 }
