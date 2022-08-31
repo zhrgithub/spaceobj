@@ -37,14 +37,38 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
   Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
 
-
-
   @Override
   public SaResult addProject(SysProject sysProject) {
 
     try {
       // 校验内容是否重复
+      List<SysProject> sysProjectList =
+          redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+      List<SysProject> resultSysProjectList =
+          (List<SysProject>)
+              sysProjectList.stream()
+                  .filter(
+                      p -> {
+                        return p.getContent().equals(sysProject.getContent());
+                      });
+      if (resultSysProjectList.size() > 0) {
+        return SaResult.error("请勿重复提交");
+      }
+
       // 校验当前提交次数是否超过最大次数
+      List<SysUserBo> sysUserBoList =
+          redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+      List<SysUserBo> resultSysUserBo =
+          (List<SysUserBo>)
+              sysUserBoList.stream()
+                  .filter(
+                      u -> {
+                        return u.getUserId().equals(sysProject.getReleaseUserId());
+                      });
+      SysUserBo sysUserBo = resultSysUserBo.get(0);
+      if (sysUserBo.getReleaseProjectTimes() >= 10) {
+        return SaResult.error("今天发布次数已上线，明天再来吧！");
+      }
 
       // 生成UUID
       String uuid = UUID.randomUUID().toString();
@@ -195,7 +219,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public void addPageViews(String projectId) {
     try {
       SysProject sysProject = SysProject.builder().pId(Long.valueOf(projectId)).build();
-      kafkaSender.send(sysProject, KafKaTopics.VIEWS_PROJECT);
+      sysProject.setPageViews(sysProject.getPageViews() + 1);
+      kafkaSender.send(sysProject, KafKaTopics.UPDATE_PROJECT);
     } catch (Exception e) {
       LOG.error("add Page view error", e.getMessage());
     }

@@ -12,9 +12,6 @@ public class KafKaTopics {
   /** 修改项目 */
   public static final String UPDATE_PROJECT = "update_project";
 
-  /** 项目浏览次数 */
-  public static final String VIEWS_PROJECT = "views_project";
-
   /** 修改用户信息 */
   public static final String UPDATE_USER = "update_user";
 
