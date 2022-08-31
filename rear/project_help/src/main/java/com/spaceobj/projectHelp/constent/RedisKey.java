@@ -5,9 +5,6 @@ package com.spaceobj.projectHelp.constent;
  * @date 2022/8/31 12:46
  */
 public class RedisKey {
-  /** 项目列表 */
-  public static final String PROJECT_LIST = "project_list";
-
   /** 项目助力列表 */
   public static final String PROJECT_HELP_LIST = "project_help_list";
 
