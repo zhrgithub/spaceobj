@@ -47,7 +47,7 @@ public class TestController {
   public void testConvertTargert(){
 
     SysUser sysUser = SysUser.builder().username("测试").password("hahaha").deviceType("iphone13 pro 5T").build();
-    kafkaSender.send(sysUser, KafKaTopics.USER_UPDATE);
+    kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
   }
 
 
