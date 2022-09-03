@@ -73,4 +73,6 @@ public class SysUserBo implements Serializable {
 
 
   private String deviceType;
+
+  private Integer createProjectHelpTimes;
 }

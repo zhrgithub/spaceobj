@@ -11,6 +11,7 @@ import com.spaceobj.projectHelp.pojo.ProjectHelp;
  */
 public interface ProjectHelpService extends IService<ProjectHelp> {
   /**
+   * 判断创建项目的次数是否大于0
    * 判断其本人是否已经创建过，如果已经创建过，直接返回之前创建的,
    * 否则根据项目id查询项目库（p_Id、create_user_id、p_content、p_price、p_release_user_id）
    * 校验当前id是否在项目库中存在，如果存在则创建，不存在就不要创建，返回请求参数错误

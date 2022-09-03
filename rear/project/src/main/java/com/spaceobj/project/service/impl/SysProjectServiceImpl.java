@@ -66,9 +66,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                         return u.getUserId().equals(sysProject.getReleaseUserId());
                       });
       SysUserBo sysUserBo = resultSysUserBo.get(0);
-      if (sysUserBo.getReleaseProjectTimes() >= 10) {
+      if (sysUserBo.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线，明天再来吧！");
       }
+      //修改用户信息
+      sysUserBo.setReleaseProjectTimes(sysUserBo.getReleaseProjectTimes()-1);
+      kafkaSender.send(sysUserBo, KafKaTopics.UPDATE_USER);
 
       // 生成UUID
       String uuid = UUID.randomUUID().toString();

@@ -40,6 +40,21 @@ public class SysProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Pr
   public SaResult createProjectHelpLink(ProjectHelpBo projectHelpBo) {
 
     try {
+      // 如果用户的创建剩余次数小于10次，提醒明天再来
+      List<SysUserBo> sysUserBoList =
+          redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+      List<SysUserBo> resultSysUserBoList =
+          (List<SysUserBo>)
+              sysUserBoList.stream()
+                  .filter(
+                      u -> {
+                        return u.getUserId().equals(projectHelpBo.getUserId());
+                      });
+      SysUserBo sysUserBo = resultSysUserBoList.get(0);
+      if (sysUserBo.getCreateProjectHelpTimes() <= 0) {
+        return SaResult.error("今日分享链接创建已上限，明天再来吧！");
+      }
+
       List<ProjectHelp> list = redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
       // 判断缓存中如果没有数据，那么从数据库中取数据并且持久化到缓存中
       if (list.size() < 0) {

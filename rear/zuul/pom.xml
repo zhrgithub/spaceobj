@@ -59,7 +59,15 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- SpringBoot 热部署 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-devtools</artifactId>
+                <!-- 不传递依赖 -->
+                <optional>true</optional>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
     <build>
