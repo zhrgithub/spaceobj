@@ -4,7 +4,6 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.pojo.SysUser;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author zhr_java@163.com
@@ -30,4 +29,11 @@ public interface SysUserService extends IService<SysUser> {
    * @return
    */
   SaResult updateSysUser(SysUserBo sysUser);
+
+  /**
+   * 更新所有数据
+   *
+   * @return
+   */
+  void updateAll(SysUserBo sysUserBo);
 }

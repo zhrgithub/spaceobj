@@ -157,8 +157,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   @Override
-  public SaResult findList(
-      Integer currentPage, Integer pageSize, String content, Integer projectType, String userId) {
+  public SaResult findList(String content, Integer projectType, String userId) {
     try {
       List<SysProject> list;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);

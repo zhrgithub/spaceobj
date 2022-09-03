@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
+import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.constent.KafKaTopics;
 import com.spaceobj.user.constent.OperationType;
@@ -13,16 +14,14 @@ import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.CustomerUserService;
 import com.spaceobj.user.service.kafka.KafkaSender;
+import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import com.spaceobj.user.utils.EmailVerifyCode;
 import com.spaceobj.user.utils.FileUtil;
-import com.spaceobj.user.bo.ReceiveEmailBo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import sun.net.util.IPAddressUtil;
 
@@ -76,12 +75,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (redisTemplate.hasKey(loginOrRegisterBo.getEmail())) {
           SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginOrRegisterBo.getEmail());
           if (sysUser.getPassword().equals(loginOrRegisterBo.getPassword())) {
-            sysUser.setIp(loginOrRegisterBo.getIp());
-            sysUser.setIpTerritory(loginOrRegisterBo.getIpTerritory());
-            sysUser.setDeviceType(loginOrRegisterBo.getDeviceType());
+            StpUtil.login(loginOrRegisterBo.getEmail());
+            sysUser.setOnlineStatus(1);
+            sysUser.setToken(StpUtil.getTokenValue());
+            BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
             // 更新用户当前登录信息
             kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-            StpUtil.login(loginOrRegisterBo.getEmail());
             return SaResult.ok("登录成功").setData(sysUser);
           } else {
             return SaResult.error("密码不正确");
@@ -95,21 +94,15 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (redisTemplate.hasKey(loginOrRegisterBo.getEmail())) {
           return SaResult.error("请勿重复注册");
         }
-        SysUser sysUser =
-            SysUser.builder()
-                .userId(UUID.randomUUID().toString())
-                .inviteUserId(loginOrRegisterBo.getInviteUserId())
-                .account(loginOrRegisterBo.getEmail())
-                .password(loginOrRegisterBo.getPassword())
-                .ip(loginOrRegisterBo.getIp())
-                .phoneNumber(loginOrRegisterBo.getPhoneNumber())
-                .ipTerritory(loginOrRegisterBo.getIpTerritory())
-                .deviceType(loginOrRegisterBo.getDeviceType())
-                .build();
 
+        SysUser sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
+        BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
+
+        StpUtil.login(loginOrRegisterBo.getEmail());
+        sysUser.setOnlineStatus(1);
+        sysUser.setToken(StpUtil.getTokenValue());
         // 消息队列通知MySQL
         kafkaSender.send(sysUser, KafKaTopics.ADD_USER);
-        StpUtil.login(loginOrRegisterBo.getEmail());
         return SaResult.ok("注册成功，正在跳转");
       } else {
         // 逻辑参数校验错误
@@ -123,8 +116,16 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Override
   public SaResult loginOut(String loginId) {
-    StpUtil.logout(loginId);
-    return SaResult.ok();
+    try {
+      StpUtil.logout(loginId);
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+      sysUser.setOnlineStatus(0);
+      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+      return SaResult.ok("登出成功");
+    } catch (Exception e) {
+      LOG.error("login out error", e.getMessage());
+      return SaResult.error("登出失败！");
+    }
   }
 
   @Override
@@ -155,6 +156,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 先封禁账号，然后踢下线
         StpUtil.disable(account, -1);
         StpUtil.kickout(account);
+        SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(account);
+        sysUser.setOnlineStatus(0);
+        sysUser.setDisableStatus(0);
+        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         redisTemplate.opsForValue().set(user.getRequestIp(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("非法操作，账号已封禁、设备已锁定");
       }
@@ -207,7 +212,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       // 校验剩余修改次数是否小于0
       if (sysUser.getSendCodeTimes() <= 0) {
-        return SaResult.error("剩余修改次数为0，明天再来吧");
+        return SaResult.error("验证码发送次数上线，明天再来吧");
       }
       // 生成邮箱验证码
       String getEmailCodeVerify = EmailVerifyCode.getVerifyCode();
@@ -225,7 +230,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 消息队列通知邮箱服务器发送邮件
       kafkaSender.send(receiveEmail, KafKaTopics.EMAIL_VERIFICATION_CODE);
       // Redis缓存刷新用户今天剩余邮件、短信发送次数
-      redisTemplate.opsForValue().set(account, sysUser);
+      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
       return SaResult.ok("发送成功");
     } catch (RuntimeException e) {
       LOG.error("Error send failed", e.getMessage());
@@ -236,21 +241,23 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult resetPassword(SysUserBo sysUserBo) {
     try {
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(sysUserBo.getLoginId());
       // 验证当前登录的用户是否和传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
       if (!sysUserBo.getAccount().equals(sysUserBo.getLoginId())) {
         // 封禁账号
         StpUtil.disable(sysUserBo.getLoginId(), -1);
         // 踢下线
         StpUtil.kickout(sysUserBo.getUserId());
+        sysUser.setOnlineStatus(0);
+        sysUser.setDisableStatus(0);
+        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         // 锁定设备
         redisTemplate.opsForValue().set(sysUserBo.getRequestIp(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("违规操作，账号已封，设备已锁定");
       }
       // 验证邮箱验证码是否和服务器保存的一致
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(sysUserBo.getAccount());
       String emailCodeFromRedis = sysUser.getEmailCode();
       if (emailCodeFromRedis.equals(sysUserBo.getEmailCode())) {
-
         // 缓存更新
         sysUser.setPassword(sysUserBo.getNewPassword());
         // kafka通知MySQL修改
@@ -269,6 +276,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult realName(SysUserBo user) {
 
     try {
+      // 从缓存中获取当前登录用户的基本信息
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(user.getLoginId());
       // 验证当前登录的用户是否和前端传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
       if (!user.getAccount().equals(user.getLoginId())) {
         // 封禁账号
@@ -276,12 +285,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 踢下线
         StpUtil.kickout(user.getLoginId());
         // 锁定设备
+        sysUser.setOnlineStatus(0);
+        sysUser.setDisableStatus(0);
+        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         redisTemplate.opsForValue().set(user.getLoginId(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("违规操作，账号已封，设备已锁定");
       }
-
-      // 从缓存中获取当前登录用户的基本信息
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(user.getLoginId());
 
       // 校验当前账户是否是在审核中
       if (sysUser.getRealNameStatus() == 1) {

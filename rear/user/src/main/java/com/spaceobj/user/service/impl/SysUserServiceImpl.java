@@ -3,6 +3,7 @@ package com.spaceobj.user.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.constent.KafKaTopics;
@@ -11,6 +12,7 @@ import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.SysUserService;
 import com.spaceobj.user.service.kafka.KafkaSender;
+import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,40 +60,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult updateSysUser(SysUserBo sysUserBo) {
     Integer result = -1;
-    SysUser sysUser =
-        SysUser.builder()
-            .userId(sysUserBo.getUserId())
-            .inviteUserId(sysUserBo.getInviteUserId())
-            .account(sysUserBo.getAccount())
-            .emailCode(sysUserBo.getEmailCode())
-            .password(sysUserBo.getPassword())
-            .token(sysUserBo.getToken())
-            .openId(sysUserBo.getOpenId())
-            .phoneNumber(sysUserBo.getPhoneNumber())
-            .assistValue(sysUserBo.getAssistValue())
-            .invitationValue(sysUserBo.getInvitationValue())
-            .userType(sysUserBo.getUserType())
-            .userRights(sysUserBo.getUserRights())
-            .username(sysUserBo.getUsername())
-            .nickName(sysUserBo.getNickName())
-            .photoUrl(sysUserBo.getPhotoUrl())
-            .onlineStatus(sysUserBo.getOnlineStatus())
-            .userInfoEditStatus(sysUserBo.getUserInfoEditStatus())
-            .idCardNum(sysUserBo.getIdCardNum())
-            .idCardPic(sysUserBo.getIdCardPic())
-            .realNameStatus(sysUserBo.getRealNameStatus())
-            .ip(sysUserBo.getIp())
-            .ipTerritory(sysUserBo.getIpTerritory())
-            .editInfoTimes(sysUserBo.getEditInfoTimes())
-            .sendCodeTimes(sysUserBo.getSendCodeTimes())
-            .releaseProjectTimes(sysUserBo.getReleaseProjectTimes())
-            .projectHelpTimes(sysUserBo.getProjectHelpTimes())
-            .deviceType(sysUserBo.getDeviceType())
-            .createProjectHelpTimes(sysUserBo.getCreateProjectHelpTimes())
-            .disableStatus(sysUserBo.getDisableStatus())
-            .build();
+    SysUser sysUser = new SysUser();
     try {
-
+      BeanConvertToTargetUtils.copyNotNullProperties(sysUserBo, sysUser);
       if (sysUserBo.getDisableStatus() == 0) {
         StpUtil.kickout(sysUserBo.getAccount());
         StpUtil.disable(sysUserBo.getAccount(), -1);
@@ -105,5 +76,30 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     }
 
     return SaResult.ok().setData(result);
+  }
+
+  @Override
+  public void updateAll(SysUserBo sysUserBo) {
+    try {
+      UpdateWrapper<SysUser> sysUserWrapper = new UpdateWrapper<>();
+      SysUser sysUser = new SysUser();
+      BeanConvertToTargetUtils.copyNotNullProperties(sysUserBo, sysUser);
+      int result = sysUserMapper.update(sysUser, sysUserWrapper);
+      if (result == 0) {
+        LOG.error("logic update all system user failed");
+      }
+      if (result == 1) {
+        redisTemplate.delete(RedisKey.SYS_USER_LIST);
+        QueryWrapper<SysUser> sysQueryWrapper = new QueryWrapper<>();
+        List<SysUser> sysUserList = sysUserMapper.selectList(sysQueryWrapper);
+        redisTemplate.opsForList().leftPush(RedisKey.SYS_USER_LIST, sysUserList.toArray());
+        for (SysUser su : sysUserList) {
+          redisTemplate.opsForValue().set(su.getAccount(), su);
+        }
+      }
+
+    } catch (Exception e) {
+      LOG.error("update all system user failed");
+    }
   }
 }

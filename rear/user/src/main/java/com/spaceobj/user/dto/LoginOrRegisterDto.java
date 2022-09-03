@@ -15,31 +15,30 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginOrRegisterDto {
 
+  /** 操作类型 */
+  private Integer operateType;
 
-    /** 操作类型 */
-    private Integer operateType;
+  /** 账户 */
+  private String email;
 
-    /** 账户 */
-    private String email;
+  /** 密码 */
+  private String password;
 
-    /** 密码 */
-    private String password;
+  /** 电话 */
+  private String phoneNumber;
 
-    /** 电话 */
-    private String phoneNumber;
+  /** ip */
+  private String ip;
 
-    /** ip */
-    private String ip;
+  /** requestIP */
+  private String requestIp;
 
-    /** ip属地 */
-    private String ipTerritory;
+  /** ip属地 */
+  private String ipTerritory;
 
-    /** 设备类型 */
-    private String deviceType;
+  /** 设备类型 */
+  private String deviceType;
 
-    /**
-     * 邀请人账号id
-     */
-    private String inviteUserId;
-
+  /** 邀请人账号id */
+  private String inviteUserId;
 }

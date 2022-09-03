@@ -27,9 +27,7 @@ public class LoginOrRegisterBo {
   /** 电话 */
   private String phoneNumber;
 
-  /**
-   * requestIP
-   */
+  /** requestIP */
   private String requestIp;
 
   /** ip */
@@ -41,8 +39,6 @@ public class LoginOrRegisterBo {
   /** 设备类型 */
   private String deviceType;
 
-  /**
-   * 邀请人账号id
-   */
+  /** 邀请人账号id */
   private String inviteUserId;
 }

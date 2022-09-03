@@ -2,8 +2,9 @@ package com.spaceobj.user.controller;
 
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
-import com.spaceobj.user.service.CustomerUserService;
 import com.spaceobj.user.dto.LoginOrRegisterDto;
+import com.spaceobj.user.service.CustomerUserService;
+import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,20 +20,20 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("customerUser")
 public class CustomerUserController {
 
-    @Autowired
-    private CustomerUserService customerUserService;
+  @Autowired private CustomerUserService customerUserService;
 
-    @RequestMapping("upload")
-    public SaResult uploadFile(@RequestPart("file") MultipartFile file){
-        return customerUserService.uploadFile(file);
-    }
+  @RequestMapping("upload")
+  public SaResult uploadFile(@RequestPart("file") MultipartFile file) {
+    return customerUserService.uploadFile(file);
+  }
 
-    @PostMapping("loginOrRegister")
-    public SaResult loginOrRegister(LoginOrRegisterDto loginOrRegisterVo){
+  @PostMapping("loginOrRegister")
+  public SaResult loginOrRegister(LoginOrRegisterDto loginOrRegisterDto) {
 
-        LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
-        //此处需要将Dto转化成bo
-        return customerUserService.loginOrRegister(loginOrRegisterBo);
-    }
+    LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
+    // 将Dto转化成bo
+    BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterDto, loginOrRegisterBo);
 
+    return customerUserService.loginOrRegister(loginOrRegisterBo);
+  }
 }

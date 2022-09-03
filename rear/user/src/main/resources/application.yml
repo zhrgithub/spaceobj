@@ -62,14 +62,6 @@ spring:
     multipart:
       max-file-size: 200KB
       max-request-size: 200KB
-  jpa:
-    database: mysql
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-      naming:
-        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
-
 
 # Sa-Token配置
 sa-token:
