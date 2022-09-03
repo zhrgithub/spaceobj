@@ -5,7 +5,7 @@ import com.spaceobj.project.constent.KafKaTopics;
 import com.spaceobj.project.constent.RedisKey;
 import com.spaceobj.project.mapper.SysProjectMapper;
 import com.spaceobj.project.pojo.SysProject;
-import com.spaceobj.project.util.ConvertToTarget;
+import com.spaceobj.project.util.KafkaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class KafkaUserConsumer {
         .ifPresent(
             message -> {
               try {
-                SysProject sysProject = ConvertToTarget.getObject(message, SysProject.class);
+                SysProject sysProject = KafkaSourceToTarget.getObject(message, SysProject.class);
                 int result = sysProjectMapper.insert(sysProject);
                 // 刷新缓存
                 if (result == 1) {
@@ -61,7 +61,7 @@ public class KafkaUserConsumer {
         .ifPresent(
             message -> {
               try {
-                SysProject sysProject = ConvertToTarget.getObject(message, SysProject.class);
+                SysProject sysProject = KafkaSourceToTarget.getObject(message, SysProject.class);
                 int result = sysProjectMapper.updateById(sysProject);
                 // 刷新缓存
                 if (result == 1) {
