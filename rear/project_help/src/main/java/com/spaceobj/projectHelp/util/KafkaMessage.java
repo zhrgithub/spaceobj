@@ -9,7 +9,7 @@ import java.util.Date;
  * @date 2022/7/26 15:28
  */
 @Data
-public class Message {
+public class KafkaMessage {
 
   private Long id;
 

@@ -5,7 +5,7 @@ import com.spaceobj.projectHelp.constent.KafKaTopics;
 import com.spaceobj.projectHelp.constent.RedisKey;
 import com.spaceobj.projectHelp.mapper.ProjectHelpMapper;
 import com.spaceobj.projectHelp.pojo.ProjectHelp;
-import com.spaceobj.projectHelp.util.ConvertToTarget;
+import com.spaceobj.projectHelp.util.KafkaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public class KafkaProjectHelpConsumer {
             message -> {
               try {
 
-                ProjectHelp projectHelp = ConvertToTarget.getObject(message, ProjectHelp.class);
+                ProjectHelp projectHelp = KafkaSourceToTarget.getObject(message, ProjectHelp.class);
                 int result = projectHelpMapper.insert(projectHelp);
                 if (result == 0) {
                   LOG.error("project help info save to mysql failed !");
@@ -73,7 +73,7 @@ public class KafkaProjectHelpConsumer {
             message -> {
               try {
 
-                ProjectHelp projectHelp = ConvertToTarget.getObject(message, ProjectHelp.class);
+                ProjectHelp projectHelp = KafkaSourceToTarget.getObject(message, ProjectHelp.class);
                 int result = projectHelpMapper.updateById(projectHelp);
                 if (result == 0) {
                   LOG.error("project help info update to mysql failed !");

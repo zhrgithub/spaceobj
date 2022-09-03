@@ -2,7 +2,7 @@ package com.spaceobj.projectHelp.service.kafka;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.spaceobj.projectHelp.util.Message;
+import com.spaceobj.projectHelp.util.KafkaMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ public class KafkaSender {
   private Gson gson = new Gson();
 
   public void send(Object obj, String topicName) {
-    Message message = new Message();
+    KafkaMessage message = new KafkaMessage();
 
     message.setId(System.currentTimeMillis());
 

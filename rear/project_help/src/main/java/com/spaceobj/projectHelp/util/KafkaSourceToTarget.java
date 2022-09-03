@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken;
  * @author zhr_java@163.com
  * @date 2022/8/25 12:25
  */
-public class ConvertToTarget<T> {
+public class KafkaSourceToTarget<T> {
 
   /**
    * 获取kafka的消息，并且通过泛型转化成目的对象
@@ -21,8 +21,8 @@ public class ConvertToTarget<T> {
     // 开启复杂处理Map方法
     Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
     // fromJson
-    Message messageResult =
-        gson.fromJson(message.toString(), new TypeToken<Message>() {}.getType());
+    KafkaMessage messageResult =
+        gson.fromJson(message.toString(), new TypeToken<KafkaMessage>() {}.getType());
     return new Gson().fromJson(messageResult.getMsg(), classOfT);
   }
 }
