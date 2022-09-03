@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken;
  * @author zhr_java@163.com
  * @date 2022/8/25 12:25
  */
-public class KafKaMessageConvertToTarget<T> {
+public class KafKaSourceToTarget<T> {
 
   /**
    * 获取kafka的消息，并且通过泛型转化成目的对象

@@ -5,7 +5,7 @@ import com.spaceobj.user.constent.KafKaTopics;
 import com.spaceobj.user.constent.RedisKey;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
-import com.spaceobj.user.utils.KafKaMessageConvertToTarget;
+import com.spaceobj.user.utils.KafKaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class KafkaCustomerUserConsumer {
         .ifPresent(
             message -> {
               try {
-                SysUser sysUser = KafKaMessageConvertToTarget.getObject(message, SysUser.class);
+                SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
                 int result = sysUserMapper.insert(sysUser);
                 // 刷新缓存
                 if (result == 1) {
@@ -70,7 +70,7 @@ public class KafkaCustomerUserConsumer {
         .ifPresent(
             message -> {
               try {
-                SysUser sysUser = KafKaMessageConvertToTarget.getObject(message, SysUser.class);
+                SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
                 int result = sysUserMapper.updateById(sysUser);
 
                 // 刷新缓存
