@@ -27,6 +27,11 @@ public class LoginOrRegisterBo {
   /** 电话 */
   private String phoneNumber;
 
+  /**
+   * requestIP
+   */
+  private String requestIp;
+
   /** ip */
   private String ip;
 

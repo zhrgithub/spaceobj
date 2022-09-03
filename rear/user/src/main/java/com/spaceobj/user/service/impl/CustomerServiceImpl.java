@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
+import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.constent.KafKaTopics;
 import com.spaceobj.user.constent.OperationType;
 import com.spaceobj.user.constent.Regexes;
@@ -14,7 +15,7 @@ import com.spaceobj.user.service.CustomerUserService;
 import com.spaceobj.user.service.kafka.KafkaSender;
 import com.spaceobj.user.utils.EmailVerifyCode;
 import com.spaceobj.user.utils.FileUtil;
-import com.spaceobj.user.utils.ReceiveEmail;
+import com.spaceobj.user.bo.ReceiveEmailBo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +45,16 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Override
   public SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo) {
+    // 判断用户是否被封禁
+    boolean isDisable = StpUtil.isDisable(loginOrRegisterBo.getEmail());
+    if (isDisable) {
+      return SaResult.error("账号已被封禁！");
+    }
 
     // 校验ip是否合法
-    String requestIp = getIpAddress();
-    if (!isIpAddressCheck(requestIp) || !requestIp.equals(loginOrRegisterBo.getIp())) {
-      redisTemplate.opsForValue().set(requestIp, 10, 1, TimeUnit.DAYS);
+    if (!isIpAddressCheck(loginOrRegisterBo.getRequestIp())
+        || !loginOrRegisterBo.getRequestIp().equals(loginOrRegisterBo.getIp())) {
+      redisTemplate.opsForValue().set(loginOrRegisterBo.getRequestIp(), 10, 1, TimeUnit.DAYS);
       return SaResult.error("非法操作，设备已锁定");
     }
     // 校验邮箱
@@ -100,8 +106,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 .ipTerritory(loginOrRegisterBo.getIpTerritory())
                 .deviceType(loginOrRegisterBo.getDeviceType())
                 .build();
-        // 注册用户存储到Redis
-        redisTemplate.opsForValue().set(loginOrRegisterBo.getEmail(), sysUser);
+
         // 消息队列通知MySQL
         kafkaSender.send(sysUser, KafKaTopics.ADD_USER);
         StpUtil.login(loginOrRegisterBo.getEmail());
@@ -117,18 +122,16 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult loginOut() {
-    StpUtil.logout();
+  public SaResult loginOut(String loginId) {
+    StpUtil.logout(loginId);
     return SaResult.ok();
   }
 
   @Override
-  public SaResult getUserInfo() {
-    String account = null;
+  public SaResult getUserInfo(String loginId) {
     SysUser sysUser = null;
     try {
-      account = (String) StpUtil.getLoginId();
-      sysUser = (SysUser) redisTemplate.opsForValue().get(account);
+      sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       return SaResult.ok().setData(sysUser);
     } catch (RuntimeException e) {
       LOG.error("getUserInfo failed", e.getMessage());
@@ -137,14 +140,13 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult updateUserInfo(SysUser user) {
+  public SaResult updateUserInfo(SysUserBo user) {
 
     try {
 
       // 校验ip是否合法
-      String requestIp = getIpAddress();
-      if (!isIpAddressCheck(requestIp) || !requestIp.equals(user.getIp())) {
-        redisTemplate.opsForValue().set(requestIp, 10, 1, TimeUnit.DAYS);
+      if (!isIpAddressCheck(user.getRequestIp()) || !user.getRequestIp().equals(user.getIp())) {
+        redisTemplate.opsForValue().set(user.getRequestIp(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("非法操作，设备已锁定");
       }
       // 校验当前登录用户是否是和修改用户一样
@@ -153,7 +155,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 先封禁账号，然后踢下线
         StpUtil.disable(account, -1);
         StpUtil.kickout(account);
-        redisTemplate.opsForValue().set(requestIp, 10, 1, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(user.getRequestIp(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("非法操作，账号已封禁、设备已锁定");
       }
 
@@ -210,8 +212,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 生成邮箱验证码
       String getEmailCodeVerify = EmailVerifyCode.getVerifyCode();
       // 设置邮件的标题，内容，收件人
-      ReceiveEmail receiveEmail =
-          ReceiveEmail.builder()
+      ReceiveEmailBo receiveEmail =
+          ReceiveEmailBo.builder()
               .receiverEmail(account)
               .title("spaceObj")
               .content("邮箱验证码:" + getEmailCodeVerify)
@@ -232,27 +234,25 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult resetPassword(String account, String emailCode, String newPassword) {
+  public SaResult resetPassword(SysUserBo sysUserBo) {
     try {
       // 验证当前登录的用户是否和传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
-      String loginId = (String) StpUtil.getLoginId();
-      if (!account.equals(loginId)) {
+      if (!sysUserBo.getAccount().equals(sysUserBo.getLoginId())) {
         // 封禁账号
-        StpUtil.disable(loginId, -1);
+        StpUtil.disable(sysUserBo.getLoginId(), -1);
         // 踢下线
-        StpUtil.kickout(loginId);
+        StpUtil.kickout(sysUserBo.getUserId());
         // 锁定设备
-        redisTemplate.opsForValue().set(getIpAddress(), 10, 1, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(sysUserBo.getRequestIp(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("违规操作，账号已封，设备已锁定");
       }
       // 验证邮箱验证码是否和服务器保存的一致
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(account);
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(sysUserBo.getAccount());
       String emailCodeFromRedis = sysUser.getEmailCode();
-      if (emailCodeFromRedis.equals(emailCode)) {
+      if (emailCodeFromRedis.equals(sysUserBo.getEmailCode())) {
 
         // 缓存更新
-        sysUser.setPassword(newPassword);
-        redisTemplate.opsForValue().set(account, sysUser);
+        sysUser.setPassword(sysUserBo.getNewPassword());
         // kafka通知MySQL修改
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         return SaResult.ok("密码修改成功");
@@ -266,23 +266,22 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult realName(SysUser user) {
+  public SaResult realName(SysUserBo user) {
 
     try {
       // 验证当前登录的用户是否和前端传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
-      String loginId = (String) StpUtil.getLoginId();
-      if (!user.getAccount().equals(loginId)) {
+      if (!user.getAccount().equals(user.getLoginId())) {
         // 封禁账号
-        StpUtil.disable(loginId, -1);
+        StpUtil.disable(user.getLoginId(), -1);
         // 踢下线
-        StpUtil.kickout(loginId);
+        StpUtil.kickout(user.getLoginId());
         // 锁定设备
-        redisTemplate.opsForValue().set(getIpAddress(), 10, 1, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(user.getLoginId(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("违规操作，账号已封，设备已锁定");
       }
 
       // 从缓存中获取当前登录用户的基本信息
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(user.getLoginId());
 
       // 校验当前账户是否是在审核中
       if (sysUser.getRealNameStatus() == 1) {
@@ -294,8 +293,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 设置身份证号码与身份证图片名称
       sysUser.setIdCardNum(user.getIdCardNum());
       sysUser.setIdCardPic(user.getIdCardPic());
-      // 缓存设置为审核中
-      redisTemplate.opsForValue().set(loginId, sysUser);
       // 消息队列通知MySQL修改用户实名状态，定时任务检测当前实名状态是否大于十个，大于十个审核需求，那么邮件通知管理员审核
       kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
       return SaResult.ok("提交成功");
@@ -337,17 +334,5 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       return false;
     }
     return true;
-  }
-
-  /**
-   * 获取用户IP
-   *
-   * @return
-   */
-  public static String getIpAddress() {
-
-    ServletRequestAttributes requestAttributes =
-        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-    return requestAttributes.getRequest().getRemoteHost();
   }
 }

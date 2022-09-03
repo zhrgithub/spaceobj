@@ -43,21 +43,18 @@ public class KafkaCustomerUserConsumer {
     Optional.ofNullable(record.value())
         .ifPresent(
             message -> {
-              log.info("【+++++++++++++++++ record = {} 】", record);
-              log.info("【+++++++++++++++++ message = {}】", message);
-
               try {
                 SysUser sysUser = ConvertToTarget.getObject(message, SysUser.class);
                 int result = sysUserMapper.insert(sysUser);
                 // 刷新缓存
                 if (result == 1) {
-                  this.updateRedis();
+                  this.updateRedis(sysUser);
                 }
                 if (result == 0) {
-                  LOG.error("用户数据持久化新增失败!");
+                  LOG.error("user info save to mysql failed !");
                 }
               } catch (Exception e) {
-                LOG.error("用户信息持久化新增失败! 失败信息：{}", e.getMessage());
+                LOG.error("user info save to mysql failed! fail info：{}", e.getMessage());
               }
             });
   }
@@ -72,33 +69,36 @@ public class KafkaCustomerUserConsumer {
     Optional.ofNullable(record.value())
         .ifPresent(
             message -> {
-              log.info("【+++++++++++++++++ record = {} 】", record);
-              log.info("【+++++++++++++++++ message = {}】", message);
               try {
                 SysUser sysUser = ConvertToTarget.getObject(message, SysUser.class);
                 int result = sysUserMapper.updateById(sysUser);
 
                 // 刷新缓存
                 if (result == 1) {
-                  this.updateRedis();
+                  // 刷新Redis中的用户列表
+                  this.updateRedis(sysUser);
                 }
 
                 if (result == 0) {
-                  LOG.error("用户数据持久化修改失败!");
+                  LOG.error("user info update to mysql failed!");
                 }
               } catch (Exception e) {
-                LOG.error("用户数据持久化修改失败!失败信息{}", e.getMessage());
+                LOG.error("update info update to mysql failed!failed info {}", e.getMessage());
               }
             });
   }
 
   /** 刷新Redis缓存 */
-  private void updateRedis() {
-
+  private void updateRedis(SysUser sysUser) {
+    // 根据用户的账户id，更新用户登录信息
+    redisTemplate.opsForValue().set(sysUser.getAccount(), sysUser);
+    // 删除用户列表信息
     redisTemplate.delete(RedisKey.SYS_USER_LIST);
+    // 查询用户列表信息
     List<SysUser> sysUserList;
-    QueryWrapper queryWrapper = new QueryWrapper();
+    QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
     sysUserList = sysUserMapper.selectList(queryWrapper);
+    // 更新用户列表信息
     redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList.toArray());
   }
 }

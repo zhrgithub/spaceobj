@@ -101,4 +101,11 @@ public class SysUser implements Serializable {
 
   @TableField(value = "device_type")
   private String deviceType;
+
+  @TableField(value = "create_project_help_times")
+  private Integer createProjectHelpTimes;
+
+
+  @TableField(value = "disable_status")
+  private Integer disableStatus;
 }

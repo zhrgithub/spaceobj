@@ -3,6 +3,7 @@ package com.spaceobj.user.service;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
+import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.pojo.SysUser;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,16 +26,18 @@ public interface CustomerUserService extends IService<SysUser> {
   /**
    * 退出登录，根据当前登录账号的cookie退出登录
    *
+   * @param loginId
    * @return
    */
-  SaResult loginOut();
+  SaResult loginOut(String loginId);
 
   /**
    * 通过用户当前登录的cookie返回用户基本信息
    *
+   * @param loginId
    * @return
    */
-  SaResult getUserInfo();
+  SaResult getUserInfo(String loginId);
 
   /**
    * 修改用户信息，要比较当前登录账户的cookie是否和提交的账号ID一致，
@@ -48,7 +51,7 @@ public interface CustomerUserService extends IService<SysUser> {
    * @param user
    * @return
    */
-  SaResult updateUserInfo(SysUser user);
+  SaResult updateUserInfo(SysUserBo user);
 
   /**
    * 发送验证码
@@ -63,12 +66,10 @@ public interface CustomerUserService extends IService<SysUser> {
   /**
    * 通过邮件验证码修改
    *
-   * @param account 用户的邮箱也是用户的账户
-   * @param emailCode
-   * @param newPassword
+   * @param sysUserBo 用户实体信息和附加信息
    * @return
    */
-  SaResult resetPassword(String account, String emailCode, String newPassword);
+  SaResult resetPassword(SysUserBo sysUserBo);
 
   /**
    * 先缓存到Redis，变成审核状态，消息队列持久化到MySQL，通过任务调度判断超过十个人，则邮件通知管理员审核， 审核后，消息队列通知先持久化，然后刷新缓存，邮件通知用户审核通过
@@ -78,7 +79,7 @@ public interface CustomerUserService extends IService<SysUser> {
    * @param user
    * @return
    */
-  SaResult realName(SysUser user);
+  SaResult realName(SysUserBo user);
 
   /**
    * 文件上传

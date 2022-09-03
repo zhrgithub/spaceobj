@@ -15,13 +15,9 @@ public class KafKaTopics {
   /** 审核结果通知 */
   public static final String AUDIT_RESULT_NOTICE = "audit_result_notice";
 
-  /**
-   * 用户注册
-   */
+  /** 用户注册 */
   public static final String ADD_USER = "add_user";
 
-  /**
-   * 修改用户信息
-   */
+  /** 修改用户信息 */
   public static final String UPDATE_USER = "update_user";
 }

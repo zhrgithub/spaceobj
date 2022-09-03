@@ -2,6 +2,7 @@ package com.spaceobj.user.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.pojo.SysUser;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,8 +26,8 @@ public interface SysUserService extends IService<SysUser> {
    * 修改系统用户: 必须具有管理员权限，然后可以冻结用户，踢下线，等操作先通过消息队列持久化，然后再刷新缓存
    *
    * @param sysUser
-   * @param operateType
+   * @param sysUser
    * @return
    */
-  SaResult updateSysUser(SysUser sysUser, Integer operateType);
+  SaResult updateSysUser(SysUserBo sysUser);
 }

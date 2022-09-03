@@ -3,7 +3,6 @@ package com.spaceobj.user.service.kafka;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.spaceobj.user.utils.Message;
-import com.spaceobj.user.utils.ReceiveEmail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
