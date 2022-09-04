@@ -235,7 +235,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SaResult getPhoneNumberByProjectId(String projectId, String userId) {
     try {
       List<SysProject> list;
-      SysProject sysProject;
+      List<SysProject> sysProjectList;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
         synchronized (this) {
@@ -247,13 +247,17 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       }
 
-      sysProject =
-          (SysProject)
+      sysProjectList =
+          (List<SysProject>)
               list.stream()
                   .filter(
                       p -> {
                         return Long.valueOf(projectId).equals(p.getPId());
                       });
+      if(sysProjectList.size()==0){
+        return SaResult.error("项目不存在");
+      }
+      SysProject sysProject = sysProjectList.get(0);
 
       List<SysUserBo> sysUserBos = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       List<SysUserBo> resultSysUserBos =
@@ -263,6 +267,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                       user -> {
                         return user.getUserId().equals(userId);
                       });
+      if(resultSysUserBos.size()== 0){
+        return SaResult.error("用户不存在");
+      }
       SysUserBo sysUserBo = resultSysUserBos.get(0);
       // 如果项目发布人id和userId相同，直接返回用户联系方式
       if (sysProject.getReleaseUserId().equals(userId)) {
