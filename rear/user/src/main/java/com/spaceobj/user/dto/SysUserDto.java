@@ -1,4 +1,4 @@
-package com.spaceobj.user.bo;
+package com.spaceobj.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SysUserBo implements Serializable {
+public class SysUserDto implements Serializable {
 
   private String userId;
 
@@ -76,7 +76,7 @@ public class SysUserBo implements Serializable {
   /** 新密码 */
   private String newPassword;
 
-  /** 当前登录id */
+  /** 登录id */
   private String loginId;
 
   /** 用户封禁状态 */

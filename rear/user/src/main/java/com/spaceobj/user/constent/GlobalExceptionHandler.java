@@ -6,6 +6,7 @@ import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.util.SaResult;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,6 +23,39 @@ public class GlobalExceptionHandler {
 
   Log logger = LogFactory.getLog(GlobalExceptionHandler.class);
 
+  /** 请求参数为空 */
+  @ExceptionHandler(NullPointerException.class)
+  @ResponseBody
+  public SaResult nullPointerException(NullPointerException ex) {
+    logger.error("null point exception info:" + ex.getMessage());
+    return SaResult.error("请求参数为空");
+  }
+
+  /**
+   * 参数格式异常捕获
+   *
+   * @param ex
+   * @return
+   */
+  @ExceptionHandler(BindException.class)
+  @ResponseBody
+  public SaResult bindException(BindException ex) {
+    logger.error("bind exception info:" + ex.getMessage());
+    return SaResult.error("参数格式错误");
+  }
+
+  /**
+   * 参数类型转换异常捕获
+   *
+   * @param ex
+   * @return
+   */
+  @ExceptionHandler(NumberFormatException.class)
+  @ResponseBody
+  public SaResult numberFormatException(NumberFormatException ex) {
+    logger.error("number format exception info:" + ex.getMessage());
+    return SaResult.error("参数类型转换错误");
+  }
 
   /**
    * 非空校验
@@ -31,14 +65,17 @@ public class GlobalExceptionHandler {
    */
   @ExceptionHandler(SaTokenException.class)
   @ResponseBody
-  public SaResult notLoginException(SaTokenException ex) {
+  public SaResult saTokenException(SaTokenException ex) {
+    logger.error("sa token exception info:" + ex.getMessage());
     return SaResult.error(ex.getMessage());
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   @ResponseBody
-  public SaResult notLoginException(HttpRequestMethodNotSupportedException ex) {
-    return SaResult.error(ex.getMessage());
+  public SaResult httpRequestMethodNotSupportedException(
+      HttpRequestMethodNotSupportedException ex) {
+    logger.error("httpRequest method notSupported exception info:" + ex.getMessage());
+    return SaResult.error("请求方法不支持");
   }
 
   /**
@@ -50,6 +87,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NotLoginException.class)
   @ResponseBody
   public SaResult notLoginException(NotLoginException ex) {
+    logger.error("not login exception:" + ex.getMessage());
     return SaResult.error("登录后操作");
   }
 
@@ -61,7 +99,7 @@ public class GlobalExceptionHandler {
    */
   @ExceptionHandler(NotPermissionException.class)
   @ResponseBody
-  public SaResult notLoginException(NotPermissionException ex) {
+  public SaResult notPermissionException(NotPermissionException ex) {
     return SaResult.error("无此权限");
   }
 

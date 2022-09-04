@@ -16,15 +16,14 @@ public interface SysUserService extends IService<SysUser> {
    *
    * <p>必须是具有管理员权限，然后可以根据用户的ID，邮箱，微信，电话，名称查询用户，返回用户列表
    *
-   * @param searchValue
+   * @param sysUserBo
    * @return
    */
-  SaResult findList(String searchValue);
+  SaResult findList(SysUserBo sysUserBo);
 
   /**
    * 修改系统用户: 必须具有管理员权限，然后可以冻结用户，踢下线，等操作先通过消息队列持久化，然后再刷新缓存
    *
-   * @param sysUser
    * @param sysUser
    * @return
    */
@@ -33,6 +32,7 @@ public interface SysUserService extends IService<SysUser> {
   /**
    * 更新所有数据
    *
+   * @param sysUserBo
    * @return
    */
   void updateAll(SysUserBo sysUserBo);

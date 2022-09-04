@@ -44,6 +44,7 @@ public class SysUser implements Serializable {
   @TableField(value = "phone_number")
   private String phoneNumber;
 
+  /** 助力值 */
   @TableField(value = "assist_value")
   private Integer assistValue;
 
@@ -98,13 +99,11 @@ public class SysUser implements Serializable {
   @TableField(value = "project_help_times")
   private Integer projectHelpTimes;
 
-
   @TableField(value = "device_type")
   private String deviceType;
 
   @TableField(value = "create_project_help_times")
   private Integer createProjectHelpTimes;
-
 
   @TableField(value = "disable_status")
   private Integer disableStatus;

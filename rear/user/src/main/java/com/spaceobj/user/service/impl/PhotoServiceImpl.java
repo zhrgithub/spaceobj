@@ -3,6 +3,7 @@ package com.spaceobj.user.service.impl;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.user.bo.SysPhotoBo;
 import com.spaceobj.user.constent.OperationType;
 import com.spaceobj.user.constent.RedisKey;
 import com.spaceobj.user.mapper.SysPhotoMapper;
@@ -10,6 +11,7 @@ import com.spaceobj.user.pojo.SysPhoto;
 import com.spaceobj.user.service.PhotoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -29,40 +31,45 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
 
   @Autowired private SysPhotoMapper sysPhotoMapper;
 
-
   @Override
-  public SaResult addOrUpdate(SysPhoto photo, Integer operation) {
+  public SaResult addOrUpdate(SysPhotoBo sysPhotoBo) {
 
     Integer result = -1;
     try {
-
-      if (operation.equals(OperationType.ADD)) {
+      SysPhoto photo = SysPhoto.builder().build();
+      if (sysPhotoBo.getOperation().equals(OperationType.ADD)) {
+        BeanUtils.copyProperties(sysPhotoBo, photo);
         result = sysPhotoMapper.insert(photo);
       } else {
         result = sysPhotoMapper.updateById(photo);
       }
       if (result == 1) {
         redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
-        LOG.info("Photo addOrUpdate successfully");
+      } else {
+        return SaResult.error("数据更新失败");
       }
     } catch (Exception e) {
       LOG.error("Photo addOrUpdate failed", e.getMessage());
-      return SaResult.error(e.getMessage()).setData(result);
+      return SaResult.error("数据更新失败");
     }
-    return SaResult.ok().setData(result);
+    return SaResult.ok();
   }
 
   @Override
-  public SaResult delete(Long id) {
+  public SaResult delete(SysPhotoBo sysPhotoBo) {
     Integer result = -1;
     try {
-      result = sysPhotoMapper.deleteById(id);
-      redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+      result = sysPhotoMapper.deleteById(sysPhotoBo.getPhotoId());
+      if (result == 1) {
+        redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+      } else {
+        return SaResult.error("删除失败");
+      }
     } catch (RuntimeException e) {
       LOG.error("Photo delete failed", e.getMessage());
-      return SaResult.error(e.getMessage()).setData(result);
+      return SaResult.error("删除失败");
     }
-    return SaResult.ok().setData(result);
+    return SaResult.ok();
   }
 
   @Override

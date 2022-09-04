@@ -19,7 +19,7 @@ public class LoginOrRegisterBo {
   private Integer operateType;
 
   /** 账户 */
-  private String email;
+  private String account;
 
   /** 密码 */
   private String password;

@@ -46,4 +46,14 @@ public class TaskJob {
       LOG.error("update user info times failed of every month", e.getMessage());
     }
   }
+
+  /** 朝九晚五，每一个小时判断一下是否需要审核实名认证的用户，如果大于10个就通知管理员审核 */
+  @Scheduled(cron = "0 0 0 9-17 * * ")
+  public void auditUserInfo() {
+    try {
+
+    } catch (Exception e) {
+      LOG.error("update user info times failed of every month", e.getMessage());
+    }
+  }
 }

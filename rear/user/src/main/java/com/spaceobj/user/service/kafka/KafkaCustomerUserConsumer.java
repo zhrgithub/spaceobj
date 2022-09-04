@@ -45,6 +45,7 @@ public class KafkaCustomerUserConsumer {
             message -> {
               try {
                 SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
+                System.out.println("sysUser:" + sysUser.toString());
                 int result = sysUserMapper.insert(sysUser);
                 // 刷新缓存
                 if (result == 1) {
@@ -90,8 +91,12 @@ public class KafkaCustomerUserConsumer {
 
   /** 刷新Redis缓存 */
   private void updateRedis(SysUser sysUser) {
+    QueryWrapper<SysUser> queryWrapperOnly = new QueryWrapper<>();
+    queryWrapperOnly.eq("account", sysUser.getAccount());
+    SysUser sysUserOnly = sysUserMapper.selectOne(queryWrapperOnly);
+
     // 根据用户的账户id，更新用户登录信息
-    redisTemplate.opsForValue().set(sysUser.getAccount(), sysUser);
+    redisTemplate.opsForValue().set(sysUser.getAccount(), sysUserOnly);
     // 删除用户列表信息
     redisTemplate.delete(RedisKey.SYS_USER_LIST);
     // 查询用户列表信息

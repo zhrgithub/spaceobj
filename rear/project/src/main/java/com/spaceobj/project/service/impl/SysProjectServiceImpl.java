@@ -184,7 +184,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                         p -> {
                           if (ObjectUtils.isNotNull(content)) {
                             return p.getStatus() == 1 && p.getContent().contains(content);
-
                           } else {
                             return p.getStatus() == 1;
                           }

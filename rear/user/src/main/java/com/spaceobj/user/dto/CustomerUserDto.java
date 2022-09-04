@@ -1,36 +1,54 @@
-package com.spaceobj.user.bo;
+package com.spaceobj.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 /**
- * @author zhr
+ * @author zhr_java@163.com
+ * @date 2022/8/30 13:10
  */
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class SysUserBo implements Serializable {
+@AllArgsConstructor
+public class CustomerUserDto {
+
+  /** 操作类型 */
+  private Integer operateType;
+
+  /** 账户 */
+  private String account;
+
+  /** 密码 */
+  private String password;
+
+  /** 电话 */
+  private String phoneNumber;
+
+  /** ip */
+  private String ip;
+
+  /** requestIP */
+  private String requestIp;
+
+  /** ip属地 */
+  private String ipTerritory;
+
+  /** 设备类型 */
+  private String deviceType;
+
+  /** 邀请人账号id */
+  private String inviteUserId;
 
   private String userId;
 
-  private String inviteUserId;
-
-  private String account;
-
   private String emailCode;
-
-  private String password;
 
   private String token;
 
   private String openId;
-
-  private String phoneNumber;
 
   private Integer assistValue;
 
@@ -56,10 +74,6 @@ public class SysUserBo implements Serializable {
 
   private Integer realNameStatus;
 
-  private String ip;
-
-  private String ipTerritory;
-
   private Integer editInfoTimes;
 
   private Integer sendCodeTimes;
@@ -68,15 +82,10 @@ public class SysUserBo implements Serializable {
 
   private Integer projectHelpTimes;
 
-  private String deviceType;
-
-  /** requestIP */
-  private String requestIp;
-
   /** 新密码 */
   private String newPassword;
 
-  /** 当前登录id */
+  /** 登录id */
   private String loginId;
 
   /** 用户封禁状态 */

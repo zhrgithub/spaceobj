@@ -4,6 +4,10 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.constent.KafKaTopics;
@@ -38,28 +42,63 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   private static final Logger LOG = LoggerFactory.getLogger(SysUserServiceImpl.class);
 
   @Override
-  public SaResult findList(String searchValue) {
+  public SaResult findList(SysUserBo sysUserBo) {
     List<SysUser> list = null;
     try {
-      Long size = redisTemplate.opsForList().size(RedisKey.SYS_USER_LIST);
-      if (size == 0) {
-        QueryWrapper queryWrapper = new QueryWrapper();
-        list = sysUserMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, list.toArray());
-      } else {
-        // 此处建议使用pipeLine来提升性能
-        list = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+      if (ObjectUtils.isNotEmpty(sysUserBo)) {
+        if (StringUtils.isNotBlank(sysUserBo.getAccount())) {
+          queryWrapper.like("account", sysUserBo.getAccount());
+        }
+        if (StringUtils.isNotBlank(sysUserBo.getPhoneNumber())) {
+          queryWrapper.like("phone_number", sysUserBo.getPhoneNumber());
+        }
+
+        if (StringUtils.isNotBlank(sysUserBo.getUserType())) {
+          queryWrapper.eq("user_type", sysUserBo.getUserType());
+        }
+
+        if (StringUtils.isNotBlank(sysUserBo.getUsername())) {
+          queryWrapper.like("username", sysUserBo.getUsername());
+        }
+
+        if (StringUtils.isNotBlank(sysUserBo.getNickName())) {
+          queryWrapper.like("nick_name", sysUserBo.getNickName());
+        }
+
+        if (sysUserBo.getOnlineStatus() != null) {
+          queryWrapper.eq("online_status", sysUserBo.getOnlineStatus());
+        }
+
+        if (StringUtils.isNotBlank(sysUserBo.getIdCardNum())) {
+          queryWrapper.eq("id_card_num", sysUserBo.getIdCardNum());
+        }
+
+        if (sysUserBo.getRealNameStatus() != null) {
+          queryWrapper.eq("real_name_status", sysUserBo.getRealNameStatus());
+        }
+
+        if (sysUserBo.getDisableStatus() != null) {
+          queryWrapper.eq("disable_status", sysUserBo.getDisableStatus());
+        }
       }
+      if (sysUserBo.getCurrentPage() == null || sysUserBo.getPageSize() == null) {
+        sysUserBo.setCurrentPage(0);
+        sysUserBo.setPageSize(10);
+      }
+      Page<SysUser> page = new Page<>(sysUserBo.getCurrentPage(), sysUserBo.getPageSize());
+      IPage<SysUser> iPage = sysUserMapper.selectPage(page, queryWrapper);
+      list = iPage.getRecords();
     } catch (Exception e) {
-      LOG.error(e.getMessage());
-      return SaResult.error(e.getMessage());
+      e.printStackTrace();
+      LOG.error("system user find list failed ", e.getMessage());
+      return SaResult.error("查询失败");
     }
     return SaResult.ok().setData(list);
   }
 
   @Override
   public SaResult updateSysUser(SysUserBo sysUserBo) {
-    Integer result = -1;
     SysUser sysUser = new SysUser();
     try {
       BeanConvertToTargetUtils.copyNotNullProperties(sysUserBo, sysUser);
@@ -70,12 +109,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         StpUtil.untieDisable(sysUserBo.getAccount());
       }
       kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
+      e.printStackTrace();
       LOG.error("update sysUser failed", e.getMessage());
-      return SaResult.error(e.getMessage()).setData(result);
+      return SaResult.error("用户更新失败");
     }
 
-    return SaResult.ok().setData(result);
+    return SaResult.ok();
   }
 
   @Override

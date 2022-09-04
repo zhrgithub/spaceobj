@@ -54,7 +54,7 @@ public class IpLimiting {
       if (redisTemplate.hasKey(ip)
           && (int) redisTemplate.boundValueOps(ip).get() >= MALICIOUS_REQUESTS) {
         pjp = new ServiceProceedingJoinPoint(SaResult.ok("服务器繁忙"));
-        LOG.info("ip:{}", ip);
+        LOG.info("attack ip of client:{}", ip);
         return pjp.proceed();
       }
 
@@ -81,9 +81,15 @@ public class IpLimiting {
         return pjp.proceed();
       }
       return pjp.proceed();
-    } catch (Exception e) {
+    } catch (NullPointerException e) {
+      e.printStackTrace();
       LOG.error(e.getMessage());
-      pjp = new ServiceProceedingJoinPoint(SaResult.error(e.getMessage()));
+      pjp = new ServiceProceedingJoinPoint(SaResult.error("请求参数错误"));
+      return pjp.proceed();
+    } catch (Exception e) {
+      e.printStackTrace();
+      LOG.error(e.getMessage());
+      pjp = new ServiceProceedingJoinPoint(SaResult.error("服务器拦截异常！"));
       return pjp.proceed();
     }
   }
