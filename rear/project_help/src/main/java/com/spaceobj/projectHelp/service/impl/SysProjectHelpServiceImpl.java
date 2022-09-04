@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.projectHelp.bo.ProjectHelpBo;
 import com.spaceobj.projectHelp.bo.ReceiveEmailBo;
+import com.spaceobj.projectHelp.bo.SysProjectBo;
 import com.spaceobj.projectHelp.bo.SysUserBo;
 import com.spaceobj.projectHelp.constent.KafKaTopics;
 import com.spaceobj.projectHelp.constent.RedisKey;
@@ -50,13 +51,29 @@ public class SysProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Pr
                       u -> {
                         return u.getUserId().equals(projectHelpBo.getUserId());
                       });
+      if (resultSysUserBoList.size() == 0) {
+        return SaResult.error("用户不存在");
+      }
       SysUserBo sysUserBo = resultSysUserBoList.get(0);
       if (sysUserBo.getCreateProjectHelpTimes() <= 0) {
         return SaResult.error("今日分享链接创建已上限，明天再来吧！");
       }
+      // 判断项目中是否有该项目的id
+      List<SysProjectBo> sysProjectBoList =
+          redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+      List<SysProjectBo> resultSysProjectBoList =
+          (List<SysProjectBo>)
+              sysProjectBoList.stream()
+                  .filter(
+                      p -> {
+                        return p.getPId() == projectHelpBo.getPId();
+                      });
+      if (resultSysProjectBoList.size() == 0) {
+        return SaResult.error("项目id不正确");
+      }
 
       List<ProjectHelp> list = redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
-      // 判断缓存中如果没有数据，那么从数据库中取数据并且持久化到缓存中
+      // 判断用户之前是否创建过，如果没有，那么从数据库中取数据并且持久化到缓存中
       if (list.size() < 0) {
         synchronized (this) {
           QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper<>();
@@ -71,8 +88,7 @@ public class SysProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Pr
                   .filter(
                       ph -> {
                         return ph.getPReleaseUserId().equals(projectHelpBo.getUserId())
-                            && Long.valueOf(ph.getPId())
-                                .equals(Long.valueOf(projectHelpBo.getPId()));
+                            && ph.getPId() == projectHelpBo.getPId();
                       });
       // 如果之前创建过那么直接返回之前创建过的
       if (resultList.size() > 0) {
@@ -112,8 +128,7 @@ public class SysProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Pr
               list.stream()
                   .filter(
                       ph -> {
-                        return Long.valueOf(ph.getPId())
-                            .equals(Long.valueOf(projectHelpBo.getPId()));
+                        return ph.getPId() == projectHelpBo.getPId();
                       });
       ProjectHelp projectHelp = resultList.get(0);
       // 如果项目已经助力成功，那么直接返回好友已经成功
@@ -177,7 +192,7 @@ public class SysProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Pr
       List<ProjectHelp> list = null;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_HELP_LIST);
       // 如果缓存中的数据为0，那么从数据库中查询，并缓存到Redis中
-      if (Long.valueOf(size) == 0) {
+      if (size == 0) {
         synchronized (this) {
           QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper<>();
           list = projectHelpMapper.selectList(queryWrapper);
