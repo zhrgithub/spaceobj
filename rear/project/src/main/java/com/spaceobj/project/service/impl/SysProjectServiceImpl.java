@@ -69,8 +69,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (sysUserBo.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线，明天再来吧！");
       }
-      //修改用户信息
-      sysUserBo.setReleaseProjectTimes(sysUserBo.getReleaseProjectTimes()-1);
+      // 修改用户信息
+      sysUserBo.setReleaseProjectTimes(sysUserBo.getReleaseProjectTimes() - 1);
       kafkaSender.send(sysUserBo, KafKaTopics.UPDATE_USER);
 
       // 生成UUID
@@ -162,9 +162,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       List<SysProject> list;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (Long.valueOf(size) == 0) {
-        QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("create_time");
-        list = sysProjectMapper.selectList(queryWrapper);
+        synchronized (this) {
+          QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
+          queryWrapper.orderByDesc("create_time");
+          list = sysProjectMapper.selectList(queryWrapper);
+        }
+
         redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, list);
       } else {
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
@@ -235,8 +238,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       SysProject sysProject;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
-        QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-        list = sysProjectMapper.selectList(queryWrapper);
+        synchronized (this) {
+          QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
+          list = sysProjectMapper.selectList(queryWrapper);
+        }
         redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, list);
       } else {
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
@@ -264,11 +269,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         return SaResult.ok().setData(sysUserBo.getPhoneNumber());
       }
       //  判断当前用户是否已经实名认证
-      if (!(sysUserBo.getRealNameStatus() == 1)) {
+      if (sysUserBo.getRealNameStatus() == 0) {
         return SaResult.error("请实名认证后再来获取");
       }
       //  判断项目是否审核通过
-      if (!(sysProject.getStatus() == 1)) {
+      if (sysProject.getStatus() == 0) {
         return SaResult.error("项目未通过审核，无法获取");
       }
 
