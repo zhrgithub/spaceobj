@@ -1,17 +1,18 @@
 package com.spaceobj.project.service.impl;
 
 import cn.dev33.satoken.util.SaResult;
+import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.project.bo.ProjectHelpBo;
 import com.spaceobj.project.bo.SysUserBo;
 import com.spaceobj.project.constent.KafKaTopics;
+import com.spaceobj.project.constent.KafkaSender;
 import com.spaceobj.project.constent.RedisKey;
 import com.spaceobj.project.mapper.SysProjectMapper;
 import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.service.SysProjectService;
-import com.spaceobj.project.constent.KafkaSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * @author zhr_java@163.com
@@ -161,7 +163,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       List<SysProject> list;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
-      if (Long.valueOf(size) == 0) {
+      if (size == 0) {
         synchronized (this) {
           QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
           queryWrapper.orderByDesc("create_time");
@@ -204,8 +206,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                     .filter(
                         p -> {
                           if (ObjectUtils.isNotNull(content)) {
-                            return Long.valueOf(content).equals(p.getPId())
-                                || p.getContent().contains(content);
+                            //如果是项目编号，匹配项目编号然后返回
+                            if(Pattern.matches(RegexPool.NUMBERS,content)){
+                              return Long.valueOf(content).longValue() == p.getPId();
+                            }
+                            //如果是内容，匹配内容
+                            return p.getContent().contains(content);
                           }
                           return true;
                         });
@@ -221,9 +227,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   @Override
-  public void addPageViews(String projectId) {
+  public void addPageViews(long projectId) {
     try {
-      SysProject sysProject = SysProject.builder().pId(Long.valueOf(projectId)).build();
+      SysProject sysProject = SysProject.builder().pId(projectId).build();
       sysProject.setPageViews(sysProject.getPageViews() + 1);
       kafkaSender.send(sysProject, KafKaTopics.UPDATE_PROJECT);
     } catch (Exception e) {
@@ -232,7 +238,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   @Override
-  public SaResult getPhoneNumberByProjectId(String projectId, String userId) {
+  public SaResult getPhoneNumberByProjectId(long projectId, String userId) {
     try {
       List<SysProject> list;
       List<SysProject> sysProjectList;
@@ -252,9 +258,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
               list.stream()
                   .filter(
                       p -> {
-                        return Long.valueOf(projectId).equals(p.getPId());
+                        return projectId == p.getPId();
                       });
-      if(sysProjectList.size()==0){
+      if (sysProjectList.size() == 0) {
         return SaResult.error("项目不存在");
       }
       SysProject sysProject = sysProjectList.get(0);
@@ -267,7 +273,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                       user -> {
                         return user.getUserId().equals(userId);
                       });
-      if(resultSysUserBos.size()== 0){
+      if (resultSysUserBos.size() == 0) {
         return SaResult.error("用户不存在");
       }
       SysUserBo sysUserBo = resultSysUserBos.get(0);
@@ -291,8 +297,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       projectHelpBoList.stream()
           .filter(
               hp -> {
-                return hp.getCreateUserId().equals(userId)
-                    && Long.valueOf(projectId).equals(hp.getPId());
+                return hp.getCreateUserId().equals(userId) && projectId == hp.getPId();
               });
       if (projectHelpBoList.size() > 0) {
         ProjectHelpBo helpBo = projectHelpBoList.get(0);

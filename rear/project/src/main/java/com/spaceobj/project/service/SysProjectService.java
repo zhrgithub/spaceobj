@@ -57,7 +57,7 @@ public interface SysProjectService extends IService<SysProject> {
    * @param projectId
    * @return
    */
-  void addPageViews(String projectId);
+  void addPageViews(long projectId);
 
   /**
    * 判断是否为其本人发布的, 判断项目状态是否为审核通过，判断用户是否实名，判断助力表是否有该数据，判断用户助力表中是否已经获取到，
@@ -68,5 +68,5 @@ public interface SysProjectService extends IService<SysProject> {
    * @param projectId
    * @return
    */
-  SaResult getPhoneNumberByProjectId(String projectId,String userId);
+  SaResult getPhoneNumberByProjectId(long projectId,String userId);
 }
