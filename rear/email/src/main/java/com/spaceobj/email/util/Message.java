@@ -1,6 +1,5 @@
 package com.spaceobj.email.util;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;

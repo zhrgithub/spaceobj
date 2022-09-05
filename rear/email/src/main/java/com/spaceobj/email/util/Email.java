@@ -1,8 +1,6 @@
 package com.spaceobj.email.util;
 
-import lombok.Builder;
 import lombok.Data;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * @author zhr_java@163.com
