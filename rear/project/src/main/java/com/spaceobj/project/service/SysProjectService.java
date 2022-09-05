@@ -2,6 +2,7 @@ package com.spaceobj.project.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.pojo.SysProject;
 
 /**
@@ -42,12 +43,10 @@ public interface SysProjectService extends IService<SysProject> {
    * 普通用户在首页查询的项目是审核通过的，不包括用户联系方式的； 设置分页查询
    * 项目类型：0表示首页所有已经审核通过的信息，1表示查看自己发布的项目信息（网关要校验是否为当前登录用户），2表示管理员查询的项目信息 设置查询条件：项目id，预算，项目内容
    *
-   * @param content 查询内容
-   * @param projectType 项目类型
-   * @param userId 用户id
+   * @param projectSearchBo 查询条件实体类
    * @return
    */
-  SaResult findList(String content, Integer projectType, String userId);
+  SaResult findList(ProjectSearchBo projectSearchBo);
 
   /**
    * 项目浏览量：根据项目的ID通过消息队列对持久层的浏览量数据修改，然后存储到缓存
@@ -66,6 +65,7 @@ public interface SysProjectService extends IService<SysProject> {
    * <p>校验项目id是否真实存在
    *
    * @param projectId
+   * @param userId
    * @return
    */
   SaResult getPhoneNumberByProjectId(long projectId,String userId);

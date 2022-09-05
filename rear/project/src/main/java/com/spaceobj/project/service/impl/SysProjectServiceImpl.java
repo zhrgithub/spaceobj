@@ -4,8 +4,10 @@ import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.project.bo.ProjectHelpBo;
+import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.bo.SysUserBo;
 import com.spaceobj.project.constent.KafKaTopics;
 import com.spaceobj.project.constent.KafkaSender;
@@ -159,8 +161,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   @Override
-  public SaResult findList(String content, Integer projectType, String userId) {
+  public SaResult findList(ProjectSearchBo projectSearchBo) {
     try {
+
       List<SysProject> list;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
@@ -176,41 +179,44 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
 
       // 查询首页信息
-      if (projectType == 0) {
+      if (projectSearchBo.getProjectType() == 0) {
         list =
             (List<SysProject>)
                 list.stream()
                     .filter(
                         p -> {
-                          if (ObjectUtils.isNotNull(content)) {
-                            return p.getStatus() == 1 && p.getContent().contains(content);
+                          if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
+                            return p.getStatus() == 1 && p.getContent().contains(projectSearchBo.getContent());
                           } else {
                             return p.getStatus() == 1;
                           }
                         });
-      } else if (projectType == 1) {
+      } else if (projectSearchBo.getProjectType() == 1) {
+        if(StringUtils.isEmpty( projectSearchBo.getUserId())){
+          return  SaResult.error("用户id不为空");
+        }
         // 查询自己发布的信息
         list =
             (List<SysProject>)
                 list.stream()
                     .filter(
                         p -> {
-                          return p.getReleaseUserId().equals(userId);
+                          return p.getReleaseUserId().equals(projectSearchBo.getUserId());
                         });
-      } else if (projectType == 2) {
+      } else if (projectSearchBo.getProjectType() == 2) {
         // 管理员查询信息全部的信息
         list =
             (List<SysProject>)
                 list.stream()
                     .filter(
                         p -> {
-                          if (ObjectUtils.isNotNull(content)) {
+                          if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
                             //如果是项目编号，匹配项目编号然后返回
-                            if(Pattern.matches(RegexPool.NUMBERS,content)){
-                              return Long.valueOf(content).longValue() == p.getPId();
+                            if(Pattern.matches(RegexPool.NUMBERS,projectSearchBo.getContent())){
+                              return Long.valueOf(projectSearchBo.getContent()).longValue() == p.getPId();
                             }
                             //如果是内容，匹配内容
-                            return p.getContent().contains(content);
+                            return p.getContent().contains(projectSearchBo.getContent());
                           }
                           return true;
                         });
@@ -281,11 +287,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         return SaResult.ok().setData(sysUserBo.getPhoneNumber());
       }
       //  判断当前用户是否已经实名认证
-      if (sysUserBo.getRealNameStatus() == 0) {
+      if (sysUserBo.getRealNameStatus() != 1) {
         return SaResult.error("请实名认证后再来获取");
       }
       //  判断项目是否审核通过
-      if (sysProject.getStatus() == 0) {
+      if (sysProject.getStatus() != 1) {
         return SaResult.error("项目未通过审核，无法获取");
       }
 

@@ -3,22 +3,54 @@ package com.spaceobj.project.constent;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.util.SaResult;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+
+import java.util.List;
 
 /**
  * @author zhr_java@163.com
  * @date 2022/7/26 22:05
  */
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
-  Log logger = LogFactory.getLog(GlobalExceptionHandler.class);
+
+  @ResponseBody
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(BindException.class)
+  public SaResult exceptionHandler(BindException exception) {
+    BindingResult result = exception.getBindingResult();
+    StringBuilder stringBuilder = new StringBuilder();
+    if (result.hasErrors()) {
+      List<ObjectError> errors = result.getAllErrors();
+      if (errors != null) {
+        errors.forEach(
+            p -> {
+              FieldError fieldError = (FieldError) p;
+              log.warn(
+                  "Bad Request Parameters: dto entity [{}],field [{}],message [{}]",
+                  fieldError.getObjectName(),
+                  fieldError.getField(),
+                  fieldError.getDefaultMessage());
+              stringBuilder.append(fieldError.getDefaultMessage());
+            });
+      }
+    }
+    return SaResult.error(stringBuilder.toString());
+}
+
 
   /**
    * 登录校验

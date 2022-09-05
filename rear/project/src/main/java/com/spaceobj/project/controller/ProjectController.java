@@ -1,0 +1,40 @@
+package com.spaceobj.project.controller;
+
+import cn.dev33.satoken.util.SaResult;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.spaceobj.project.bo.ProjectSearchBo;
+import com.spaceobj.project.dto.ProjectSearchDto;
+import com.spaceobj.project.service.SysProjectService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @author zhr_java@163.com
+ * @date 2022/9/5 22:11
+ */
+@RestController(value = "projectController")
+@RequestMapping(value = "project", method = RequestMethod.POST)
+public class ProjectController {
+
+  @Autowired private SysProjectService sysProjectService;
+
+  @PostMapping("findList")
+  public SaResult findList(@Validated ProjectSearchDto projectSearchDto) {
+
+    if (ObjectUtils.isEmpty(projectSearchDto)) {
+      return SaResult.error("请求参数错误！");
+    }
+    ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
+    BeanUtils.copyProperties(projectSearchDto, projectSearchBo);
+    return sysProjectService.findList(projectSearchBo);
+  }
+
+
+
+
+}

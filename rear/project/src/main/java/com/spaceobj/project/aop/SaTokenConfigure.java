@@ -29,14 +29,14 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                 (req, res, handler) -> {
 
                   /** 拦截所有接口 */
-                  SaRouter.match("/**", r -> StpUtil.checkLogin());
+                  // SaRouter.match("/**", r -> StpUtil.checkLogin());
 
                   /** 二次拦截，权限认证 -- 不同模块认证不同权限 */
                   SaRouter.match("/user/test", r -> StpUtil.checkPermission("admin"));
                 }))
-        .addPathPatterns("/**")
+        .addPathPatterns("/**");
 
         /** 放开拦截的接口 */
-        .excludePathPatterns(new String[] {"/user/doLogin", "/test2"});
+        // .excludePathPatterns(new String[] {"/user/doLogin", "/test2"});
   }
 }
