@@ -101,8 +101,22 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult updateSysUser(SysUserBo sysUserBo) {
     SysUser sysUser = new SysUser();
     try {
+
+      if (StringUtils.isEmpty(sysUserBo.getAccount())) {
+        return SaResult.error("账号不为空");
+      }
+      if (StringUtils.isEmpty(sysUserBo.getUserId())) {
+        return SaResult.error("用户id不为空");
+      }
+      if (sysUserBo.getDisableStatus() == null) {
+        return SaResult.error("用户禁用状态不为空");
+      }
+      if (!redisTemplate.hasKey(sysUserBo.getAccount())) {
+        return SaResult.error("账户不存在！");
+      }
+
       BeanConvertToTargetUtils.copyNotNullProperties(sysUserBo, sysUser);
-      if (sysUserBo.getDisableStatus() == 0) {
+      if (sysUserBo.getDisableStatus() == 1) {
         StpUtil.kickout(sysUserBo.getAccount());
         StpUtil.disable(sysUserBo.getAccount(), -1);
       } else {

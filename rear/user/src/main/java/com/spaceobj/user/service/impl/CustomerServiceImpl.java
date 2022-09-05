@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.ReceiveEmailBo;
@@ -45,6 +46,39 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Override
   public SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo) {
+
+    if (loginOrRegisterBo.getOperateType() == null) {
+      return SaResult.error("操作类型不为空");
+    }
+
+    if (StringUtils.isEmpty(loginOrRegisterBo.getAccount())) {
+      return SaResult.error("登录账户不为空");
+    }
+
+    if (StringUtils.isEmpty(loginOrRegisterBo.getPassword())) {
+      return SaResult.error("登录密码不为空");
+    }
+
+    if (StringUtils.isEmpty(loginOrRegisterBo.getPhoneNumber())) {
+      return SaResult.error("登录电话不为空");
+    }
+
+    if (StringUtils.isEmpty(loginOrRegisterBo.getIp())) {
+      return SaResult.error("登录账户ip不为空");
+    }
+
+    if (StringUtils.isEmpty(loginOrRegisterBo.getRequestIp())) {
+      return SaResult.error("请求ip不为空");
+    }
+
+    if (StringUtils.isEmpty(loginOrRegisterBo.getIpTerritory())) {
+      return SaResult.error("ip归属地不为空");
+    }
+
+    if (StringUtils.isEmpty(loginOrRegisterBo.getDeviceType())) {
+      return SaResult.error("登录设备类型不为空");
+    }
+
     // 判断用户是否被封禁
     boolean isDisable = StpUtil.isDisable(loginOrRegisterBo.getAccount());
     if (isDisable) {
@@ -109,7 +143,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         sysUser.setReleaseProjectTimes(10);
         sysUser.setProjectHelpTimes(10);
         sysUser.setCreateProjectHelpTimes(10);
-        sysUser.setDisableStatus(1);
+        sysUser.setDisableStatus(0);
         // 消息队列通知MySQL
         kafkaSender.send(sysUser, KafKaTopics.ADD_USER);
         return SaResult.ok("注册成功，正在跳转").setData(sysUser);
@@ -126,6 +160,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult loginOut(String loginId) {
     try {
+      if (StringUtils.isEmpty(loginId)) {
+        return SaResult.error("登录id不为空");
+      }
       StpUtil.logout(loginId);
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       if (ObjectUtils.isNull(sysUser)) {
@@ -144,6 +181,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult getUserInfo(String loginId) {
     SysUser sysUser = null;
     try {
+
+      if (StringUtils.isEmpty(loginId)) {
+        return SaResult.error("登录id不为空");
+      }
       sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       if (ObjectUtils.isNull(sysUser)) {
         return SaResult.error("账号不存在");
@@ -159,6 +200,34 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult updateUserInfo(SysUserBo user) {
 
     try {
+      if (StringUtils.isEmpty(user.getRequestIp())) {
+        return SaResult.error("请求ip不为空");
+      }
+
+      if (StringUtils.isEmpty(user.getIp())) {
+        return SaResult.error("ip不为空");
+      }
+
+      if (StringUtils.isEmpty(user.getLoginId())) {
+        return SaResult.error("登录id不为空");
+      }
+
+      if (StringUtils.isEmpty(user.getPhoneNumber())) {
+        return SaResult.error("电话号不为空");
+      }
+
+      if (StringUtils.isEmpty(user.getNickName())) {
+        return SaResult.error("昵称不为空");
+      }
+
+      if (StringUtils.isEmpty(user.getPhotoUrl())) {
+        return SaResult.error("头像URL不为空");
+      }
+
+      if (StringUtils.isEmpty(user.getRequestIp())) {
+        return SaResult.error("账户不为空");
+      }
+
       // 校验ip是否合法
       if (!isIpAddressCheck(user.getRequestIp()) || !user.getRequestIp().equals(user.getIp())) {
         redisTemplate.opsForValue().set(user.getRequestIp(), 10, 1, TimeUnit.DAYS);
@@ -170,7 +239,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
       // 如果当前账号已经被封禁
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(account);
-      if (sysUser.getDisableStatus() == 0) {
+      if (ObjectUtils.isNull(sysUser)) {
+        return SaResult.error("账号不存在");
+      }
+      if (sysUser.getDisableStatus() == 1) {
         return SaResult.error("账号已被封禁，禁止操作！");
       }
       // 如果是在修改中，那么禁止重复提交
@@ -187,7 +259,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         StpUtil.disable(account, -1);
         StpUtil.kickout(account);
         sysUser.setOnlineStatus(0);
-        sysUser.setDisableStatus(0);
+        sysUser.setDisableStatus(1);
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         redisTemplate.opsForValue().set(user.getRequestIp(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("非法操作，账号已封禁、设备已锁定");
@@ -228,6 +300,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult sendMailCode(String account) {
     try {
+      if (StringUtils.isEmpty(account)) {
+        return SaResult.error("收件人账户不为空");
+      }
       SysUser sysUser = null;
       // 校验缓存中是否存在用户基本信息
       if (redisTemplate.hasKey(account)) {
@@ -266,6 +341,22 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult resetPassword(SysUserBo sysUserBo) {
     try {
+      if (StringUtils.isEmpty(sysUserBo.getLoginId())) {
+        return SaResult.error("登录账户id不为空");
+      }
+
+      if (StringUtils.isEmpty(sysUserBo.getAccount())) {
+        return SaResult.error("登录账户不为空");
+      }
+
+      if (StringUtils.isEmpty(sysUserBo.getEmailCode())) {
+        return SaResult.error("邮箱验证码不为空");
+      }
+
+      if (StringUtils.isEmpty(sysUserBo.getNewPassword())) {
+        return SaResult.error("新密码不为空");
+      }
+
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(sysUserBo.getLoginId());
       // 验证当前登录的用户是否和传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
       if (!sysUserBo.getAccount().equals(sysUserBo.getLoginId())) {
@@ -274,7 +365,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 踢下线
         StpUtil.kickout(sysUserBo.getUserId());
         sysUser.setOnlineStatus(0);
-        sysUser.setDisableStatus(0);
+        sysUser.setDisableStatus(1);
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         // 锁定设备
         redisTemplate.opsForValue().set(sysUserBo.getRequestIp(), 10, 1, TimeUnit.DAYS);
@@ -289,7 +380,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         return SaResult.ok("密码修改成功");
       }
-      return SaResult.error("密码修改失败");
+      return SaResult.error("验证码错误，密码修改失败");
 
     } catch (RuntimeException e) {
       LOG.error("resetPassword failed", e.getMessage());
@@ -301,6 +392,25 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult realName(SysUserBo user) {
 
     try {
+
+      if (StringUtils.isEmpty(user.getLoginId())) {
+        return SaResult.error("登录id不为空");
+      }
+      if (StringUtils.isEmpty(user.getAccount())) {
+        return SaResult.error("账户不为空");
+      }
+      if (StringUtils.isEmpty(user.getIdCardNum())) {
+        return SaResult.error("身份证号不为空");
+      }
+      if (StringUtils.isEmpty(user.getIdCardPic())) {
+        return SaResult.error("请上传身份证照片");
+      }
+
+      // 身份证号校验
+      if (!Pattern.matches(RegexPool.CITIZEN_ID, user.getIdCardNum())) {
+        return SaResult.error("身份证号不正确");
+      }
+
       // 从缓存中获取当前登录用户的基本信息
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(user.getLoginId());
       // 验证当前登录的用户是否和前端传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
@@ -311,7 +421,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         StpUtil.kickout(user.getLoginId());
         // 锁定设备
         sysUser.setOnlineStatus(0);
-        sysUser.setDisableStatus(0);
+        sysUser.setDisableStatus(1);
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         redisTemplate.opsForValue().set(user.getLoginId(), 10, 1, TimeUnit.DAYS);
         return SaResult.error("违规操作，账号已封，设备已锁定");
@@ -319,7 +429,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
       // 校验当前账户是否是在审核中
       if (sysUser.getRealNameStatus() == 1) {
-        return SaResult.error("请勿重复提交");
+        return SaResult.error("审核中，请勿重复提交");
       }
 
       // 设置为审核中
@@ -329,7 +439,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       sysUser.setIdCardPic(user.getIdCardPic());
       // 消息队列通知MySQL修改用户实名状态，定时任务检测当前实名状态是否大于十个，大于十个审核需求，那么邮件通知管理员审核
       kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-      return SaResult.ok("提交成功,大概需要一到两个工作日审核");
+      return SaResult.ok("提交成功,大概需要一到两个工作日审核").setData(sysUser);
     } catch (RuntimeException e) {
       LOG.error("realName failed", e.getMessage());
       return SaResult.error("提交失败，服务器异常");

@@ -2,6 +2,7 @@ package com.spaceobj.user.service.impl;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.user.bo.SysPhotoBo;
 import com.spaceobj.user.constent.OperationType;
@@ -36,21 +37,48 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
 
     Integer result = -1;
     try {
+
+      if (sysPhotoBo.getOperation() == null) {
+        return SaResult.error("操作类型不为空");
+      }
+      if (StringUtils.isEmpty(sysPhotoBo.getPhotoUrl())) {
+        return SaResult.error("图片URL不为空");
+      }
+
       SysPhoto photo = SysPhoto.builder().build();
+      BeanUtils.copyProperties(sysPhotoBo, photo);
       if (sysPhotoBo.getOperation().equals(OperationType.ADD)) {
-        BeanUtils.copyProperties(sysPhotoBo, photo);
+        photo.setPhotoId(null);
         result = sysPhotoMapper.insert(photo);
-      } else {
+
+        if (result == 1) {
+          redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+        } else {
+          return SaResult.error("数据新增失败");
+        }
+
+      } else if (sysPhotoBo.getOperation().equals(OperationType.UPDATE)) {
+
+        // 判断修改的图片id是否为空
+        if (sysPhotoBo.getPhotoId() == null) {
+          return SaResult.error("图片id不为空");
+        }
+
+        System.out.println("photo:" + photo);
         result = sysPhotoMapper.updateById(photo);
-      }
-      if (result == 1) {
-        redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+        if (result == 1) {
+          redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+        } else {
+          return SaResult.error("数据更新失败");
+        }
       } else {
-        return SaResult.error("数据更新失败");
+        return SaResult.error("操作类型不正确");
       }
+
     } catch (Exception e) {
+      e.printStackTrace();
       LOG.error("Photo addOrUpdate failed", e.getMessage());
-      return SaResult.error("数据更新失败");
+      return SaResult.error("数据操作失败，服务器异常");
     }
     return SaResult.ok();
   }
@@ -59,6 +87,9 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
   public SaResult delete(SysPhotoBo sysPhotoBo) {
     Integer result = -1;
     try {
+      if (sysPhotoBo.getPhotoId() == null) {
+        return SaResult.error("请求参数错误");
+      }
       result = sysPhotoMapper.deleteById(sysPhotoBo.getPhotoId());
       if (result == 1) {
         redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);

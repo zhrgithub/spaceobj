@@ -20,12 +20,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class SysPhoto implements Serializable {
 
-  @TableId(value = "user_id")
-  private long photoId;
+  @TableId(value = "photo_id")
+  private Long photoId;
 
   @TableField(value = "photo_url")
   private String photoUrl;
-
-
-
 }

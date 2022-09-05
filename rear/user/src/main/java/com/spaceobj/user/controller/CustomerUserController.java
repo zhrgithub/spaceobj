@@ -69,6 +69,26 @@ public class CustomerUserController {
     return customerUserService.sendMailCode(customerUserDto.getAccount());
   }
 
+  @PostMapping("resetPassword")
+  public SaResult resetPassword(CustomerUserDto customerUserDto) {
+
+    SysUserBo sysUserBo = SysUserBo.builder().build();
+    // 将Dto转化成bo
+    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+
+    return customerUserService.resetPassword(sysUserBo);
+  }
+
+  @PostMapping("realName")
+  public SaResult realName(CustomerUserDto customerUserDto) {
+
+    SysUserBo sysUserBo = SysUserBo.builder().build();
+    // 将Dto转化成bo
+    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+
+    return customerUserService.realName(sysUserBo);
+  }
+
   @RequestMapping("upload")
   public SaResult uploadFile(@RequestPart("file") MultipartFile file) {
     return customerUserService.uploadFile(file);

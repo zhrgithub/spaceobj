@@ -17,7 +17,7 @@ import java.io.Serializable;
 public class SysPhotoBo implements Serializable {
 
   /** 图片id */
-  private long photoId;
+  private Long photoId;
 
   /** 图片URl */
   private String photoUrl;

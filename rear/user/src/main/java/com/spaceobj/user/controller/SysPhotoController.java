@@ -28,4 +28,9 @@ public class SysPhotoController {
   public SaResult delete(SysPhotoBo sysPhotoBo) {
     return photoService.delete(sysPhotoBo);
   }
+
+  @PostMapping("photoList")
+  public SaResult photoList() {
+    return photoService.photoList();
+  }
 }

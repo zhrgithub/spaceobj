@@ -29,7 +29,9 @@ public class SysUserController {
   }
 
   @PostMapping("updateUser")
-  public SaResult updateUser(SysUserBo sysUserBo) {
+  public SaResult updateUser(SysUserDto sysUserDto) {
+    SysUserBo sysUserBo = SysUserBo.builder().build();
+    BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
     return sysUserService.updateSysUser(sysUserBo);
   }
 }
