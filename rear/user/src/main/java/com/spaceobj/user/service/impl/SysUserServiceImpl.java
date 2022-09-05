@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.constent.KafKaTopics;
 import com.spaceobj.user.constent.RedisKey;
@@ -154,6 +155,22 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     } catch (Exception e) {
       LOG.error("update all system user failed");
+    }
+  }
+
+  @Override
+  public void noticeAuditUserRealNameInfo() {
+    QueryWrapper<SysUser> sysQueryWrapper = new QueryWrapper<>();
+    sysQueryWrapper.eq("real_name_status", 2);
+    List<SysUser> sysUserList = sysUserMapper.selectList(sysQueryWrapper);
+    if (sysUserList.size() >= 0) {
+      ReceiveEmailBo receiveEmail =
+          ReceiveEmailBo.builder()
+              .receiverEmail("zhr_java@163.com")
+              .title("用户待审核通知")
+              .content("尊敬的管理员您好:现在有需要您审核的实名认证用户，请您尽快处理！")
+              .build();
+      kafkaSender.send(receiveEmail, KafKaTopics.AUDIT_NOTICE);
     }
   }
 }

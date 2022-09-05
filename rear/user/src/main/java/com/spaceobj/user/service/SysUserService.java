@@ -36,4 +36,7 @@ public interface SysUserService extends IService<SysUser> {
    * @return
    */
   void updateAll(SysUserBo sysUserBo);
+
+  /** 通知管理员审核用户实名信息 */
+  void noticeAuditUserRealNameInfo();
 }

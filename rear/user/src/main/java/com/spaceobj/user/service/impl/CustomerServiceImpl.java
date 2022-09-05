@@ -405,6 +405,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (StringUtils.isEmpty(user.getIdCardPic())) {
         return SaResult.error("请上传身份证照片");
       }
+      if (StringUtils.isEmpty(user.getUsername())) {
+        return SaResult.error("真实姓名不为空");
+      }
 
       // 身份证号校验
       if (!Pattern.matches(RegexPool.CITIZEN_ID, user.getIdCardNum())) {
@@ -428,12 +431,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
 
       // 校验当前账户是否是在审核中
-      if (sysUser.getRealNameStatus() == 1) {
+      if (sysUser.getRealNameStatus() == 2) {
         return SaResult.error("审核中，请勿重复提交");
       }
 
       // 设置为审核中
-      sysUser.setRealNameStatus(1);
+      sysUser.setRealNameStatus(2);
       // 设置身份证号码与身份证图片名称
       sysUser.setIdCardNum(user.getIdCardNum());
       sysUser.setIdCardPic(user.getIdCardPic());
