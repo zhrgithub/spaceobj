@@ -7,7 +7,7 @@ import com.spaceobj.project.dto.ProjectSearchDto;
 import com.spaceobj.project.dto.SysProjectDto;
 import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.service.SysProjectService;
-import org.springframework.beans.BeanUtils;
+import com.spaceobj.project.util.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +29,7 @@ public class ProjectController {
   public SaResult addProject(@Validated SysProjectDto sysProjectDto) {
 
     SysProject sysProject = SysProject.builder().build();
-    BeanUtils.copyProperties(sysProjectDto, sysProject);
+    BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
 
     return sysProjectService.addProject(sysProject);
   }
@@ -38,7 +38,7 @@ public class ProjectController {
   public SaResult updateProject(@Validated SysProjectDto sysProjectDto) {
 
     SysProject sysProject = SysProject.builder().build();
-    BeanUtils.copyProperties(sysProjectDto, sysProject);
+    BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
 
     return sysProjectService.updateProject(sysProject);
   }
@@ -47,7 +47,7 @@ public class ProjectController {
   public SaResult auditProject(@Validated SysProjectDto sysProjectDto) {
 
     SysProject sysProject = SysProject.builder().build();
-    BeanUtils.copyProperties(sysProjectDto, sysProject);
+    BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
 
     return sysProjectService.auditProject(sysProject);
   }
@@ -59,7 +59,7 @@ public class ProjectController {
       return SaResult.error("请求参数错误！");
     }
     ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
-    BeanUtils.copyProperties(projectSearchDto, projectSearchBo);
+    BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
     return sysProjectService.findList(projectSearchBo);
   }
 
