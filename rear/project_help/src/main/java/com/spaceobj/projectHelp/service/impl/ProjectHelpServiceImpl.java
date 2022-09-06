@@ -27,9 +27,9 @@ import java.util.UUID;
  * @date 2022/07/23 22:00
  */
 @Service
-public class SysProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, ProjectHelp>
+public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, ProjectHelp>
     implements ProjectHelpService {
-  Logger LOG = LoggerFactory.getLogger(SysProjectHelpServiceImpl.class);
+  Logger LOG = LoggerFactory.getLogger(ProjectHelpServiceImpl.class);
 
   @Autowired private RedisTemplate redisTemplate;
 
