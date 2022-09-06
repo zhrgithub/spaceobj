@@ -3,9 +3,11 @@ package com.spaceobj.advertise.service.impl;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.advertise.bo.JdAdvertisBo;
 import com.spaceobj.advertise.mapper.JdAdvertisMapper;
 import com.spaceobj.advertise.pojo.JdAdvertis;
 import com.spaceobj.advertise.service.JdAdvertiseService;
+import com.spaceobj.advertise.utils.BeanConvertToTargetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +57,10 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     }
 
     @Override
-    public SaResult saveAdvertise(JdAdvertis jdAdvertis) {
+    public SaResult saveAdvertise(JdAdvertisBo jdAdvertisBo) {
+
+        JdAdvertis jdAdvertis = JdAdvertis.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisBo, jdAdvertis);
 
         try {
             int result = jdAdvertisMapper.insert(jdAdvertis);
@@ -63,18 +68,19 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
                 //刷新缓存
                 this.updateRedis();
             } else {
+
                 LOG.error("Logic add advertise error");
+                return SaResult.error("新增失败");
             }
+            return SaResult.ok("新增成功");
         } catch (Exception e) {
             LOG.error("add advertise error", e.getMessage());
             return SaResult.error("新增广告失败,服务器异常！");
         }
-
-        return null;
     }
 
     @Override
-    public SaResult deleteAdvertise(String id) {
+    public SaResult deleteAdvertise(long id) {
 
         try {
             int result = jdAdvertisMapper.deleteById(id);
@@ -82,6 +88,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
                 this.updateRedis();
             } else {
                 LOG.error("Logic delete advertise error !");
+                return SaResult.error("删除失败");
             }
             return SaResult.ok("删除成功！");
         } catch (Exception e) {
@@ -91,7 +98,10 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     }
 
     @Override
-    public SaResult updateAdvertise(JdAdvertis jdAdvertis) {
+    public SaResult updateAdvertise(JdAdvertisBo jdAdvertisBo) {
+
+        JdAdvertis jdAdvertis = JdAdvertis.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisBo, jdAdvertis);
 
         try {
             int result = jdAdvertisMapper.updateById(jdAdvertis);

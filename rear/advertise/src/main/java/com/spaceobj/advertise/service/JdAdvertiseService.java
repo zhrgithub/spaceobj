@@ -2,6 +2,7 @@ package com.spaceobj.advertise.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.spaceobj.advertise.bo.JdAdvertisBo;
 import com.spaceobj.advertise.pojo.JdAdvertis;
 
 /**
@@ -20,11 +21,11 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
     /**
      * 新增广告内容
      *
-     * @param jdAdvertis
+     * @param jdAdvertisBo
      *
      * @return
      */
-    SaResult saveAdvertise(JdAdvertis jdAdvertis);
+    SaResult saveAdvertise(JdAdvertisBo jdAdvertisBo);
 
     /**
      * 删除广告内容
@@ -33,15 +34,15 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
      *
      * @return
      */
-    SaResult deleteAdvertise(String id);
+    SaResult deleteAdvertise(long id);
 
     /**
      * 修改广告内容
      *
-     * @param jdAdvertis
+     * @param jdAdvertisBo
      *
      * @return
      */
-    SaResult updateAdvertise(JdAdvertis jdAdvertis);
+    SaResult updateAdvertise(JdAdvertisBo jdAdvertisBo);
 
 }
