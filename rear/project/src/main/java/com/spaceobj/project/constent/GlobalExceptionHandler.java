@@ -1,7 +1,5 @@
 package com.spaceobj.project.constent;
 
-import cn.dev33.satoken.exception.NotLoginException;
-import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.util.SaResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.List;
@@ -25,7 +22,6 @@ import java.util.List;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-
 
   @ResponseBody
   @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -49,43 +45,6 @@ public class GlobalExceptionHandler {
       }
     }
     return SaResult.error(stringBuilder.toString());
-}
-
-
-  /**
-   * 登录校验
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(NotLoginException.class)
-  @ResponseBody
-  public SaResult notLoginException(NotLoginException ex) {
-    return SaResult.error("登录后操作");
-  }
-
-  /**
-   * 权限校验
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(NotPermissionException.class)
-  @ResponseBody
-  public SaResult notLoginException(NotPermissionException ex) {
-    return SaResult.error("无此权限");
-  }
-
-  /**
-   * 文件大小校验
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(MaxUploadSizeExceededException.class)
-  @ResponseBody
-  public SaResult processException(MaxUploadSizeExceededException ex) {
-    return SaResult.error("文件不得超过200kb");
   }
 
   /**

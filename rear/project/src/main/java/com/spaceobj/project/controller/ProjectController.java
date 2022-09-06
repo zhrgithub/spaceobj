@@ -4,6 +4,8 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.dto.ProjectSearchDto;
+import com.spaceobj.project.dto.SysProjectDto;
+import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.service.SysProjectService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,33 @@ public class ProjectController {
 
   @Autowired private SysProjectService sysProjectService;
 
+  @PostMapping(value = "addProject")
+  public SaResult addProject(@Validated SysProjectDto sysProjectDto) {
+
+    SysProject sysProject = SysProject.builder().build();
+    BeanUtils.copyProperties(sysProjectDto, sysProject);
+
+    return sysProjectService.addProject(sysProject);
+  }
+
+  @PostMapping(value = "updateProject")
+  public SaResult updateProject(@Validated SysProjectDto sysProjectDto) {
+
+    SysProject sysProject = SysProject.builder().build();
+    BeanUtils.copyProperties(sysProjectDto, sysProject);
+
+    return sysProjectService.updateProject(sysProject);
+  }
+
+  @PostMapping(value = "auditProject")
+  public SaResult auditProject(@Validated SysProjectDto sysProjectDto) {
+
+    SysProject sysProject = SysProject.builder().build();
+    BeanUtils.copyProperties(sysProjectDto, sysProject);
+
+    return sysProjectService.auditProject(sysProject);
+  }
+
   @PostMapping("findList")
   public SaResult findList(@Validated ProjectSearchDto projectSearchDto) {
 
@@ -34,7 +63,13 @@ public class ProjectController {
     return sysProjectService.findList(projectSearchBo);
   }
 
+  @PostMapping(value = "addPageViews")
+  public void addPageViews(@Validated SysProjectDto sysProjectDto) {
+    sysProjectService.addPageViews(sysProjectDto.getPId());
+  }
 
-
-
+  @PostMapping("getPhoneNumberByProjectId")
+  public SaResult getPhoneNumberByProjectId(long projectId, String userId) {
+    return sysProjectService.getPhoneNumberByProjectId(projectId, userId);
+  }
 }
