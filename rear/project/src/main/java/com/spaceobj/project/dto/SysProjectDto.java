@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -32,7 +35,9 @@ public class SysProjectDto implements Serializable {
   private String content;
 
   @TableField(value = "p_price")
-  @NotBlank(message = "预算是必填项")
+  @Digits(integer = 9, fraction=2, message = "amount格式不正确")
+  @DecimalMin(value = "0.00", message = "amount格式不正确")
+  @NotNull(message = "预算是必填项")
   private BigDecimal price;
 
   @TableField(value = "p_release_user_id")

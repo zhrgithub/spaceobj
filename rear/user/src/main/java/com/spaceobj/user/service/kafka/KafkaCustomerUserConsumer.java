@@ -103,7 +103,8 @@ public class KafkaCustomerUserConsumer {
     List<SysUser> sysUserList;
     QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
     sysUserList = sysUserMapper.selectList(queryWrapper);
+    // System.out.println(sysUserList.toArray());
     // 更新用户列表信息
-    redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList.toArray());
+    redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
   }
 }

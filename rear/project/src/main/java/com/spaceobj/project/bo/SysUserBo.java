@@ -15,7 +15,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SysUserBo implements Serializable {
-
   private String userId;
 
   private String inviteUserId;
@@ -69,4 +68,25 @@ public class SysUserBo implements Serializable {
   private Integer projectHelpTimes;
 
   private String deviceType;
+
+  /** requestIP */
+  private String requestIp;
+
+  /** 新密码 */
+  private String newPassword;
+
+  /** 当前登录id */
+  private String loginId;
+
+  /** 用户封禁状态 */
+  private Integer disableStatus;
+
+  /** 创建项目的剩余次数 */
+  private Integer createProjectHelpTimes;
+
+  /** 当前页 */
+  private Integer currentPage;
+
+  /** 每页大小 */
+  private Integer pageSize;
 }

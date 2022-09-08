@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author zhr_java@163.com
@@ -49,26 +50,28 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       List<SysProject> sysProjectList =
           redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       List<SysProject> resultSysProjectList =
-          (List<SysProject>)
-              sysProjectList.stream()
-                  .filter(
-                      p -> {
-                        return p.getContent().equals(sysProject.getContent());
-                      });
+          sysProjectList.stream()
+              .filter(
+                  p -> {
+                    return p.getContent().equals(sysProject.getContent());
+                  })
+              .collect(Collectors.toList());
       if (resultSysProjectList.size() > 0) {
         return SaResult.error("请勿重复提交");
       }
 
       // 校验当前提交次数是否超过最大次数
-      List<SysUserBo> sysUserBoList =
-          redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+      List<SysUserBo> sysUserBoList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+
+      System.out.println("sysUserBoList:"+sysUserBoList);
+
       List<SysUserBo> resultSysUserBo =
-          (List<SysUserBo>)
-              sysUserBoList.stream()
-                  .filter(
-                      u -> {
-                        return u.getUserId().equals(sysProject.getReleaseUserId());
-                      });
+          sysUserBoList.stream()
+              .filter(
+                  u -> {
+                    return u.getUserId().equals(sysProject.getReleaseUserId());
+                  })
+              .collect(Collectors.toList());
       SysUserBo sysUserBo = resultSysUserBo.get(0);
       if (sysUserBo.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线，明天再来吧！");
@@ -87,8 +90,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       kafkaSender.send(sysProject, KafKaTopics.ADD_PROJECT);
       return SaResult.ok().setData(sysProject);
     } catch (Exception e) {
+      e.printStackTrace();
       LOG.error("project add error", e.getMessage());
-      return SaResult.error("项目新增失败");
+      return SaResult.error("项目新增失败，服务器异常");
     }
   }
 
@@ -186,14 +190,15 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                     .filter(
                         p -> {
                           if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
-                            return p.getStatus() == 1 && p.getContent().contains(projectSearchBo.getContent());
+                            return p.getStatus() == 1
+                                && p.getContent().contains(projectSearchBo.getContent());
                           } else {
                             return p.getStatus() == 1;
                           }
                         });
       } else if (projectSearchBo.getProjectType() == 1) {
-        if(StringUtils.isEmpty( projectSearchBo.getUserId())){
-          return  SaResult.error("用户id不为空");
+        if (StringUtils.isEmpty(projectSearchBo.getUserId())) {
+          return SaResult.error("用户id不为空");
         }
         // 查询自己发布的信息
         list =
@@ -211,11 +216,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                     .filter(
                         p -> {
                           if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
-                            //如果是项目编号，匹配项目编号然后返回
-                            if(Pattern.matches(RegexPool.NUMBERS,projectSearchBo.getContent())){
-                              return Long.valueOf(projectSearchBo.getContent()).longValue() == p.getPId();
+                            // 如果是项目编号，匹配项目编号然后返回
+                            if (Pattern.matches(RegexPool.NUMBERS, projectSearchBo.getContent())) {
+                              return Long.valueOf(projectSearchBo.getContent()).longValue()
+                                  == p.getPId();
                             }
-                            //如果是内容，匹配内容
+                            // 如果是内容，匹配内容
                             return p.getContent().contains(projectSearchBo.getContent());
                           }
                           return true;
