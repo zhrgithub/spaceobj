@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.advertise.bo.JdAdvertisBo;
 import com.spaceobj.advertise.mapper.JdAdvertisMapper;
-import com.spaceobj.advertise.pojo.JdAdvertis;
+import com.spaceobj.domain.JdAdvertis;
 import com.spaceobj.advertise.service.JdAdvertiseService;
 import com.spaceobj.advertise.utils.BeanConvertToTargetUtils;
 import org.slf4j.Logger;

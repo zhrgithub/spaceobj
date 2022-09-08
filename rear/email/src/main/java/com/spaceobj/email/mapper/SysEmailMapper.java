@@ -1,7 +1,7 @@
 package com.spaceobj.email.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.spaceobj.email.pojo.SysEmail;
+import com.spaceobj.domain.SysEmail;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

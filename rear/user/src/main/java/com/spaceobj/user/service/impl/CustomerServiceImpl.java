@@ -6,14 +6,14 @@ import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.domain.SysUser;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
-import com.spaceobj.user.constent.KafKaTopics;
-import com.spaceobj.user.constent.OperationType;
-import com.spaceobj.user.constent.Resource;
+import com.spaceobj.user.constant.KafKaTopics;
+import com.spaceobj.user.constant.OperationType;
+import com.spaceobj.user.constant.Resource;
 import com.spaceobj.user.mapper.SysUserMapper;
-import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.CustomerUserService;
 import com.spaceobj.user.service.kafka.KafkaSender;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
@@ -152,6 +152,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("请求参数错误");
       }
     } catch (RuntimeException e) {
+      e.printStackTrace();
       LOG.error("loginOrRegister failed", e.getMessage());
       return SaResult.error("服务器异常");
     }

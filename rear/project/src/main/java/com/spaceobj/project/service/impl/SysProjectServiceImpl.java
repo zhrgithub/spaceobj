@@ -6,15 +6,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.spaceobj.project.bo.ProjectHelpBo;
+import com.spaceobj.domain.ProjectHelp;
 import com.spaceobj.project.bo.ProjectSearchBo;
-import com.spaceobj.project.bo.SysUserBo;
-import com.spaceobj.project.constent.KafKaTopics;
-import com.spaceobj.project.constent.KafkaSender;
-import com.spaceobj.project.constent.RedisKey;
+import com.spaceobj.project.constant.KafKaTopics;
+import com.spaceobj.project.constant.KafkaSender;
+import com.spaceobj.project.constant.RedisKey;
 import com.spaceobj.project.mapper.SysProjectMapper;
-import com.spaceobj.project.pojo.SysProject;
+import com.spaceobj.domain.SysProject;
 import com.spaceobj.project.service.SysProjectService;
+import com.spaceobj.domain.SysUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +49,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 校验内容是否重复
       List<SysProject> sysProjectList =
           redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+
       List<SysProject> resultSysProjectList =
           sysProjectList.stream()
               .filter(
@@ -61,24 +62,24 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
 
       // 校验当前提交次数是否超过最大次数
-      List<SysUserBo> sysUserBoList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-
-      System.out.println("sysUserBoList:"+sysUserBoList);
-
-      List<SysUserBo> resultSysUserBo =
-          sysUserBoList.stream()
+      List<SysUser> sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+      List<SysUser> resultSysUser =
+          sysUserList.stream()
               .filter(
                   u -> {
                     return u.getUserId().equals(sysProject.getReleaseUserId());
                   })
               .collect(Collectors.toList());
-      SysUserBo sysUserBo = resultSysUserBo.get(0);
-      if (sysUserBo.getReleaseProjectTimes() <= 0) {
+      if (resultSysUser.size() == 0) {
+        return SaResult.error("用户不存在");
+      }
+      SysUser sysUser = resultSysUser.get(0);
+      if (sysUser.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线，明天再来吧！");
       }
       // 修改用户信息
-      sysUserBo.setReleaseProjectTimes(sysUserBo.getReleaseProjectTimes() - 1);
-      kafkaSender.send(sysUserBo, KafKaTopics.UPDATE_USER);
+      sysUser.setReleaseProjectTimes(sysUser.getReleaseProjectTimes() - 1);
+      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
 
       // 生成UUID
       String uuid = UUID.randomUUID().toString();
@@ -276,24 +277,24 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
       SysProject sysProject = sysProjectList.get(0);
 
-      List<SysUserBo> sysUserBos = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      List<SysUserBo> resultSysUserBos =
-          (List<SysUserBo>)
-              sysUserBos.stream()
+      List<SysUser> sysUsers = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+      List<SysUser> resultSysUsers =
+          (List<SysUser>)
+              sysUsers.stream()
                   .filter(
                       user -> {
                         return user.getUserId().equals(userId);
                       });
-      if (resultSysUserBos.size() == 0) {
+      if (resultSysUsers.size() == 0) {
         return SaResult.error("用户不存在");
       }
-      SysUserBo sysUserBo = resultSysUserBos.get(0);
+      SysUser sysUser = resultSysUsers.get(0);
       // 如果项目发布人id和userId相同，直接返回用户联系方式
       if (sysProject.getReleaseUserId().equals(userId)) {
-        return SaResult.ok().setData(sysUserBo.getPhoneNumber());
+        return SaResult.ok().setData(sysUser.getPhoneNumber());
       }
       //  判断当前用户是否已经实名认证
-      if (sysUserBo.getRealNameStatus() != 1) {
+      if (sysUser.getRealNameStatus() != 1) {
         return SaResult.error("请实名认证后再来获取");
       }
       //  判断项目是否审核通过
@@ -303,33 +304,33 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
       // 判断该用户的助力列表中是否有该项目数据
       // 判断是否已经获取到该项目联系人
-      List<ProjectHelpBo> projectHelpBoList =
+      List<ProjectHelp> projectHelpList =
           redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
-      projectHelpBoList.stream()
+      projectHelpList.stream()
           .filter(
               hp -> {
                 return hp.getCreateUserId().equals(userId) && projectId == hp.getPId();
               });
-      if (projectHelpBoList.size() > 0) {
-        ProjectHelpBo helpBo = projectHelpBoList.get(0);
+      if (projectHelpList.size() > 0) {
+        ProjectHelp helpBo = projectHelpList.get(0);
         if (helpBo.getHpStatus() == 1) {
-          return SaResult.ok().setData(sysUserBo.getPhoneNumber());
+          return SaResult.ok().setData(sysUser.getPhoneNumber());
         }
       }
 
       // 判断用户的邀请值大于0
-      if (sysUserBo.getInvitationValue() > 0) {
+      if (sysUser.getInvitationValue() > 0) {
         //  邀请值减一，如果项目助力列表中没有该项目，那么设置成已经获取到，如果没有，那么新增到项目助力列表并设置成已经获取到的状态
-        sysUserBo.setInvitationValue(sysUserBo.getInvitationValue() - 1);
-        ProjectHelpBo helpBo;
-        if (projectHelpBoList.size() > 0) {
-          helpBo = projectHelpBoList.get(0);
+        sysUser.setInvitationValue(sysUser.getInvitationValue() - 1);
+        ProjectHelp helpBo;
+        if (projectHelpList.size() > 0) {
+          helpBo = projectHelpList.get(0);
           helpBo.setHpNumber(10);
           // 通知项目助力服务更新数据
           kafkaSender.send(helpBo, KafKaTopics.UPDATE_HELP_PROJECT);
         } else {
           helpBo =
-              ProjectHelpBo.builder()
+              ProjectHelp.builder()
                   .hpId(UUID.randomUUID().toString())
                   .pId(sysProject.getPId())
                   .createUserId(userId)
@@ -343,9 +344,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           kafkaSender.send(helpBo, KafKaTopics.ADD_HELP_PROJECT);
         }
         // 消息队列发送用户信息
-        kafkaSender.send(sysUserBo, KafKaTopics.UPDATE_USER);
+        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
 
-        return SaResult.ok().setData(sysUserBo.getPhoneNumber());
+        return SaResult.ok().setData(sysUser.getPhoneNumber());
       }
       return SaResult.error("请分享项目助力链接获取");
     } catch (Exception e) {

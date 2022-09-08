@@ -3,7 +3,7 @@ package com.spaceobj.advertise.service;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spaceobj.advertise.bo.JdAdvertisBo;
-import com.spaceobj.advertise.pojo.JdAdvertis;
+import com.spaceobj.domain.JdAdvertis;
 
 /**
  * @author zhr_java@163.com

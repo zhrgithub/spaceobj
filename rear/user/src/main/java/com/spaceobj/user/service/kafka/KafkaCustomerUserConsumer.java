@@ -1,10 +1,10 @@
 package com.spaceobj.user.service.kafka;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.spaceobj.user.constent.KafKaTopics;
-import com.spaceobj.user.constent.RedisKey;
+import com.spaceobj.domain.SysUser;
+import com.spaceobj.user.constant.KafKaTopics;
+import com.spaceobj.user.constant.RedisKey;
 import com.spaceobj.user.mapper.SysUserMapper;
-import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.utils.KafKaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -103,7 +103,6 @@ public class KafkaCustomerUserConsumer {
     List<SysUser> sysUserList;
     QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
     sysUserList = sysUserMapper.selectList(queryWrapper);
-    // System.out.println(sysUserList.toArray());
     // 更新用户列表信息
     redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
   }

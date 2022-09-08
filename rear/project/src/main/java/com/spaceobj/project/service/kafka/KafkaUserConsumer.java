@@ -1,10 +1,10 @@
 package com.spaceobj.project.service.kafka;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.spaceobj.project.constent.KafKaTopics;
-import com.spaceobj.project.constent.RedisKey;
+import com.spaceobj.project.constant.KafKaTopics;
+import com.spaceobj.project.constant.RedisKey;
 import com.spaceobj.project.mapper.SysProjectMapper;
-import com.spaceobj.project.pojo.SysProject;
+import com.spaceobj.domain.SysProject;
 import com.spaceobj.project.util.KafkaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

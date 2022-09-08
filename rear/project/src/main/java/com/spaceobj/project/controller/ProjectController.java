@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.dto.ProjectSearchDto;
 import com.spaceobj.project.dto.SysProjectDto;
-import com.spaceobj.project.pojo.SysProject;
+import com.spaceobj.domain.SysProject;
 import com.spaceobj.project.service.SysProjectService;
 import com.spaceobj.project.util.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;

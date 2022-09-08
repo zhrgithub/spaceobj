@@ -9,7 +9,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     name: defaultDataSource
-    url: jdbc:mysql://localhost:3306/spaceobj-project-help?serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/spaceobj-project-help?autoReconnect=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
     username: root
     password: 123456
   redis:

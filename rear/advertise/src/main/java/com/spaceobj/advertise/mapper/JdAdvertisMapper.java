@@ -1,7 +1,7 @@
 package com.spaceobj.advertise.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.spaceobj.advertise.pojo.JdAdvertis;
+import com.spaceobj.domain.JdAdvertis;
 import org.springframework.stereotype.Component;
 
 /**

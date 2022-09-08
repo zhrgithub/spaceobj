@@ -1,7 +1,7 @@
 package com.spaceobj.other.controller;
 
 import cn.dev33.satoken.util.SaResult;
-import com.spaceobj.other.pojo.Other;
+import com.spaceobj.domain.Other;
 import com.spaceobj.other.service.OtherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;

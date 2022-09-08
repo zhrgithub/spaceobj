@@ -1,7 +1,7 @@
 package com.spaceobj.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.spaceobj.user.pojo.SysUser;
+import com.spaceobj.domain.SysUser;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -9,6 +9,4 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2022/7/18 14:48
  */
 @Mapper
-public interface SysUserMapper extends BaseMapper<SysUser> {
-
-}
+public interface SysUserMapper extends BaseMapper<SysUser> {}

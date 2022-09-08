@@ -2,8 +2,8 @@ package com.spaceobj.user.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.spaceobj.domain.SysPhoto;
 import com.spaceobj.user.bo.SysPhotoBo;
-import com.spaceobj.user.pojo.SysPhoto;
 
 /**
  * @author zhr_java@163.com

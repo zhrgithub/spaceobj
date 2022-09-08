@@ -2,9 +2,9 @@ package com.spaceobj.user.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.spaceobj.domain.SysUser;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.SysUserBo;
-import com.spaceobj.user.pojo.SysUser;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -18,7 +18,6 @@ public interface CustomerUserService extends IService<SysUser> {
    * 消息队列通知MySQL，然后返回给客户token，持久化完毕，消息队列根据账号刷新缓存中的用户ID，如果邀请者Id不为空， 消息队列通知MySQL给邀请者的邀请值加1，随后刷新邀请者的缓存
    *
    * @param loginOrRegisterBo 登录或者注册参数
-   *
    * @return
    */
   SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo);
