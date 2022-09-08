@@ -62,6 +62,7 @@ public class KafkaUserConsumer {
             message -> {
               try {
                 SysProject sysProject = KafkaSourceToTarget.getObject(message, SysProject.class);
+                System.out.println(sysProject);
                 int result = sysProjectMapper.updateById(sysProject);
                 // 刷新缓存
                 if (result == 1) {

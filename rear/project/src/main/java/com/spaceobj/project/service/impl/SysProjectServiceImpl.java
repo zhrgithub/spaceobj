@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.domain.ProjectHelp;
+import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.constant.KafKaTopics;
 import com.spaceobj.project.constant.KafkaSender;
@@ -104,15 +105,19 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
         // 从缓存中获取数据
         List<SysProject> cacheProject =
-            (List<SysProject>) redisTemplate.opsForValue().get(RedisKey.PROJECT_LIST);
+            (List<SysProject>) redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
         // 如果当前项目是在审核中那么返回不可重复修改
-        SysProject checkCacheProject =
-            (SysProject)
-                cacheProject.stream()
-                    .filter(
-                        p -> {
-                          return p.getUuid().equals(sysProject.getUuid());
-                        });
+        List<SysProject> checkCacheProjectList =
+            cacheProject.stream()
+                .filter(
+                    p -> {
+                      return p.getUuid().equals(sysProject.getUuid());
+                    })
+                .collect(Collectors.toList());
+        if (checkCacheProjectList.size() == 0) {
+          return SaResult.error("项目不存在");
+        }
+        SysProject checkCacheProject = checkCacheProjectList.get(0);
         if (!ObjectUtils.isNotNull(checkCacheProject)) {
           return SaResult.error("项目不存在");
         }
@@ -138,6 +143,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, cacheProject);
           //  发送消息队列持久化修改数据
           kafkaSender.send(sysProject, KafKaTopics.UPDATE_PROJECT);
+          return SaResult.ok("已提交审核");
         } else {
           return SaResult.error("违规操作，修改失败");
         }
@@ -145,6 +151,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
       return SaResult.error("请求参数错误");
     } catch (Exception e) {
+      e.printStackTrace();
       LOG.error("update project exception", e.getMessage());
       return SaResult.error("服务器异常");
     }
@@ -153,9 +160,15 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   @Override
   public SaResult auditProject(SysProject project) {
     try {
+      QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
+      queryWrapper.eq("p_id",project.getPId());
+      SysProject sysProject = sysProjectMapper.selectOne(queryWrapper);
+      sysProject.setMessage(project.getMessage());
+      sysProject.setStatus(project.getStatus());
 
-      int result = sysProjectMapper.updateById(project);
+      int result = sysProjectMapper.updateById(sysProject);
       if (result == 1) {
+        kafkaSender.send(sysProject,KafKaTopics.UPDATE_PROJECT);
         return SaResult.ok("审核成功");
       }
       return SaResult.error("审核失败");
@@ -186,53 +199,54 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 查询首页信息
       if (projectSearchBo.getProjectType() == 0) {
         list =
-            (List<SysProject>)
-                list.stream()
-                    .filter(
-                        p -> {
-                          if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
-                            return p.getStatus() == 1
-                                && p.getContent().contains(projectSearchBo.getContent());
-                          } else {
-                            return p.getStatus() == 1;
-                          }
-                        });
+            list.stream()
+                .filter(
+                    p -> {
+                      if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
+                        return p.getStatus() == 1
+                            && p.getContent().contains(projectSearchBo.getContent());
+                      } else {
+                        return p.getStatus() == 1;
+                      }
+                    })
+                .collect(Collectors.toList());
       } else if (projectSearchBo.getProjectType() == 1) {
         if (StringUtils.isEmpty(projectSearchBo.getUserId())) {
           return SaResult.error("用户id不为空");
         }
         // 查询自己发布的信息
         list =
-            (List<SysProject>)
-                list.stream()
-                    .filter(
-                        p -> {
-                          return p.getReleaseUserId().equals(projectSearchBo.getUserId());
-                        });
+            list.stream()
+                .filter(
+                    p -> {
+                      return p.getReleaseUserId().equals(projectSearchBo.getUserId());
+                    })
+                .collect(Collectors.toList());
       } else if (projectSearchBo.getProjectType() == 2) {
         // 管理员查询信息全部的信息
         list =
-            (List<SysProject>)
-                list.stream()
-                    .filter(
-                        p -> {
-                          if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
-                            // 如果是项目编号，匹配项目编号然后返回
-                            if (Pattern.matches(RegexPool.NUMBERS, projectSearchBo.getContent())) {
-                              return Long.valueOf(projectSearchBo.getContent()).longValue()
-                                  == p.getPId();
-                            }
-                            // 如果是内容，匹配内容
-                            return p.getContent().contains(projectSearchBo.getContent());
-                          }
-                          return true;
-                        });
+            list.stream()
+                .filter(
+                    p -> {
+                      if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
+                        // 如果是项目编号，匹配项目编号然后返回
+                        if (Pattern.matches(RegexPool.NUMBERS, projectSearchBo.getContent())) {
+                          return Long.valueOf(projectSearchBo.getContent()).longValue()
+                              == p.getPId();
+                        }
+                        // 如果是内容，匹配内容
+                        return p.getContent().contains(projectSearchBo.getContent());
+                      }
+                      return true;
+                    })
+                .collect(Collectors.toList());
       } else {
         return SaResult.error("请求参数错误");
       }
 
       return SaResult.ok().setData(list);
     } catch (Exception e) {
+      e.printStackTrace();
       LOG.error("system project find error", e.getMessage());
       return SaResult.error("项目列表查询结果异常");
     }
@@ -241,7 +255,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   @Override
   public void addPageViews(long projectId) {
     try {
-      SysProject sysProject = SysProject.builder().pId(projectId).build();
+      List<SysProject> sysProjectList =  redisTemplate.opsForList().range(RedisKey.PROJECT_LIST,0,-1);
+      List<SysProject> resultSysProject =  sysProjectList.stream().filter(p -> p.getPId() ==projectId).collect(Collectors.toList());
+      if(resultSysProject.size()==0){
+        return;
+      }
+      SysProject sysProject = resultSysProject.get(0);
       sysProject.setPageViews(sysProject.getPageViews() + 1);
       kafkaSender.send(sysProject, KafKaTopics.UPDATE_PROJECT);
     } catch (Exception e) {
@@ -250,7 +269,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   @Override
-  public SaResult getPhoneNumberByProjectId(long projectId, String userId) {
+  public SaResult getPhoneNumberByProjectId(GetPhoneNumberBo getPhoneNumberBo) {
     try {
       List<SysProject> list;
       List<SysProject> sysProjectList;
@@ -260,18 +279,17 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
           list = sysProjectMapper.selectList(queryWrapper);
         }
-        redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, list);
+        redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, list.toArray());
       } else {
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       }
 
       sysProjectList =
-          (List<SysProject>)
               list.stream()
                   .filter(
                       p -> {
-                        return projectId == p.getPId();
-                      });
+                        return getPhoneNumberBo.getProjectId() == p.getPId();
+                      }).collect(Collectors.toList());
       if (sysProjectList.size() == 0) {
         return SaResult.error("项目不存在");
       }
@@ -279,18 +297,17 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
       List<SysUser> sysUsers = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       List<SysUser> resultSysUsers =
-          (List<SysUser>)
               sysUsers.stream()
                   .filter(
                       user -> {
-                        return user.getUserId().equals(userId);
-                      });
+                        return user.getUserId().equals(getPhoneNumberBo.getUserId());
+                      }).collect(Collectors.toList());
       if (resultSysUsers.size() == 0) {
         return SaResult.error("用户不存在");
       }
       SysUser sysUser = resultSysUsers.get(0);
       // 如果项目发布人id和userId相同，直接返回用户联系方式
-      if (sysProject.getReleaseUserId().equals(userId)) {
+      if (sysProject.getReleaseUserId().equals(getPhoneNumberBo.getUserId())) {
         return SaResult.ok().setData(sysUser.getPhoneNumber());
       }
       //  判断当前用户是否已经实名认证
@@ -306,12 +323,13 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 判断是否已经获取到该项目联系人
       List<ProjectHelp> projectHelpList =
           redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
-      projectHelpList.stream()
+      List<ProjectHelp> resultProjectHelp =  projectHelpList.stream()
           .filter(
               hp -> {
-                return hp.getCreateUserId().equals(userId) && projectId == hp.getPId();
-              });
-      if (projectHelpList.size() > 0) {
+                return hp.getCreateUserId().equals(getPhoneNumberBo.getUserId())
+                    && getPhoneNumberBo.getProjectId() == hp.getPId();
+              }).collect(Collectors.toList());
+      if (resultProjectHelp.size() > 0) {
         ProjectHelp helpBo = projectHelpList.get(0);
         if (helpBo.getHpStatus() == 1) {
           return SaResult.ok().setData(sysUser.getPhoneNumber());
@@ -333,7 +351,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
               ProjectHelp.builder()
                   .hpId(UUID.randomUUID().toString())
                   .pId(sysProject.getPId())
-                  .createUserId(userId)
+                  .createUserId(getPhoneNumberBo.getUserId())
                   .hpNumber(10)
                   .pContent(sysProject.getContent())
                   .pPrice(sysProject.getPrice())

@@ -1,7 +1,9 @@
 package com.spaceobj.project.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.spaceobj.project.group.AddPageViewsGroup;
+import com.spaceobj.project.group.AuditProjectGroup;
+import com.spaceobj.project.group.InsertProjectGroup;
+import com.spaceobj.project.group.UpdateProjectGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,44 +26,55 @@ import java.util.Date;
 @NoArgsConstructor
 public class SysProjectDto implements Serializable {
 
-  @TableId(value = "p_id")
+  @NotNull(
+      message = "项目id是必填项",
+      groups = {UpdateProjectGroup.class, AuditProjectGroup.class, AddPageViewsGroup.class})
   private long pId;
 
-  @TableField(value = "p_uuid")
+  @NotBlank(
+      message = "UUID是必填项",
+      groups = {UpdateProjectGroup.class})
   private String uuid;
 
-  @TableField(value = "p_content")
-  @NotBlank(message = "内容是必填项")
+  @NotBlank(
+      message = "内容是必填项",
+      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
   private String content;
 
-  @TableField(value = "p_price")
-  @Digits(integer = 9, fraction=2, message = "amount格式不正确")
-  @DecimalMin(value = "0.00", message = "amount格式不正确")
-  @NotNull(message = "预算是必填项")
+  @Digits(integer = 9, fraction = 2, message = "预算格式不正确")
+  @DecimalMin(value = "0.00", message = "预算格式不正确")
+  @NotNull(
+      message = "预算是必填项",
+      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
   private BigDecimal price;
 
-  @TableField(value = "p_release_user_id")
-  @NotBlank(message = "用户ID是必填项")
+  @NotBlank(
+      message = "用户ID是必填项",
+      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
   private String releaseUserId;
 
-  @TableField(value = "p_page_views")
-  private long pageViews;
+  private Long pageViews;
 
-  @TableField(value = "p_status")
-  private long status;
+  @NotNull(
+      message = "审核状态是必选项",
+      groups = {AuditProjectGroup.class})
+  private Long status;
 
-  @TableField(value = "p_ip_address")
-  @NotBlank(message = "IP属地是必填项")
+  @NotBlank(
+      message = "IP属地是必填项",
+      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
   private String ipAddress;
 
-  @TableField(value = "p_nick_name")
-  @NotBlank(message = "用户昵称是必填项")
+  @NotBlank(
+      message = "用户昵称是必填项",
+      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
   private String nickname;
 
   /** 审核内容 */
-  @TableField(value = "p_message")
+  @NotBlank(
+      message = "审核内容是必填项",
+      groups = {AuditProjectGroup.class})
   private String message;
 
-  @TableField(value = "create_time")
   private Date createTime;
 }

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author zhr_java@163.com
@@ -45,12 +46,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       List<SysUser> sysUserList =
           redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       List<SysUser> resultSysUserList =
-          (List<SysUser>)
               sysUserList.stream()
                   .filter(
                       u -> {
                         return u.getUserId().equals(projectHelpBo.getUserId());
-                      });
+                      }).collect(Collectors.toList());
       if (resultSysUserList.size() == 0) {
         return SaResult.error("用户不存在");
       }
@@ -62,12 +62,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       List<SysProject> sysProjectList =
           redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       List<SysProject> resultSysProjectList =
-          (List<SysProject>)
               sysProjectList.stream()
                   .filter(
                       p -> {
                         return p.getPId() == projectHelpBo.getPId();
-                      });
+                      }).collect(Collectors.toList());
       if (resultSysProjectList.size() == 0) {
         return SaResult.error("项目id不正确");
       }
@@ -89,7 +88,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
                       ph -> {
                         return ph.getPReleaseUserId().equals(projectHelpBo.getUserId())
                             && ph.getPId() == projectHelpBo.getPId();
-                      });
+                      }).collect(Collectors.toList());
       // 如果之前创建过那么直接返回之前创建过的
       if (resultList.size() > 0) {
         return SaResult.ok().setData(resultList.get(0));
@@ -124,12 +123,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       // 获取当前项目信息
       List<ProjectHelp> resultList;
       resultList =
-          (List<ProjectHelp>)
               list.stream()
                   .filter(
                       ph -> {
                         return ph.getPId() == projectHelpBo.getPId();
-                      });
+                      }).collect(Collectors.toList());
       ProjectHelp projectHelp = resultList.get(0);
       // 如果项目已经助力成功，那么直接返回好友已经成功
       if (projectHelp.getHpStatus() == 1) {
@@ -141,12 +139,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       List<SysUser> sysUserList =
           redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       List<SysUser> resultSysUser =
-          (List<SysUser>)
               sysUserList.stream()
                   .filter(
                       user -> {
                         return user.getUserId().equals(projectHelpBo.getUserId());
-                      });
+                      }).collect(Collectors.toList());
       SysUser sysUser = resultSysUser.get(0);
       if (sysUser.getProjectHelpTimes() <= 0) {
         return SaResult.error("您今日的助力次数已经用尽，请改天再来吧");
@@ -160,12 +157,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       // 如果项目大于等于10，邮件通知
       if (projectHelp.getHpNumber() >= 10) {
         List<SysUser> createProjectUserList =
-            (List<SysUser>)
                 sysUserList.stream()
                     .filter(
                         user -> {
                           return user.getUserId().equals(projectHelp.getCreateUserId());
-                        });
+                        }).collect(Collectors.toList());
         SysUser createSysUser = createProjectUserList.get(0);
         ReceiveEmailBo receiveEmailBo =
             ReceiveEmailBo.builder()
@@ -199,23 +195,21 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
         }
         redisTemplate.opsForList().leftPush(RedisKey.PROJECT_HELP_LIST, list.toArray());
         resultList =
-            (List<ProjectHelp>)
                 list.stream()
                     .filter(
                         ph -> {
                           return ph.getPReleaseUserId().equals(projectHelpBo.getUserId());
-                        });
+                        }).collect(Collectors.toList());
 
       } else {
         //  否则从缓存中查找
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
         resultList =
-            (List<ProjectHelp>)
                 list.stream()
                     .filter(
                         hp -> {
                           return hp.getPReleaseUserId().equals(projectHelpBo.getUserId());
-                        });
+                        }).collect(Collectors.toList());
       }
       return SaResult.ok().setData(resultList);
 

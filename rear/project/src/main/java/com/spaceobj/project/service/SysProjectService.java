@@ -2,6 +2,7 @@ package com.spaceobj.project.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.domain.SysProject;
 
@@ -64,9 +65,8 @@ public interface SysProjectService extends IService<SysProject> {
    *
    * <p>校验项目id是否真实存在
    *
-   * @param projectId
-   * @param userId
+   * @param getPhoneNumberBo
    * @return
    */
-  SaResult getPhoneNumberByProjectId(long projectId,String userId);
+  SaResult getPhoneNumberByProjectId(GetPhoneNumberBo getPhoneNumberBo);
 }
