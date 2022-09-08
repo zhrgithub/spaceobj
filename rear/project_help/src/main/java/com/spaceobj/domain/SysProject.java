@@ -1,4 +1,4 @@
-package com.spaceobj.projectHelp.bo;
+package com.spaceobj.domain;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -20,7 +20,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SysProjectBo implements Serializable {
+public class SysProject implements Serializable {
 
   private long pId;
 

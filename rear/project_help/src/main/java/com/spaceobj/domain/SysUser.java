@@ -1,4 +1,4 @@
-package com.spaceobj.projectHelp.bo;
+package com.spaceobj.domain;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -17,7 +17,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SysUserBo implements Serializable {
+public class SysUser implements Serializable {
 
   private String userId;
 

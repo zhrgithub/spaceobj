@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.projectHelp.bo.ProjectHelpBo;
 import com.spaceobj.projectHelp.bo.ReceiveEmailBo;
-import com.spaceobj.projectHelp.bo.SysProjectBo;
-import com.spaceobj.projectHelp.bo.SysUserBo;
+import com.spaceobj.domain.SysProject;
+import com.spaceobj.domain.SysUser;
 import com.spaceobj.projectHelp.constant.KafKaTopics;
 import com.spaceobj.projectHelp.constant.RedisKey;
 import com.spaceobj.projectHelp.mapper.ProjectHelpMapper;
@@ -42,33 +42,33 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
     try {
       // 如果用户的创建剩余次数小于10次，提醒明天再来
-      List<SysUserBo> sysUserBoList =
+      List<SysUser> sysUserList =
           redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      List<SysUserBo> resultSysUserBoList =
-          (List<SysUserBo>)
-              sysUserBoList.stream()
+      List<SysUser> resultSysUserList =
+          (List<SysUser>)
+              sysUserList.stream()
                   .filter(
                       u -> {
                         return u.getUserId().equals(projectHelpBo.getUserId());
                       });
-      if (resultSysUserBoList.size() == 0) {
+      if (resultSysUserList.size() == 0) {
         return SaResult.error("用户不存在");
       }
-      SysUserBo sysUserBo = resultSysUserBoList.get(0);
-      if (sysUserBo.getCreateProjectHelpTimes() <= 0) {
+      SysUser sysUser = resultSysUserList.get(0);
+      if (sysUser.getCreateProjectHelpTimes() <= 0) {
         return SaResult.error("今日分享链接创建已上限，明天再来吧！");
       }
       // 判断项目中是否有该项目的id
-      List<SysProjectBo> sysProjectBoList =
+      List<SysProject> sysProjectList =
           redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
-      List<SysProjectBo> resultSysProjectBoList =
-          (List<SysProjectBo>)
-              sysProjectBoList.stream()
+      List<SysProject> resultSysProjectList =
+          (List<SysProject>)
+              sysProjectList.stream()
                   .filter(
                       p -> {
                         return p.getPId() == projectHelpBo.getPId();
                       });
-      if (resultSysProjectBoList.size() == 0) {
+      if (resultSysProjectList.size() == 0) {
         return SaResult.error("项目id不正确");
       }
 
@@ -138,44 +138,44 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       if (projectHelp.getCreateUserId().equals(projectHelpBo.getUserId())) {
         return SaResult.error("助力失败，请分享给好友助力！");
       }
-      List<SysUserBo> sysUserBoList =
+      List<SysUser> sysUserList =
           redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      List<SysUserBo> resultSysUserBo =
-          (List<SysUserBo>)
-              sysUserBoList.stream()
+      List<SysUser> resultSysUser =
+          (List<SysUser>)
+              sysUserList.stream()
                   .filter(
                       user -> {
                         return user.getUserId().equals(projectHelpBo.getUserId());
                       });
-      SysUserBo sysUserBo = resultSysUserBo.get(0);
-      if (sysUserBo.getProjectHelpTimes() <= 0) {
+      SysUser sysUser = resultSysUser.get(0);
+      if (sysUser.getProjectHelpTimes() <= 0) {
         return SaResult.error("您今日的助力次数已经用尽，请改天再来吧");
       }
       //  用户的助力次数减少一，返回助力成功
-      sysUserBo.setProjectHelpTimes(sysUserBo.getProjectHelpTimes() - 1);
-      kafkaSender.send(sysUserBo, KafKaTopics.UPDATE_USER);
+      sysUser.setProjectHelpTimes(sysUser.getProjectHelpTimes() - 1);
+      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
       // 修改项目助力信息
       projectHelp.setHpNumber(projectHelp.getHpNumber() + 1);
       kafkaSender.send(projectHelp, KafKaTopics.UPDATE_HELP_PROJECT);
       // 如果项目大于等于10，邮件通知
       if (projectHelp.getHpNumber() >= 10) {
-        List<SysUserBo> createProjectUserList =
-            (List<SysUserBo>)
-                sysUserBoList.stream()
+        List<SysUser> createProjectUserList =
+            (List<SysUser>)
+                sysUserList.stream()
                     .filter(
                         user -> {
                           return user.getUserId().equals(projectHelp.getCreateUserId());
                         });
-        SysUserBo createSysUserBo = createProjectUserList.get(0);
+        SysUser createSysUser = createProjectUserList.get(0);
         ReceiveEmailBo receiveEmailBo =
             ReceiveEmailBo.builder()
-                .receiverEmail(createSysUserBo.getAccount())
+                .receiverEmail(createSysUser.getAccount())
                 .title("项目助力成功")
                 .content("项目编号：" + projectHelp.getPId() + "助力成功！快去联系吧！")
                 .build();
         kafkaSender.send(receiveEmailBo, KafKaTopics.HELP_PROJECT_SUCCESSFUL);
       }
-      return SaResult.ok("助力成功").setData(sysUserBo);
+      return SaResult.ok("助力成功").setData(sysUser);
     } catch (Exception e) {
 
       LOG.error("project help failed", e.getMessage());
