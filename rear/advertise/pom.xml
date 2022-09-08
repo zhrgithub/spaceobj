@@ -97,6 +97,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- 将作为Redis对象序列化器 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.83</version>
+        </dependency>
+
 
     </dependencies>
 
