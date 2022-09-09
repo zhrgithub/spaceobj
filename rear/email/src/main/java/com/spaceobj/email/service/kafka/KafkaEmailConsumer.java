@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import com.spaceobj.email.constant.KafKaTopics;
 import com.spaceobj.domain.SysEmail;
 import com.spaceobj.email.service.SysEmailService;
+import com.spaceobj.email.util.CommonStringUtils;
 import com.spaceobj.email.util.Email;
 import com.spaceobj.email.util.Message;
 import com.spaceobj.email.util.SendMail;
@@ -108,14 +109,14 @@ public class KafkaEmailConsumer {
     SysEmail sysEmail = getSysEmail();
     Email email = getEmail(message);
     if (StringUtils.isBlank(sysEmail.getEmailAccount())
-        || StringUtils.isBlank(sysEmail.getEmailAccountName())
+        || StringUtils.isBlank(CommonStringUtils.getEmailAccountName(sysEmail.getEmailAccount()))
         || StringUtils.isBlank(sysEmail.getEmailPassword())) {
       log.error("邮件发送参数错误！停止发送！");
       return;
     }
 
     email.setSendEmail(sysEmail.getEmailAccount());
-    email.setSendEmailName(sysEmail.getEmailAccountName());
+    email.setSendEmailName(CommonStringUtils.getEmailAccountName(sysEmail.getEmailAccount()));
     email.setPassword(sysEmail.getEmailPassword());
 
     if (StringUtils.isBlank(email.getReceiverEmail())

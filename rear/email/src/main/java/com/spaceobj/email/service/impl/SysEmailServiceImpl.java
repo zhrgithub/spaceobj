@@ -48,6 +48,7 @@ public class SysEmailServiceImpl extends ServiceImpl<SysEmailMapper, SysEmail>
         list = redisTemplate.opsForList().range(SYS_EMAIL_LIST, 0, -1);
       }
     } catch (Exception e) {
+      e.printStackTrace();
       LOG.error("查询邮箱数据异常");
       return SaResult.error("发件箱列表异常").setData(list);
     }

@@ -32,15 +32,5 @@ public class SysEmail implements Serializable {
   @NotBlank
   private String emailPassword;
 
-  /** 返回账户名称前缀 */
-  private String emailAccountName;
 
-  /**
-   * 获取账号名称
-   *
-   * @return
-   */
-  public String getEmailAccountName() {
-    return this.emailAccount.substring(0, this.emailAccount.indexOf("@"));
-  }
 }
