@@ -2,20 +2,19 @@ package com.spaceobj.project.service.impl;
 
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.domain.ProjectHelp;
+import com.spaceobj.domain.SysProject;
+import com.spaceobj.domain.SysUser;
 import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.constant.KafKaTopics;
 import com.spaceobj.project.constant.KafkaSender;
 import com.spaceobj.project.constant.RedisKey;
 import com.spaceobj.project.mapper.SysProjectMapper;
-import com.spaceobj.domain.SysProject;
 import com.spaceobj.project.service.SysProjectService;
-import com.spaceobj.domain.SysUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +33,6 @@ import java.util.stream.Collectors;
 @Service
 public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProject>
     implements SysProjectService {
-
-  @Autowired private SysProjectMapper sysProjectMapper;
 
   @Autowired private RedisTemplate redisTemplate;
 
@@ -160,18 +157,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   @Override
   public SaResult auditProject(SysProject project) {
     try {
-      QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-      queryWrapper.eq("p_id",project.getPId());
-      SysProject sysProject = sysProjectMapper.selectOne(queryWrapper);
-      sysProject.setMessage(project.getMessage());
-      sysProject.setStatus(project.getStatus());
-
-      int result = sysProjectMapper.updateById(sysProject);
-      if (result == 1) {
-        kafkaSender.send(sysProject,KafKaTopics.UPDATE_PROJECT);
-        return SaResult.ok("审核成功");
-      }
-      return SaResult.error("审核失败");
+      kafkaSender.send(project, KafKaTopics.UPDATE_PROJECT);
+      return SaResult.error("审核已提交，刷新列表查看结果");
     } catch (Exception e) {
       LOG.error("audit project failed", e.getMessage());
       return SaResult.error("审核失败");
@@ -185,13 +172,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       List<SysProject> list;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
-        synchronized (this) {
-          QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-          queryWrapper.orderByDesc("create_time");
-          list = sysProjectMapper.selectList(queryWrapper);
-        }
-
-        redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, list);
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
+        return SaResult.ok("系统项目数据同步中，请稍后");
       } else {
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       }
@@ -255,9 +237,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   @Override
   public void addPageViews(long projectId) {
     try {
-      List<SysProject> sysProjectList =  redisTemplate.opsForList().range(RedisKey.PROJECT_LIST,0,-1);
-      List<SysProject> resultSysProject =  sysProjectList.stream().filter(p -> p.getPId() ==projectId).collect(Collectors.toList());
-      if(resultSysProject.size()==0){
+      List<SysProject> sysProjectList =
+          redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+      List<SysProject> resultSysProject =
+          sysProjectList.stream().filter(p -> p.getPId() == projectId).collect(Collectors.toList());
+      if (resultSysProject.size() == 0) {
         return;
       }
       SysProject sysProject = resultSysProject.get(0);
@@ -275,21 +259,19 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       List<SysProject> sysProjectList;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
-        synchronized (this) {
-          QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-          list = sysProjectMapper.selectList(queryWrapper);
-        }
-        redisTemplate.opsForList().leftPush(RedisKey.PROJECT_LIST, list.toArray());
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
+        return SaResult.ok("系统项目同步中，请稍后");
       } else {
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       }
 
       sysProjectList =
-              list.stream()
-                  .filter(
-                      p -> {
-                        return getPhoneNumberBo.getProjectId() == p.getPId();
-                      }).collect(Collectors.toList());
+          list.stream()
+              .filter(
+                  p -> {
+                    return getPhoneNumberBo.getProjectId() == p.getPId();
+                  })
+              .collect(Collectors.toList());
       if (sysProjectList.size() == 0) {
         return SaResult.error("项目不存在");
       }
@@ -297,11 +279,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
       List<SysUser> sysUsers = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       List<SysUser> resultSysUsers =
-              sysUsers.stream()
-                  .filter(
-                      user -> {
-                        return user.getUserId().equals(getPhoneNumberBo.getUserId());
-                      }).collect(Collectors.toList());
+          sysUsers.stream()
+              .filter(
+                  user -> {
+                    return user.getUserId().equals(getPhoneNumberBo.getUserId());
+                  })
+              .collect(Collectors.toList());
       if (resultSysUsers.size() == 0) {
         return SaResult.error("用户不存在");
       }
@@ -323,15 +306,17 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 判断是否已经获取到该项目联系人
       List<ProjectHelp> projectHelpList =
           redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
-      List<ProjectHelp> resultProjectHelp =  projectHelpList.stream()
-          .filter(
-              hp -> {
-                return hp.getCreateUserId().equals(getPhoneNumberBo.getUserId())
-                    && getPhoneNumberBo.getProjectId() == hp.getPId();
-              }).collect(Collectors.toList());
+      List<ProjectHelp> resultProjectHelp =
+          projectHelpList.stream()
+              .filter(
+                  hp -> {
+                    return hp.getCreateUserId().equals(getPhoneNumberBo.getUserId())
+                        && getPhoneNumberBo.getProjectId() == hp.getPId();
+                  })
+              .collect(Collectors.toList());
       if (resultProjectHelp.size() > 0) {
-        ProjectHelp helpBo = projectHelpList.get(0);
-        if (helpBo.getHpStatus() == 1) {
+        ProjectHelp helpBo = resultProjectHelp.get(0);
+        if (helpBo.getHpStatus() == 1||helpBo.getHpNumber()>=10) {
           return SaResult.ok().setData(sysUser.getPhoneNumber());
         }
       }
@@ -341,9 +326,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         //  邀请值减一，如果项目助力列表中没有该项目，那么设置成已经获取到，如果没有，那么新增到项目助力列表并设置成已经获取到的状态
         sysUser.setInvitationValue(sysUser.getInvitationValue() - 1);
         ProjectHelp helpBo;
-        if (projectHelpList.size() > 0) {
-          helpBo = projectHelpList.get(0);
+        if (resultProjectHelp.size() > 0) {
+          helpBo = resultProjectHelp.get(0);
           helpBo.setHpNumber(10);
+          helpBo.setHpStatus(1);
           // 通知项目助力服务更新数据
           kafkaSender.send(helpBo, KafKaTopics.UPDATE_HELP_PROJECT);
         } else {
@@ -368,6 +354,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
       return SaResult.error("请分享项目助力链接获取");
     } catch (Exception e) {
+      e.printStackTrace();
       LOG.error("get phone number by projectId error", e.getMessage());
       return SaResult.error("获取联系方式失败，服务器异常");
     }

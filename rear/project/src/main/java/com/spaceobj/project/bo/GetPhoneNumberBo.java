@@ -17,5 +17,8 @@ public class GetPhoneNumberBo {
 
   private long projectId;
 
+  /**
+   * 当前登录用户id
+   */
   private String userId;
 }

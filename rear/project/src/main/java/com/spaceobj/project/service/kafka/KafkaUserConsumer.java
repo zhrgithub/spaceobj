@@ -77,12 +77,27 @@ public class KafkaUserConsumer {
             });
   }
 
+  @KafkaListener(topics = {KafKaTopics.UPDATE_PROJECT_LIST})
+  public void updateProjectList(ConsumerRecord<?, ?> record) {
+
+    Optional.ofNullable(record.value())
+        .ifPresent(
+            message -> {
+              try {
+                this.updateRedis();
+              } catch (Exception e) {
+                LOG.error("project list info update to redis failed! fail info：{}", e.getMessage());
+              }
+            });
+  }
+
   /** 刷新Redis缓存 */
   private void updateRedis() {
 
     redisTemplate.delete(RedisKey.PROJECT_LIST);
     List<SysProject> sysProjectList;
     QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
+    queryWrapper.orderByDesc("create_time");
     sysProjectList = sysProjectMapper.selectList(queryWrapper);
     redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_LIST, sysProjectList.toArray());
   }

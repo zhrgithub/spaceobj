@@ -29,7 +29,7 @@ public class SysProjectDto implements Serializable {
   @NotNull(
       message = "项目id是必填项",
       groups = {UpdateProjectGroup.class, AuditProjectGroup.class, AddPageViewsGroup.class})
-  private long pId;
+  private Long pId;
 
   @NotBlank(
       message = "UUID是必填项",

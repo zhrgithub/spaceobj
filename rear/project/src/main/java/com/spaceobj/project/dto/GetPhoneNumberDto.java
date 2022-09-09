@@ -21,6 +21,6 @@ public class GetPhoneNumberDto {
   @NotNull(message = "项目id不为空")
   private long projectId;
 
-  @NotBlank(message = "用户id不为空")
+  @NotBlank(message = "当前登录用户id不为空")
   private String userId;
 }
