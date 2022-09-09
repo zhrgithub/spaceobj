@@ -13,4 +13,9 @@ public class RedisKey {
 
   /** 项目列表 */
   public static final String PROJECT_LIST = "project_list";
+
+  /**
+   * 判断MySQL项目助力列表是否是空,默认是非空
+   */
+  public static Boolean PROJECT_HELP_LIST_OF_MYSQL_IS_EMPTY = false;
 }

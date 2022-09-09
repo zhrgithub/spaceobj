@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * @author zhr_java@163.com
  * @date 2022/8/31 12:41
@@ -15,8 +17,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProjectHelpBo {
 
-  /** 用户id */
-  private String userId;
+  /** 项目助力id */
+  private String hpId;
+
+  /** 创建助力链接的用户id,也是当前登录者id */
+  private String createUserId;
 
   /** 项目id */
   private long pId;
@@ -25,7 +30,7 @@ public class ProjectHelpBo {
   private String pContent;
 
   /** 项目预算 */
-  private double pPrice;
+  private BigDecimal pPrice;
 
   /** 项目发起人 */
   private String pReleaseUserId;

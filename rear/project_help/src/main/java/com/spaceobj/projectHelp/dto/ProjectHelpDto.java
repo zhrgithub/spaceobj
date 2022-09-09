@@ -3,48 +3,58 @@ package com.spaceobj.projectHelp.dto;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.spaceobj.projectHelp.group.InsertProjectHelpGroup;
+import com.spaceobj.projectHelp.group.QueryProjectHelpListGroup;
+import com.spaceobj.projectHelp.group.UpdateProjectHelpGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+
 /**
  * @author zhr
  */
 @Data
 @Builder
-@TableName(value = "project_help")
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProjectHelpDto {
 
-  @TableId(value = "hp_id")
+  @NotBlank(
+      message = "项目助力ID是必填项",
+      groups = {UpdateProjectHelpGroup.class})
   private String hpId;
 
-  @TableField(value = "p_Id")
-  @NotBlank(message = "项目ID是必填项")
-  private long pId;
+  @NotNull(
+      message = "项目ID是必填项",
+      groups = {InsertProjectHelpGroup.class})
+  @Min(1)
+  private Long pId;
 
-  @TableField(value = "create_user_id")
-  @NotBlank(message = "创建者ID是必填项")
+  /** 创建助力链接的用户id,也是当前登录者id */
+  @NotBlank(
+      message = "创建者ID是必填项",
+      groups = {
+        InsertProjectHelpGroup.class,
+        UpdateProjectHelpGroup.class,
+        QueryProjectHelpListGroup.class
+      })
   private String createUserId;
 
-  @TableField(value = "hp_number")
-  private long hpNumber;
+  private Long hpNumber;
 
-  @TableField(value = "p_content")
-  @NotBlank(message = "内容是必填项")
   private String pContent;
 
-  @TableField(value = "p_price")
-  @NotBlank(message = "预算是必填项")
-  private double pPrice;
+  private BigDecimal pPrice;
 
-  @TableField(value = "p_release_user_id")
-  @NotBlank(message = "项目发布人ID是必填项")
   private String pReleaseUserId;
 
-  @TableField(value = "hp_status")
   private Integer hpStatus;
 }

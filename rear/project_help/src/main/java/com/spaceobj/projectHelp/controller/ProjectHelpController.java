@@ -3,6 +3,9 @@ package com.spaceobj.projectHelp.controller;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.projectHelp.bo.ProjectHelpBo;
 import com.spaceobj.projectHelp.dto.ProjectHelpDto;
+import com.spaceobj.projectHelp.group.InsertProjectHelpGroup;
+import com.spaceobj.projectHelp.group.QueryProjectHelpListGroup;
+import com.spaceobj.projectHelp.group.UpdateProjectHelpGroup;
 import com.spaceobj.projectHelp.service.ProjectHelpService;
 import com.spaceobj.projectHelp.util.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,21 +26,21 @@ public class ProjectHelpController {
   @Autowired private ProjectHelpService projectHelpService;
 
   @PostMapping("createProjectHelpLink")
-  public SaResult createProjectHelpLink(@Validated ProjectHelpDto projectHelpDto) {
+  public SaResult createProjectHelpLink(@Validated(InsertProjectHelpGroup.class) ProjectHelpDto projectHelpDto) {
     ProjectHelpBo projectHelpBo = ProjectHelpBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectHelpDto, projectHelpBo);
     return projectHelpService.createProjectHelpLink(projectHelpBo);
   }
 
   @PostMapping("updateProjectHelpNumber")
-  public SaResult updateProjectHelpNumber(@Validated ProjectHelpDto projectHelpDto) {
+  public SaResult updateProjectHelpNumber(@Validated(UpdateProjectHelpGroup.class) ProjectHelpDto projectHelpDto) {
     ProjectHelpBo projectHelpBo = ProjectHelpBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectHelpDto, projectHelpBo);
     return projectHelpService.updateProjectHelpNumber(projectHelpBo);
   }
 
   @PostMapping("projectHelpList")
-  public SaResult projectHelpList(ProjectHelpDto projectHelpDto) {
+  public SaResult projectHelpList(@Validated(QueryProjectHelpListGroup.class) ProjectHelpDto projectHelpDto) {
     ProjectHelpBo projectHelpBo = ProjectHelpBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectHelpDto, projectHelpBo);
     return projectHelpService.projectHelpList(projectHelpBo);

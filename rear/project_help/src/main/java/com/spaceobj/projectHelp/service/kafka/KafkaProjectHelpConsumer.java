@@ -33,7 +33,7 @@ public class KafkaProjectHelpConsumer {
   @Autowired private RedisTemplate redisTemplate;
 
   /**
-   * 监听项目助力列表新增
+   * 监听项目助力新增
    *
    * @param record
    */
@@ -61,7 +61,7 @@ public class KafkaProjectHelpConsumer {
   }
 
   /**
-   * 监听项目助力列表更新
+   * 监听项目助力更新
    *
    * @param record
    */
@@ -88,6 +88,25 @@ public class KafkaProjectHelpConsumer {
             });
   }
 
+  /**
+   * 项目助力列表缓存更新
+   *
+   * @param record
+   */
+  @KafkaListener(topics = {KafKaTopics.UPDATE_HELP_PROJECT_LIST})
+  public void updateProjectHelpList(ConsumerRecord<?, ?> record) {
+
+    Optional.ofNullable(record.value())
+        .ifPresent(
+            message -> {
+              try {
+                this.updateRedis();
+              } catch (Exception e) {
+                LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
+              }
+            });
+  }
+
   /** 刷新Redis缓存 */
   private void updateRedis() {
 
@@ -95,6 +114,8 @@ public class KafkaProjectHelpConsumer {
     List<ProjectHelp> projectHelpList;
     QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
     projectHelpList = projectHelpMapper.selectList(queryWrapper);
-    redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_HELP_LIST, projectHelpList.toArray());
+    if(projectHelpList.size() != 0){
+        redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_HELP_LIST, projectHelpList.toArray());
+    }
   }
 }

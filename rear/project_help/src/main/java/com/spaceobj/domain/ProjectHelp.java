@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
+import java.math.BigDecimal;
+
 /**
  * @author zhr
  */
@@ -23,26 +25,21 @@ public class ProjectHelp {
   private String hpId;
 
   @TableField(value = "p_Id")
-  @NotBlank(message = "项目ID是必填项")
   private long pId;
 
   @TableField(value = "create_user_id")
-  @NotBlank(message = "创建者ID是必填项")
   private String createUserId;
 
   @TableField(value = "hp_number")
   private long hpNumber;
 
   @TableField(value = "p_content")
-  @NotBlank(message = "内容是必填项")
   private String pContent;
 
   @TableField(value = "p_price")
-  @NotBlank(message = "预算是必填项")
-  private double pPrice;
+  private BigDecimal pPrice;
 
   @TableField(value = "p_release_user_id")
-  @NotBlank(message = "项目发布人ID是必填项")
   private String pReleaseUserId;
 
   @TableField(value = "hp_status")
