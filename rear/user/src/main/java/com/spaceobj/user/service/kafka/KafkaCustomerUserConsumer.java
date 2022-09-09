@@ -49,7 +49,7 @@ public class KafkaCustomerUserConsumer {
                 int result = sysUserMapper.insert(sysUser);
                 // 刷新缓存
                 if (result == 1) {
-                  this.updateRedis(sysUser);
+                  this.updateRedis();
                 }
                 if (result == 0) {
                   LOG.error("user info save to mysql failed !");
@@ -77,7 +77,7 @@ public class KafkaCustomerUserConsumer {
                 // 刷新缓存
                 if (result == 1) {
                   // 刷新Redis中的用户列表
-                  this.updateRedis(sysUser);
+                  this.updateRedis();
                 }
 
                 if (result == 0) {
@@ -89,14 +89,28 @@ public class KafkaCustomerUserConsumer {
             });
   }
 
-  /** 刷新Redis缓存 */
-  private void updateRedis(SysUser sysUser) {
-    QueryWrapper<SysUser> queryWrapperOnly = new QueryWrapper<>();
-    queryWrapperOnly.eq("account", sysUser.getAccount());
-    SysUser sysUserOnly = sysUserMapper.selectOne(queryWrapperOnly);
+  /**
+   * 刷新系统用户缓存信息
+   *
+   * @param record
+   */
+  @KafkaListener(topics = {KafKaTopics.UPDATE_USER_LIST})
+  public void userUpdateList(ConsumerRecord<?, ?> record) {
 
-    // 根据用户的账户id，更新用户登录信息
-    redisTemplate.opsForValue().set(sysUser.getAccount(), sysUserOnly);
+    Optional.ofNullable(record.value())
+        .ifPresent(
+            message -> {
+              try {
+                this.updateRedis();
+
+              } catch (Exception e) {
+                LOG.error("update info update to mysql failed!failed info {}", e.getMessage());
+              }
+            });
+  }
+
+  /** 刷新Redis缓存 */
+  private void updateRedis() {
     // 删除用户列表信息
     redisTemplate.delete(RedisKey.SYS_USER_LIST);
     // 查询用户列表信息
@@ -105,5 +119,11 @@ public class KafkaCustomerUserConsumer {
     sysUserList = sysUserMapper.selectList(queryWrapper);
     // 更新用户列表信息
     redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
+    sysUserList.stream()
+        .forEachOrdered(
+            s -> {
+              // 根据用户的账户id，更新用户登录信息
+              redisTemplate.opsForValue().set(s.getAccount(), s);
+            });
   }
 }

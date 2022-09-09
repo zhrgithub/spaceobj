@@ -13,7 +13,6 @@ import com.spaceobj.domain.SysUser;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.constant.KafKaTopics;
-import com.spaceobj.user.constant.RedisKey;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.service.SysUserService;
 import com.spaceobj.user.service.kafka.KafkaSender;
@@ -144,13 +143,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         LOG.error("logic update all system user failed");
       }
       if (result == 1) {
-        redisTemplate.delete(RedisKey.SYS_USER_LIST);
-        QueryWrapper<SysUser> sysQueryWrapper = new QueryWrapper<>();
-        List<SysUser> sysUserList = sysUserMapper.selectList(sysQueryWrapper);
-        redisTemplate.opsForList().leftPush(RedisKey.SYS_USER_LIST, sysUserList.toArray());
-        for (SysUser su : sysUserList) {
-          redisTemplate.opsForValue().set(su.getAccount(), su);
-        }
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
       }
 
     } catch (Exception e) {

@@ -17,4 +17,7 @@ public class KafKaTopics {
 
   /** 修改用户信息 */
   public static final String UPDATE_USER = "update_user";
+
+  /** 刷新系统用户缓存信息 */
+  public static final String UPDATE_USER_LIST = "update_user_list";
 }

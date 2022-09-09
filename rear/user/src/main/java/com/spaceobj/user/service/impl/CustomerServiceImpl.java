@@ -101,7 +101,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     }
 
     try {
-
       if (loginOrRegisterBo.getOperateType().equals(OperationType.LOGIN)) {
         if (redisTemplate.hasKey(loginOrRegisterBo.getAccount())) {
           SysUser sysUser =
@@ -118,10 +117,11 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             return SaResult.error("密码不正确");
           }
         } else {
-
-          return SaResult.error("账号未注册");
+          // 先刷新缓存然后再次查询
+          SysUser sysUser = SysUser.builder().account(loginOrRegisterBo.getAccount()).build();
+          kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER_LIST);
+          return SaResult.ok("系统用户数据同步中，请稍后再试");
         }
-
       } else if (loginOrRegisterBo.getOperateType().equals(OperationType.ADD)) {
         // 用户注册校验，是否已经创建过
         if (redisTemplate.hasKey(loginOrRegisterBo.getAccount())) {
@@ -248,7 +248,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       // 如果是在修改中，那么禁止重复提交
       if (sysUser.getUserInfoEditStatus() == 1) {
-        return SaResult.error("修改中，请稍后！");
+        return SaResult.ok("修改中，请稍后！");
       }
       // 如果剩余修改的次数小于等于0，那么回复修改失败
       if (sysUser.getEditInfoTimes() <= 0) {
