@@ -1,0 +1,9 @@
+package com.spaceobj.advertise.group;
+
+/**
+ * @author zhr_java@163.com
+ * @date 2022/9/10 02:19
+ */
+public interface QueryAdvertiseGroup {
+
+}

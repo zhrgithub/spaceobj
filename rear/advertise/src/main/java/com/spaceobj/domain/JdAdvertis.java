@@ -1,6 +1,7 @@
 package com.spaceobj.domain;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ import java.math.BigDecimal;
 @Builder
 public class JdAdvertis implements Serializable {
 
-    @TableField(value = "jd_ad_Id")
+    @TableId(value = "jd_ad_id")
     private Long jdAdId;
 
     @TableField(value = "jd_ad_hyperlink")

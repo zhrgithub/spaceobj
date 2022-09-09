@@ -3,6 +3,9 @@ package com.spaceobj.advertise.controller;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.advertise.bo.JdAdvertisBo;
 import com.spaceobj.advertise.dto.JdAdvertisDto;
+import com.spaceobj.advertise.group.DeleteAdvertiseGroup;
+import com.spaceobj.advertise.group.InsertAdverTiseGroup;
+import com.spaceobj.advertise.group.UpdateAdvertiseGroup;
 import com.spaceobj.advertise.service.JdAdvertiseService;
 import com.spaceobj.advertise.utils.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +32,7 @@ public class JdAdvertiseController {
 
     @PostMapping("saveAdvertise")
     public SaResult saveAdvertise(
-            @Validated
+            @Validated(InsertAdverTiseGroup.class )
                     JdAdvertisDto jdAdvertisDto) {
 
         JdAdvertisBo jdAdvertisBo = JdAdvertisBo.builder().build();
@@ -39,7 +42,7 @@ public class JdAdvertiseController {
 
     @PostMapping("deleteAdvertise")
     public SaResult deleteAdvertise(
-            @Validated
+            @Validated(DeleteAdvertiseGroup.class )
                     JdAdvertisDto jdAdvertisDto) {
 
         JdAdvertisBo jdAdvertisBo = JdAdvertisBo.builder().build();
@@ -49,7 +52,7 @@ public class JdAdvertiseController {
 
     @PostMapping("updateAdvertise")
     public SaResult updateAdvertise(
-            @Validated
+            @Validated(UpdateAdvertiseGroup.class)
                     JdAdvertisDto jdAdvertisDto) {
 
         JdAdvertisBo jdAdvertisBo = JdAdvertisBo.builder().build();

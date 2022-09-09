@@ -74,6 +74,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
             }
             return SaResult.ok("新增成功");
         } catch (Exception e) {
+
             LOG.error("add advertise error", e.getMessage());
             return SaResult.error("新增广告失败,服务器异常！");
         }
@@ -83,6 +84,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     public SaResult deleteAdvertise(long id) {
 
         try {
+            System.out.println(id);
             int result = jdAdvertisMapper.deleteById(id);
             if (result == 1) {
                 this.updateRedis();
@@ -92,6 +94,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
             }
             return SaResult.ok("删除成功！");
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.error("delete advertise error !", e.getMessage());
             return SaResult.error("删除广告失败，服务器异常！");
         }
@@ -109,9 +112,11 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
                 this.updateRedis();
             } else {
                 LOG.error("Logic update advertise error !");
+                return SaResult.error("更新失败");
             }
-            return SaResult.ok("广告更新成功");
+            return SaResult.ok("更新成功");
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.error("Logic update advertise error !", e.getMessage());
             return SaResult.error("广告更新失败！服务器异常！");
         }
