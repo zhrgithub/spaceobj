@@ -26,7 +26,7 @@ public class OtherController {
 
 
     @PostMapping("updateOther")
-    public SaResult updateOther(@RequestBody @Validated Other other){
+    public SaResult updateOther(@Validated Other other){
 
         return otherService.updateOther(other);
     }

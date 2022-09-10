@@ -20,13 +20,13 @@ public class Other implements Serializable {
     /**
      * 客服微信
      */
-    @NotBlank
+    @NotBlank(message = "客服微信不为空")
     private String wechat;
 
     /**
      * 下载链接
      */
-    @NotBlank
+    @NotBlank(message = "下载链接不为空")
     private String downloadUrl;
 
 }
