@@ -173,7 +173,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
-        return SaResult.ok("系统项目数据同步中，请稍后");
+        return SaResult.error("系统项目数据同步中，请稍后");
       } else {
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       }
@@ -260,7 +260,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
-        return SaResult.ok("系统项目同步中，请稍后");
+        return SaResult.error("系统项目同步中，请稍后");
       } else {
         list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       }
