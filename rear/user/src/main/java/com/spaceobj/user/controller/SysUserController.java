@@ -3,9 +3,11 @@ package com.spaceobj.user.controller;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.dto.SysUserDto;
+import com.spaceobj.user.group.sysUser.UpdateSysUserGroup;
 import com.spaceobj.user.service.SysUserService;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,7 +31,7 @@ public class SysUserController {
   }
 
   @PostMapping("updateUser")
-  public SaResult updateUser(SysUserDto sysUserDto) {
+  public SaResult updateUser(@Validated(UpdateSysUserGroup.class) SysUserDto sysUserDto) {
     SysUserBo sysUserBo = SysUserBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
     return sysUserService.updateSysUser(sysUserBo);

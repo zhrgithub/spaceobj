@@ -4,44 +4,61 @@ import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.util.SaResult;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+
+import java.util.List;
 
 /**
  * @author zhr_java@163.com
  * @date 2022/7/26 22:05
  */
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
-  Log logger = LogFactory.getLog(GlobalExceptionHandler.class);
+  @ResponseBody
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(BindException.class)
+  public SaResult exceptionHandler(BindException exception) {
+
+    BindingResult result = exception.getBindingResult();
+    StringBuilder stringBuilder = new StringBuilder();
+    if (result.hasErrors()) {
+      List<ObjectError> errors = result.getAllErrors();
+      if (errors != null) {
+        errors.forEach(
+            p -> {
+              FieldError fieldError = (FieldError) p;
+              log.warn(
+                  "Bad Request Parameters: dto entity [{}],field [{}],message [{}]",
+                  fieldError.getObjectName(),
+                  fieldError.getField(),
+                  fieldError.getDefaultMessage());
+              stringBuilder.append(fieldError.getDefaultMessage());
+            });
+      }
+    }
+    return SaResult.error(stringBuilder.toString());
+  }
 
   /** 请求参数为空 */
   @ExceptionHandler(NullPointerException.class)
   @ResponseBody
   public SaResult nullPointerException(NullPointerException ex) {
-    logger.error("null point exception info:" + ex.getMessage());
+    log.error("null point exception info:" + ex.getMessage());
     return SaResult.error("请求参数为空");
-  }
-
-  /**
-   * 参数格式异常捕获
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(BindException.class)
-  @ResponseBody
-  public SaResult bindException(BindException ex) {
-    logger.error("bind exception info:" + ex.getMessage());
-    return SaResult.error("参数格式错误");
   }
 
   /**
@@ -53,7 +70,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NumberFormatException.class)
   @ResponseBody
   public SaResult numberFormatException(NumberFormatException ex) {
-    logger.error("number format exception info:" + ex.getMessage());
+    log.error("number format exception info:" + ex.getMessage());
     return SaResult.error("参数类型转换错误");
   }
 
@@ -66,7 +83,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(SaTokenException.class)
   @ResponseBody
   public SaResult saTokenException(SaTokenException ex) {
-    logger.error("sa token exception info:" + ex.getMessage());
+    log.error("sa token exception info:" + ex.getMessage());
     return SaResult.error(ex.getMessage());
   }
 
@@ -74,7 +91,7 @@ public class GlobalExceptionHandler {
   @ResponseBody
   public SaResult httpRequestMethodNotSupportedException(
       HttpRequestMethodNotSupportedException ex) {
-    logger.error("httpRequest method notSupported exception info:" + ex.getMessage());
+    log.error("httpRequest method notSupported exception info:" + ex.getMessage());
     return SaResult.error("请求方法不支持");
   }
 
@@ -87,7 +104,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NotLoginException.class)
   @ResponseBody
   public SaResult notLoginException(NotLoginException ex) {
-    logger.error("not login exception:" + ex.getMessage());
+    log.error("not login exception:" + ex.getMessage());
     return SaResult.error("登录后操作");
   }
 

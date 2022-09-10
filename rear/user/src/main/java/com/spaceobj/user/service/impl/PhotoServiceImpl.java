@@ -2,7 +2,6 @@ package com.spaceobj.user.service.impl;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.domain.SysPhoto;
 import com.spaceobj.user.bo.SysPhotoBo;
@@ -38,13 +37,6 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
     Integer result = -1;
     try {
 
-      if (sysPhotoBo.getOperation() == null) {
-        return SaResult.error("操作类型不为空");
-      }
-      if (StringUtils.isEmpty(sysPhotoBo.getPhotoUrl())) {
-        return SaResult.error("图片URL不为空");
-      }
-
       SysPhoto photo = SysPhoto.builder().build();
       BeanUtils.copyProperties(sysPhotoBo, photo);
       if (sysPhotoBo.getOperation().equals(OperationType.ADD)) {
@@ -53,6 +45,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
 
         if (result == 1) {
           redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+          return SaResult.ok("新增成功");
         } else {
           return SaResult.error("数据新增失败");
         }
@@ -80,7 +73,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
       LOG.error("Photo addOrUpdate failed", e.getMessage());
       return SaResult.error("数据操作失败，服务器异常");
     }
-    return SaResult.ok();
+    return SaResult.ok("更新成功");
   }
 
   @Override
@@ -100,7 +93,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
       LOG.error("Photo delete failed", e.getMessage());
       return SaResult.error("删除失败");
     }
-    return SaResult.ok();
+    return SaResult.ok("删除成功");
   }
 
   @Override

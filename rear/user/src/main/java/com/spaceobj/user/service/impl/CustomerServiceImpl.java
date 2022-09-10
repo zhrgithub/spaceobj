@@ -46,39 +46,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Override
   public SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo) {
-
-    if (loginOrRegisterBo.getOperateType() == null) {
-      return SaResult.error("操作类型不为空");
-    }
-
-    if (StringUtils.isEmpty(loginOrRegisterBo.getAccount())) {
-      return SaResult.error("登录账户不为空");
-    }
-
-    if (StringUtils.isEmpty(loginOrRegisterBo.getPassword())) {
-      return SaResult.error("登录密码不为空");
-    }
-
-    if (StringUtils.isEmpty(loginOrRegisterBo.getPhoneNumber())) {
-      return SaResult.error("登录电话不为空");
-    }
-
-    if (StringUtils.isEmpty(loginOrRegisterBo.getIp())) {
-      return SaResult.error("登录账户ip不为空");
-    }
-
-    if (StringUtils.isEmpty(loginOrRegisterBo.getRequestIp())) {
-      return SaResult.error("请求ip不为空");
-    }
-
-    if (StringUtils.isEmpty(loginOrRegisterBo.getIpTerritory())) {
-      return SaResult.error("ip归属地不为空");
-    }
-
-    if (StringUtils.isEmpty(loginOrRegisterBo.getDeviceType())) {
-      return SaResult.error("登录设备类型不为空");
-    }
-
     // 判断用户是否被封禁
     boolean isDisable = StpUtil.isDisable(loginOrRegisterBo.getAccount());
     if (isDisable) {
@@ -182,10 +149,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult getUserInfo(String loginId) {
     SysUser sysUser = null;
     try {
-
-      if (StringUtils.isEmpty(loginId)) {
-        return SaResult.error("登录id不为空");
-      }
       sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       if (ObjectUtils.isNull(sysUser)) {
         return SaResult.error("账号不存在");
@@ -199,36 +162,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Override
   public SaResult updateUserInfo(SysUserBo user) {
-
     try {
-      if (StringUtils.isEmpty(user.getRequestIp())) {
-        return SaResult.error("请求ip不为空");
-      }
-
-      if (StringUtils.isEmpty(user.getIp())) {
-        return SaResult.error("ip不为空");
-      }
-
-      if (StringUtils.isEmpty(user.getLoginId())) {
-        return SaResult.error("登录id不为空");
-      }
-
-      if (StringUtils.isEmpty(user.getPhoneNumber())) {
-        return SaResult.error("电话号不为空");
-      }
-
-      if (StringUtils.isEmpty(user.getNickName())) {
-        return SaResult.error("昵称不为空");
-      }
-
-      if (StringUtils.isEmpty(user.getPhotoUrl())) {
-        return SaResult.error("头像URL不为空");
-      }
-
-      if (StringUtils.isEmpty(user.getRequestIp())) {
-        return SaResult.error("账户不为空");
-      }
-
       // 校验ip是否合法
       if (!isIpAddressCheck(user.getRequestIp()) || !user.getRequestIp().equals(user.getIp())) {
         redisTemplate.opsForValue().set(user.getRequestIp(), 10, 1, TimeUnit.DAYS);
@@ -275,15 +209,13 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (!Pattern.matches(RegexPool.GENERAL_WITH_CHINESE, user.getNickName())) {
         return SaResult.error("昵称格式错误");
       }
+      // 对象复制
+      BeanConvertToTargetUtils.copyNotNullProperties(user, sysUser);
 
       // 设置为正在修改状态
       sysUser.setUserInfoEditStatus(1);
       // 修改缓存中的用户信息为修改中
       redisTemplate.opsForValue().set(account, sysUser);
-      // 修改其它属性
-      sysUser.setPhotoUrl(user.getPhotoUrl());
-      sysUser.setNickName(user.getNickName());
-      sysUser.setPhoneNumber(user.getPhoneNumber());
       // 设置为修改完毕状态，等MySQL持久化完毕自动变成修改完毕的状态
       sysUser.setUserInfoEditStatus(0);
       // 设置修改次数减一
@@ -301,9 +233,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult sendMailCode(String account) {
     try {
-      if (StringUtils.isEmpty(account)) {
-        return SaResult.error("收件人账户不为空");
-      }
       SysUser sysUser = null;
       // 校验缓存中是否存在用户基本信息
       if (redisTemplate.hasKey(account)) {
@@ -342,22 +271,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult resetPassword(SysUserBo sysUserBo) {
     try {
-      if (StringUtils.isEmpty(sysUserBo.getLoginId())) {
-        return SaResult.error("登录账户id不为空");
-      }
-
-      if (StringUtils.isEmpty(sysUserBo.getAccount())) {
-        return SaResult.error("登录账户不为空");
-      }
-
-      if (StringUtils.isEmpty(sysUserBo.getEmailCode())) {
-        return SaResult.error("邮箱验证码不为空");
-      }
-
-      if (StringUtils.isEmpty(sysUserBo.getNewPassword())) {
-        return SaResult.error("新密码不为空");
-      }
-
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(sysUserBo.getLoginId());
       // 验证当前登录的用户是否和传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
       if (!sysUserBo.getAccount().equals(sysUserBo.getLoginId())) {
@@ -393,28 +306,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult realName(SysUserBo user) {
 
     try {
-
-      if (StringUtils.isEmpty(user.getLoginId())) {
-        return SaResult.error("登录id不为空");
-      }
-      if (StringUtils.isEmpty(user.getAccount())) {
-        return SaResult.error("账户不为空");
-      }
-      if (StringUtils.isEmpty(user.getIdCardNum())) {
-        return SaResult.error("身份证号不为空");
-      }
-      if (StringUtils.isEmpty(user.getIdCardPic())) {
-        return SaResult.error("请上传身份证照片");
-      }
-      if (StringUtils.isEmpty(user.getUsername())) {
-        return SaResult.error("真实姓名不为空");
-      }
-
       // 身份证号校验
       if (!Pattern.matches(RegexPool.CITIZEN_ID, user.getIdCardNum())) {
         return SaResult.error("身份证号不正确");
       }
-
       // 从缓存中获取当前登录用户的基本信息
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(user.getLoginId());
       // 验证当前登录的用户是否和前端传递过来的账号一致，如果不一致，封号，踢下线，锁定设备

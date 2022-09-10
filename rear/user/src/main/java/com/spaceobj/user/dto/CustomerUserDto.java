@@ -1,9 +1,13 @@
 package com.spaceobj.user.dto;
 
+import com.spaceobj.user.group.customer.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author zhr_java@163.com
@@ -16,27 +20,59 @@ import lombok.NoArgsConstructor;
 public class CustomerUserDto {
 
   /** 操作类型 */
+  @NotNull(
+      message = "操作类型不为空",
+      groups = {LoginOrRegisterGroup.class})
   private Integer operateType;
 
   /** 账户 */
+  @NotBlank(
+      message = "登录账户不为空",
+      groups = {
+        LoginOrRegisterGroup.class,
+        LoginOutGroup.class,
+        UpdateUserInfoGroup.class,
+        GetUserInfoGroup.class,
+        SendMailGroup.class,
+        ResetPassWordGroup.class,
+        RealNameGroup.class
+      })
   private String account;
 
   /** 密码 */
+  @NotBlank(
+      message = "密码不为空",
+      groups = {LoginOrRegisterGroup.class})
   private String password;
 
   /** 电话 */
+  @NotBlank(
+      message = "电话不为空",
+      groups = {LoginOrRegisterGroup.class, UpdateUserInfoGroup.class})
   private String phoneNumber;
 
   /** ip */
+  @NotBlank(
+      message = "登录账户ip不为空",
+      groups = {LoginOrRegisterGroup.class})
   private String ip;
 
   /** requestIP */
+  @NotBlank(
+      message = "请求ip不为空",
+      groups = {LoginOrRegisterGroup.class, UpdateUserInfoGroup.class})
   private String requestIp;
 
   /** ip属地 */
+  @NotBlank(
+      message = "ip属地不为空",
+      groups = {LoginOrRegisterGroup.class, UpdateUserInfoGroup.class})
   private String ipTerritory;
 
   /** 设备类型 */
+  @NotBlank(
+      message = "登录设备类型不为空",
+      groups = {LoginOrRegisterGroup.class})
   private String deviceType;
 
   /** 邀请人账号id */
@@ -44,6 +80,9 @@ public class CustomerUserDto {
 
   private String userId;
 
+  @NotNull(
+      message = "邮箱验证码不为空",
+      groups = {ResetPassWordGroup.class})
   private String emailCode;
 
   private String token;
@@ -58,18 +97,33 @@ public class CustomerUserDto {
 
   private String userRights;
 
+  @NotBlank(
+      message = "真实姓名不为空",
+      groups = {RealNameGroup.class})
   private String username;
 
+  @NotBlank(
+      message = "昵称不为空",
+      groups = {UpdateUserInfoGroup.class})
   private String nickName;
 
+  @NotBlank(
+      message = "头像URL不为空",
+      groups = {UpdateUserInfoGroup.class})
   private String photoUrl;
 
   private Integer onlineStatus;
 
   private Integer userInfoEditStatus;
 
+  @NotBlank(
+      message = "身份证号不为空",
+      groups = {RealNameGroup.class})
   private String idCardNum;
 
+  @NotBlank(
+      message = "请上传身份证照片",
+      groups = {RealNameGroup.class})
   private String idCardPic;
 
   private Integer realNameStatus;
@@ -83,9 +137,15 @@ public class CustomerUserDto {
   private Integer projectHelpTimes;
 
   /** 新密码 */
+  @NotBlank(
+      message = "新密码不为空",
+      groups = {ResetPassWordGroup.class})
   private String newPassword;
 
   /** 登录id */
+  @NotBlank(
+      message = "登录id不为空",
+      groups = {UpdateUserInfoGroup.class, ResetPassWordGroup.class, RealNameGroup.class})
   private String loginId;
 
   /** 用户封禁状态 */

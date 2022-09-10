@@ -74,37 +74,44 @@
 		<view class="shop-list-style">
 			<swiper class="swiper" @change="getItem" :current="act" autoplay="true" interval="3000" circular="true">
 				<swiper-item v-for="(item,ids) in shopList" :key="ids">
-					<uni-link href="https://item.jd.com/100010599633.html#crumb-wrap" showUnderLine="false">
-						<view class="commodity-image-description-background-style">
-							<view class="commodity-image-background-style">
-								<image
-									src="https://img13.360buyimg.com/n1/jfs/t1/180386/10/10394/148552/60d012f9Ed0a2ad10/ad4326c6c4e2a90d.jpg"
-									mode=""></image>
+					<!-- <uni-link href="https://item.jd.com/100010599633.html#crumb-wrap" showUnderLine="false" >
+					</uni-link> -->
+					<view class="commodity-image-description-background-style">
+						<view class="commodity-image-background-style">
+							<image
+								src="https://img13.360buyimg.com/n1/jfs/t1/180386/10/10394/148552/60d012f9Ed0a2ad10/ad4326c6c4e2a90d.jpg"
+								mode=""></image>
+						</view>
+						<view class="description-background-style">
+							<view class="title-description-style">
+								京东：家香味 沂蒙土榨 花生仁油6.18L 食用油 中粮福临门出品
 							</view>
-							<view class="description-background-style">
-								<view class="title-description-style">
-									京东：家香味 沂蒙土榨 花生仁油6.18L 食用油 中粮福临门出品
+							<view class="store-description-style">
+								商家：中粮家香味京东自营旗舰店
+							</view>
+					
+							<view class="discount-description-style">
+								优惠卷：满11元可用、满169享8.5折
+							</view>
+					
+							<view class="price-good-diss-style">
+								<view class="price-num-style">
+									价格：￥300
 								</view>
-								<view class="store-description-style">
-									商家：中粮家香味京东自营旗舰店
+								<view class="good-diss-style">
+									好评：99万+
+									
 								</view>
-
-								<view class="discount-description-style">
-									优惠卷：满11元可用、满169享8.5折
-								</view>
-
-								<view class="price-good-diss-style">
-									<view class="price-num-style">
-										价格：￥300
+								<view class="go-shopping">
+									<view class="go-shopping-btn">
+										<uni-link href="https://item.jd.com/100010599633.html#crumb-wrap" showUnderLine="false"copyTips="已复制商品链接,可在浏览器打开" text="逛一逛" color="red"fontSize="12">
+										</uni-link>
 									</view>
-									<view class="good-diss-style">
-										好评：99万+
-									</view>
+									
 								</view>
-
 							</view>
 						</view>
-					</uni-link>
+					</view>
 				</swiper-item>
 			</swiper>
 		</view>
@@ -211,10 +218,10 @@
 		line-height: 100%;
 		text-align: center;
 		border: 1rpx solid black;
-		/* display: flex;
-			justify-content: center;
-			align-items: center;
-			background-color: green; */
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: green;
 	}
 
 	.commodity-image-description-background-style {
@@ -259,19 +266,39 @@
 	}
 
 	.price-num-style {
-		width: 50%;
+		width: 40%;
 		display: flex;
 		justify-content: left;
 		align-items: center;
 	}
 
 	.good-diss-style {
-		width: 50%;
+		width: 30%;
 		font-size: 12px;
 		color: grey;
 		display: flex;
 		justify-content: right;
 		align-items: center;
+	}
+	.go-shopping{
+		width: 30%;
+		font-size: 12px;
+		color: grey;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	
+	.go-shopping-btn{
+		width: 80%;
+		border-radius: 10rpx;
+		height: 100%;
+		font-size: 12px;
+		color: grey;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		box-shadow: darkgray 0px 0px 2px 0px;
 	}
 
 	.discount-description-style {
@@ -308,7 +335,7 @@
 		justify-content: center;
 		align-items: center;
 		border-radius: 10px;
-		background-color: #e6e6e6;
+		background-color: #F5F5F5;
 	}
 
 	.image-background-style {

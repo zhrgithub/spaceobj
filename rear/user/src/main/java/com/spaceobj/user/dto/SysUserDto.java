@@ -1,10 +1,13 @@
 package com.spaceobj.user.dto;
 
+import com.spaceobj.user.group.sysUser.UpdateSysUserGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -16,10 +19,16 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class SysUserDto implements Serializable {
 
+  @NotBlank(
+      message = "用户id不为空",
+      groups = {UpdateSysUserGroup.class})
   private String userId;
 
   private String inviteUserId;
 
+  @NotBlank(
+      message = "账号不为空",
+      groups = {UpdateSysUserGroup.class})
   private String account;
 
   private String emailCode;
@@ -80,6 +89,9 @@ public class SysUserDto implements Serializable {
   private String loginId;
 
   /** 用户封禁状态 */
+  @NotNull(
+      message = "用户封禁状态不为空",
+      groups = {UpdateSysUserGroup.class})
   private Integer disableStatus;
 
   /** 创建项目的剩余次数 */
