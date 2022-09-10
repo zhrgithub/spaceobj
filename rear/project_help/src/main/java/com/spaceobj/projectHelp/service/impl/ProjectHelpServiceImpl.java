@@ -46,7 +46,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       List<SysUser> sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       if (sysUserList.size() == 0) {
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-        return SaResult.ok("系统用户数据同步中，请稍后再试");
+        return SaResult.error("系统用户数据同步中，请稍后再试");
       }
       List<SysUser> resultSysUserList =
           sysUserList.stream()
@@ -67,7 +67,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
           redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
       if (sysProjectList.size() == 0) {
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
-        return SaResult.ok("系统项目数据同步中，请稍后再试");
+        return SaResult.error("系统项目数据同步中，请稍后再试");
       }
       // 根据前端传递过来的项目id，判断项目列表中是否有该项目
       List<SysProject> resultSysProjectList =
@@ -148,7 +148,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       List<ProjectHelp> list = redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
       if (list.size() == 0) {
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_HELP_PROJECT_LIST);
-        return SaResult.ok("项目助力列表数据同步中，请稍后");
+        return SaResult.error("项目助力列表数据同步中，请稍后");
       }
       // 获取当前项目信息
       List<ProjectHelp> resultList;
@@ -228,7 +228,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       // 如果缓存中的数据为0，那么从数据库中查询，并缓存到Redis中
       if (size == 0) {
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_HELP_PROJECT_LIST);
-        return SaResult.ok("项目助力列表数据同步中，请稍后");
+        return SaResult.error("项目助力列表数据同步中，请稍后");
 
       } else {
         //  否则从缓存中查找
