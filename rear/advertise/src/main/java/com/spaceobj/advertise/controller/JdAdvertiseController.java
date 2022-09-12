@@ -1,5 +1,6 @@
 package com.spaceobj.advertise.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.advertise.bo.JdAdvertisBo;
 import com.spaceobj.advertise.dto.JdAdvertisDto;
@@ -32,7 +33,7 @@ public class JdAdvertiseController {
 
     @PostMapping("saveAdvertise")
     public SaResult saveAdvertise(
-            @Validated(InsertAdverTiseGroup.class )
+            @Validated(InsertAdverTiseGroup.class)
                     JdAdvertisDto jdAdvertisDto) {
 
         JdAdvertisBo jdAdvertisBo = JdAdvertisBo.builder().build();
@@ -42,7 +43,7 @@ public class JdAdvertiseController {
 
     @PostMapping("deleteAdvertise")
     public SaResult deleteAdvertise(
-            @Validated(DeleteAdvertiseGroup.class )
+            @Validated(DeleteAdvertiseGroup.class)
                     JdAdvertisDto jdAdvertisDto) {
 
         JdAdvertisBo jdAdvertisBo = JdAdvertisBo.builder().build();
