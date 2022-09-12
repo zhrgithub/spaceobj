@@ -45,6 +45,7 @@ public class IpLimiting {
 
     try {
       String ip = getIPAddress();
+      System.out.println("ip:" + ip);
       if (!isIpAddressCheck(ip)) {
         pjp = new ServiceProceedingJoinPoint(SaResult.error("请求参数错误"));
         return pjp.proceed();

@@ -1,57 +1,36 @@
 package com.spaceobj.user.config;
 
-import cn.dev33.satoken.interceptor.SaRouteInterceptor;
-import cn.dev33.satoken.router.SaRouter;
-import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.filter.SaServletFilter;
+import cn.dev33.satoken.id.SaIdUtil;
+import cn.dev33.satoken.util.SaResult;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
+ * Sa-Token 权限认证 配置类
+ *
  * @author zhr_java@163.com
  * @date 2022/7/24 00:46
  */
 @Configuration
 public class SaTokenConfigure implements WebMvcConfigurer {
-
-  @Override
-  public void addCorsMappings(CorsRegistry registry) {
-    registry
-        // 拦截所有的请求
-        .addMapping("/**")
-        // 可跨域的域名，可以为 *
-        .allowedOrigins("*")
-        .allowCredentials(true)
-        // 允许跨域的方法，可以单独配置
-        .allowedMethods("*")
-        // 允许跨域的请求头，可以单独配置
-        .allowedHeaders("*");
-  }
-
-  /**
-   * 注册拦截器
-   *
-   * @param registry
-   */
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-
-    // 注册 Sa-Token 的路由拦截器
-    registry
-        .addInterceptor(
-            new SaRouteInterceptor(
-                (req, res, handler) -> {
-
-                  /** 拦截所有接口 */
-                  // SaRouter.match("/**", r -> StpUtil.checkLogin());
-
-                  /** 二次拦截，权限认证 -- 不同模块认证不同权限 */
-                  SaRouter.match("/user/test", r -> StpUtil.checkPermission("admin"));
-                }))
-        .addPathPatterns("/**");
-
-    /** 放开拦截的接口 */
-    // .excludePathPatterns(new String[] {"/user/doLogin","/test2"});
+  // 注册 Sa-Token 全局过滤器
+  @Bean
+  public SaServletFilter getSaServletFilter() {
+    return new SaServletFilter()
+        .addInclude("/**")
+        .addExclude("/favicon.ico")
+        .setAuth(
+            obj -> {
+              // 校验 Id-Token 身份凭证     —— 以下两句代码可简化为：SaIdUtil.checkCurrentRequestToken();
+              String token = SaHolder.getRequest().getHeader(SaIdUtil.ID_TOKEN);
+              SaIdUtil.checkToken(token);
+            })
+        .setError(
+            e -> {
+              return SaResult.error(e.getMessage());
+            });
   }
 }
