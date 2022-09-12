@@ -66,6 +66,15 @@ public class KafkaEmailConsumer {
             });
   }
 
+  @KafkaListener(topics = {KafKaTopics.PENDING_REVIEW_PROJECT})
+  public void pendingReviewProject(ConsumerRecord<?, ?> record) {
+    Optional.ofNullable(record.value())
+            .ifPresent(
+                    message -> {
+                      sendEmail(message);
+                    });
+  }
+
   /**
    * 解析kafka消息从message获取收件人的email，title，content
    *

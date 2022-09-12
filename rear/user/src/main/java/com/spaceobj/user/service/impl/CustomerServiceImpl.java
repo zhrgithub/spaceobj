@@ -1,5 +1,7 @@
 package com.spaceobj.user.service.impl;
 
+import cn.dev33.satoken.exception.SaTokenException;
+import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
@@ -22,6 +24,7 @@ import com.spaceobj.user.utils.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +46,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Autowired private RedisTemplate redisTemplate;
 
   @Autowired private KafkaSender kafkaSender;
+
+  @Value("${aseKey}")
+  private String key;
 
   @Override
   public SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo) {
@@ -72,10 +78,13 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (redisTemplate.hasKey(loginOrRegisterBo.getAccount())) {
           SysUser sysUser =
               (SysUser) redisTemplate.opsForValue().get(loginOrRegisterBo.getAccount());
-          if (sysUser.getPassword().equals(loginOrRegisterBo.getPassword())) {
+          // 密码解密
+          String aesDecryptPassword = SaSecureUtil.aesDecrypt(key, loginOrRegisterBo.getPassword());
+          if (sysUser.getPassword().equals(aesDecryptPassword)) {
             StpUtil.login(loginOrRegisterBo.getAccount());
             sysUser.setOnlineStatus(1);
             sysUser.setToken(StpUtil.getTokenValue());
+            loginOrRegisterBo.setPassword("");
             BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
             // 更新用户当前登录信息
             kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
@@ -118,6 +127,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 逻辑参数校验错误
         return SaResult.error("请求参数错误");
       }
+    } catch (SaTokenException e) {
+      return SaResult.error("密码格式不正确");
     } catch (RuntimeException e) {
       e.printStackTrace();
       LOG.error("loginOrRegister failed", e.getMessage());
@@ -359,6 +370,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             Resource.SYS_USER_ID_CARD_DIRECTORY, fileName, multipartFile);
 
     return SaResult.ok().setData(url);
+  }
+
+  @Override
+  public SaResult aesEncrypt(String text) {
+    String ciphertext = SaSecureUtil.aesEncrypt(key, text);
+    return SaResult.ok().setData(ciphertext);
   }
 
   /**

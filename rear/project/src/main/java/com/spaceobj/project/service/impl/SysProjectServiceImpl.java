@@ -1,5 +1,6 @@
 package com.spaceobj.project.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
@@ -205,6 +206,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                     })
                 .collect(Collectors.toList());
       } else if (projectSearchBo.getProjectType() == 2) {
+        if (!StpUtil.hasPermission("project")) {
+          return SaResult.error("权限不够");
+        }
         // 管理员查询信息全部的信息
         list =
             list.stream()
@@ -316,7 +320,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
               .collect(Collectors.toList());
       if (resultProjectHelp.size() > 0) {
         ProjectHelp helpBo = resultProjectHelp.get(0);
-        if (helpBo.getHpStatus() == 1||helpBo.getHpNumber()>=10) {
+        if (helpBo.getHpStatus() == 1 || helpBo.getHpNumber() >= 10) {
           return SaResult.ok().setData(sysUser.getPhoneNumber());
         }
       }
@@ -358,5 +362,24 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       LOG.error("get phone number by projectId error", e.getMessage());
       return SaResult.error("获取联系方式失败，服务器异常");
     }
+  }
+
+  /**
+   * 获取待审核项目的列表
+   *
+   * @return
+   */
+  @Override
+  public SaResult getPendingReview() {
+    List<SysProject> sysProjectList =
+        redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+    List<SysProject> resultProjectList =
+        sysProjectList.stream()
+            .filter(
+                p -> {
+                  return p.getStatus() == 0;
+                })
+            .collect(Collectors.toList());
+    return SaResult.ok().setData(resultProjectList.size());
   }
 }

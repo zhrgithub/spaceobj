@@ -25,18 +25,39 @@ spring:
   cloud:
     gateway:
       routes: # 数组模式
-        - id: spaceobj-advertise # 路由唯一标识
+        - id: spaceobj-advertise # 广告模块
           uri: lb://spaceobj-advertise # 想要转发到的地址
           order: 1 # 优先级，数字越小优先级越高
           predicates: #断言 配置哪个路径才转发
             - Path=/spaceobj-advertise/**
           filters: #过滤器，请求在传递过程中通过过滤器修改
             - StripPrefix=1  #去掉第一层前缀
-        - id: spaceobj-user # 路由唯一标识
-          uri: http://127.0.0.1:8083 # 想要转发到的地址
-          order: 1 # 优先级，数字越小优先级越高
+        - id: spaceobj-user # 用户模块
+          uri: lb://spaceobj-user # 想要转发到的地址
+          order: 2 # 优先级，数字越小优先级越高
           predicates: #断言 配置哪个路径才转发
             - Path=/spaceobj-user/**
+          filters: #过滤器，请求在传递过程中通过过滤器修改
+            - StripPrefix=1  #去掉第一层前缀
+        - id: spaceobj-project # 项目模块
+          uri: lb://spaceobj-project # 想要转发到的地址
+          order: 3 # 优先级，数字越小优先级越高
+          predicates: #断言 配置哪个路径才转发
+            - Path=/spaceobj-project/**
+          filters: #过滤器，请求在传递过程中通过过滤器修改
+            - StripPrefix=1  #去掉第一层前缀
+        - id: spaceobj-project-help # 项目助力模块
+          uri: lb://spaceobj-project-help # 想要转发到的地址
+          order: 4 # 优先级，数字越小优先级越高
+          predicates: #断言 配置哪个路径才转发
+            - Path=/spaceobj-project-help/**
+          filters: #过滤器，请求在传递过程中通过过滤器修改
+            - StripPrefix=1  #去掉第一层前缀
+        - id: spaceobj-other # 其它配置模块
+          uri: lb://spaceobj-other # 想要转发到的地址
+          order: 5 # 优先级，数字越小优先级越高
+          predicates: #断言 配置哪个路径才转发
+            - Path=/spaceobj-other/**
           filters: #过滤器，请求在传递过程中通过过滤器修改
             - StripPrefix=1  #去掉第一层前缀
     # Nacos帮助文档: https://nacos.io/zh-cn/docs/concepts.html
@@ -49,11 +70,6 @@ spring:
         server-addr: localhost:8848
         # 注册到 nacos 的指定 namespace，默认为 public
         namespace: public
-  servlet:
-    multipart:
-      max-file-size: 200KB
-      max-request-size: 200KB
-
 # Sa-Token配置
 sa-token:
   # token 名称 (同时也是cookie名称)

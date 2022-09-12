@@ -89,4 +89,9 @@ public class CustomerUserController {
   public SaResult uploadFile(@RequestPart("file") MultipartFile file) {
     return customerUserService.uploadFile(file);
   }
+
+  @PostMapping("aesEncrypt")
+  public SaResult aesEncrypt(String text) {
+    return customerUserService.aesEncrypt(text);
+  }
 }

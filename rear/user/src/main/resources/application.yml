@@ -2,6 +2,9 @@
 server:
   port: 8083
 
+# 定义变量
+aseKey: "W6rkecAN123"
+
 # 应用名称
 spring:
   application:

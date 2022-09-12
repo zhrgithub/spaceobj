@@ -69,4 +69,6 @@ public interface SysProjectService extends IService<SysProject> {
    * @return
    */
   SaResult getPhoneNumberByProjectId(GetPhoneNumberBo getPhoneNumberBo);
+
+  SaResult getPendingReview();
 }

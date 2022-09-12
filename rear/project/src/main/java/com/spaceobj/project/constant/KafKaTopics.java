@@ -21,10 +21,9 @@ public class KafKaTopics {
   /** 项目助力列表新增信息 */
   public static final String ADD_HELP_PROJECT = "add_help_project";
 
-
-  /**
-   * 刷新项目缓存信息
-   */
+  /** 刷新项目缓存信息 */
   public static final String UPDATE_PROJECT_LIST = "update_project_list";
 
+  /** 待审核项目通知 */
+  public static final String PENDING_REVIEW_PROJECT = "pending_review_project";
 }
