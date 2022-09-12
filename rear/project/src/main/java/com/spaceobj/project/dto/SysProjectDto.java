@@ -50,7 +50,7 @@ public class SysProjectDto implements Serializable {
 
   @NotBlank(
       message = "用户ID是必填项",
-      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
+      groups = {})
   private String releaseUserId;
 
   private Long pageViews;

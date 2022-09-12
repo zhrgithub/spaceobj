@@ -66,13 +66,12 @@ public class ProjectController {
   }
 
   @PostMapping(value = "addPageViews")
-  public void  addPageViews(@Validated(AddPageViewsGroup.class) SysProjectDto sysProjectDto) {
+  public void addPageViews(@Validated(AddPageViewsGroup.class) SysProjectDto sysProjectDto) {
     sysProjectService.addPageViews(sysProjectDto.getPId());
   }
 
   @PostMapping("getPhoneNumberByProjectId")
   public SaResult getPhoneNumberByProjectId(@Validated GetPhoneNumberDto getPhoneNumberDto) {
-
     GetPhoneNumberBo getPhoneNumberBo = GetPhoneNumberBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(getPhoneNumberDto, getPhoneNumberBo);
     return sysProjectService.getPhoneNumberByProjectId(getPhoneNumberBo);

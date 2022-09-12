@@ -31,10 +31,8 @@ public class CustomerUserDto {
       groups = {
         LoginOrRegisterGroup.class,
         LoginOutGroup.class,
-        UpdateUserInfoGroup.class,
         GetUserInfoGroup.class,
         SendMailGroup.class,
-        ResetPassWordGroup.class,
         RealNameGroup.class
       })
   private String account;
@@ -54,13 +52,13 @@ public class CustomerUserDto {
   /** ip */
   @NotBlank(
       message = "登录账户ip不为空",
-      groups = {LoginOrRegisterGroup.class})
+      groups = {})
   private String ip;
 
   /** requestIP */
   @NotBlank(
       message = "请求ip不为空",
-      groups = {LoginOrRegisterGroup.class, UpdateUserInfoGroup.class})
+      groups = {})
   private String requestIp;
 
   /** ip属地 */
@@ -143,9 +141,6 @@ public class CustomerUserDto {
   private String newPassword;
 
   /** 登录id */
-  @NotBlank(
-      message = "登录id不为空",
-      groups = {UpdateUserInfoGroup.class, ResetPassWordGroup.class, RealNameGroup.class})
   private String loginId;
 
   /** 用户封禁状态 */

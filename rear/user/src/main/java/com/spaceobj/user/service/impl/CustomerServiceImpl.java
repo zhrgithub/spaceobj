@@ -28,10 +28,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import sun.net.util.IPAddressUtil;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -57,13 +55,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     if (isDisable) {
       return SaResult.error("账号已被封禁！");
     }
-
-    // 校验ip是否合法
-    if (!isIpAddressCheck(loginOrRegisterBo.getRequestIp())
-        || !loginOrRegisterBo.getRequestIp().equals(loginOrRegisterBo.getIp())) {
-      redisTemplate.opsForValue().set(loginOrRegisterBo.getRequestIp(), 10, 1, TimeUnit.DAYS);
-      return SaResult.error("非法操作，设备已锁定");
-    }
     // 校验邮箱
     if (!Pattern.matches(RegexPool.EMAIL, loginOrRegisterBo.getAccount())) {
       return SaResult.error("邮箱格式错误");
@@ -84,7 +75,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             StpUtil.login(loginOrRegisterBo.getAccount());
             sysUser.setOnlineStatus(1);
             sysUser.setToken(StpUtil.getTokenValue());
-            loginOrRegisterBo.setPassword("");
+            loginOrRegisterBo.setPassword(null);
             BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
             // 更新用户当前登录信息
             kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
@@ -157,9 +148,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult getUserInfo(String loginId) {
+  public SaResult getUserInfo() {
     SysUser sysUser = null;
     try {
+      String loginId = StpUtil.getLoginId().toString();
       sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       if (ObjectUtils.isNull(sysUser)) {
         return SaResult.error("账号不存在");
@@ -174,20 +166,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult updateUserInfo(SysUserBo user) {
     try {
-      // 校验ip是否合法
-      if (!isIpAddressCheck(user.getRequestIp()) || !user.getRequestIp().equals(user.getIp())) {
-        redisTemplate.opsForValue().set(user.getRequestIp(), 10, 1, TimeUnit.DAYS);
-        return SaResult.error("非法操作，设备已锁定");
-      }
 
       // 校验当前登录用户是否是和修改用户一样
-      String account = user.getLoginId();
+      String account = StpUtil.getLoginId().toString();
 
       // 如果当前账号已经被封禁
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(account);
-      if (ObjectUtils.isNull(sysUser)) {
-        return SaResult.error("账号不存在");
-      }
       if (sysUser.getDisableStatus() == 1) {
         return SaResult.error("账号已被封禁，禁止操作！");
       }
@@ -200,17 +184,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("本月剩余修改次数为0，下个月再修改吧！");
       }
 
-      if (!account.equals(user.getAccount())) {
-        // 先封禁账号，然后踢下线
-        StpUtil.disable(account, -1);
-        StpUtil.kickout(account);
-        sysUser.setOnlineStatus(0);
-        sysUser.setDisableStatus(1);
-        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-        redisTemplate.opsForValue().set(user.getRequestIp(), 10, 1, TimeUnit.DAYS);
-        return SaResult.error("非法操作，账号已封禁、设备已锁定");
-      }
-
       // 昵称、手机号，其余设置为空
       // 校验电话号码
       if (!Pattern.matches(RegexPool.MOBILE, user.getPhoneNumber())) {
@@ -220,8 +193,11 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (!Pattern.matches(RegexPool.GENERAL_WITH_CHINESE, user.getNickName())) {
         return SaResult.error("昵称格式错误");
       }
-      // 对象复制
-      BeanConvertToTargetUtils.copyNotNullProperties(user, sysUser);
+
+      sysUser.setPhoneNumber(user.getPhoneNumber());
+      sysUser.setNickName(user.getNickName());
+      sysUser.setPhotoUrl(user.getPhotoUrl());
+      sysUser.setIpTerritory(user.getIpTerritory());
 
       // 设置为正在修改状态
       sysUser.setUserInfoEditStatus(1);
@@ -282,31 +258,24 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public SaResult resetPassword(SysUserBo sysUserBo) {
     try {
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(sysUserBo.getLoginId());
-      // 验证当前登录的用户是否和传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
-      if (!sysUserBo.getAccount().equals(sysUserBo.getLoginId())) {
-        // 封禁账号
-        StpUtil.disable(sysUserBo.getLoginId(), -1);
-        // 踢下线
-        StpUtil.kickout(sysUserBo.getUserId());
-        sysUser.setOnlineStatus(0);
-        sysUser.setDisableStatus(1);
-        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-        // 锁定设备
-        redisTemplate.opsForValue().set(sysUserBo.getRequestIp(), 10, 1, TimeUnit.DAYS);
-        return SaResult.error("违规操作，账号已封，设备已锁定");
-      }
+
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(sysUserBo.getAccount());
+
       // 验证邮箱验证码是否和服务器保存的一致
       String emailCodeFromRedis = sysUser.getEmailCode();
       if (emailCodeFromRedis.equals(sysUserBo.getEmailCode())) {
         // 缓存更新
-        sysUser.setPassword(sysUserBo.getNewPassword());
+        String password = SaSecureUtil.aesDecrypt(key, sysUserBo.getNewPassword());
+        sysUser.setPassword(password);
         // kafka通知MySQL修改
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         return SaResult.ok("密码修改成功");
       }
+      sysUser.setEmailCode(null);
+      redisTemplate.opsForValue().set(sysUser.getAccount(), sysUser);
       return SaResult.error("验证码错误，密码修改失败");
-
+    } catch (SaTokenException e) {
+      return SaResult.error("密码格式不正确");
     } catch (RuntimeException e) {
       LOG.error("resetPassword failed", e.getMessage());
       return SaResult.error("密码重置失败，服务器异常");
@@ -323,19 +292,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       // 从缓存中获取当前登录用户的基本信息
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(user.getLoginId());
-      // 验证当前登录的用户是否和前端传递过来的账号一致，如果不一致，封号，踢下线，锁定设备
-      if (!user.getAccount().equals(user.getLoginId())) {
-        // 封禁账号
-        StpUtil.disable(user.getLoginId(), -1);
-        // 踢下线
-        StpUtil.kickout(user.getLoginId());
-        // 锁定设备
-        sysUser.setOnlineStatus(0);
-        sysUser.setDisableStatus(1);
-        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-        redisTemplate.opsForValue().set(user.getLoginId(), 10, 1, TimeUnit.DAYS);
-        return SaResult.error("违规操作，账号已封，设备已锁定");
-      }
 
       // 校验当前账户是否是在审核中
       if (sysUser.getRealNameStatus() == 2) {
@@ -376,22 +332,5 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult aesEncrypt(String text) {
     String ciphertext = SaSecureUtil.aesEncrypt(key, text);
     return SaResult.ok().setData(ciphertext);
-  }
-
-  /**
-   * IP正则校验
-   *
-   * @param address
-   * @return
-   */
-  public static boolean isIpAddressCheck(String address) {
-
-    boolean iPv4LiteralAddress = IPAddressUtil.isIPv4LiteralAddress(address);
-    boolean iPv6LiteralAddress = IPAddressUtil.isIPv6LiteralAddress(address);
-    // ip有可能是v4,也有可能是v6,滿足任何一种都是合法的ip
-    if (!(iPv4LiteralAddress || iPv6LiteralAddress)) {
-      return false;
-    }
-    return true;
   }
 }

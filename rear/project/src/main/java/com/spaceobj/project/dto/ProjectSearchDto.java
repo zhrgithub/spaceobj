@@ -20,6 +20,4 @@ public class ProjectSearchDto {
 
   @NotNull(message = "查询类型是必填项")
   private Integer projectType;
-
-  private String userId;
 }

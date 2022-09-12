@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProjectSearchBo {
   private String content;
+
   private Integer projectType;
+
   private String userId;
 }

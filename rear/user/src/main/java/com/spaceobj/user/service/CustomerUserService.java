@@ -36,7 +36,7 @@ public interface CustomerUserService extends IService<SysUser> {
    * @param loginId
    * @return
    */
-  SaResult getUserInfo(String loginId);
+  SaResult getUserInfo();
 
   /**
    * 修改用户信息，要比较当前登录账户的cookie是否和提交的账号ID一致，

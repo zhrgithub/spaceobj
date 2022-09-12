@@ -4,7 +4,6 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.domain.ProjectHelp;
 import com.spaceobj.domain.SysProject;
@@ -61,18 +60,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
 
       // 校验当前提交次数是否超过最大次数
-      List<SysUser> sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      List<SysUser> resultSysUser =
-          sysUserList.stream()
-              .filter(
-                  u -> {
-                    return u.getUserId().equals(sysProject.getReleaseUserId());
-                  })
-              .collect(Collectors.toList());
-      if (resultSysUser.size() == 0) {
-        return SaResult.error("用户不存在");
-      }
-      SysUser sysUser = resultSysUser.get(0);
+      String loginId = (String) StpUtil.getLoginId();
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       if (sysUser.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线，明天再来吧！");
       }
@@ -85,6 +74,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       sysProject.setUuid(uuid);
       // 设置成审核中
       sysProject.setStatus(0);
+      sysProject.setReleaseUserId(sysUser.getUserId());
       redisTemplate.opsForList().rightPush(RedisKey.PROJECT_LIST, sysProject);
 
       kafkaSender.send(sysProject, KafKaTopics.ADD_PROJECT);
@@ -116,8 +106,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           return SaResult.error("项目不存在");
         }
         SysProject checkCacheProject = checkCacheProjectList.get(0);
-        if (!ObjectUtils.isNotNull(checkCacheProject)) {
-          return SaResult.error("项目不存在");
+        String loginId = StpUtil.getLoginId().toString();
+        SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+        if (!sysUser.getUserId().equals(checkCacheProject.getReleaseUserId())) {
+          return SaResult.error("非本人操作");
         }
 
         if (checkCacheProject.getStatus() == 0) {
@@ -170,6 +162,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SaResult findList(ProjectSearchBo projectSearchBo) {
     try {
 
+
+      if (projectSearchBo.getProjectType() == 1) {
+        String loginId = StpUtil.getLoginId().toString();
+        SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+        projectSearchBo.setUserId(sysUser.getUserId());
+      }
       List<SysProject> list;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
       if (size == 0) {
@@ -194,9 +192,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                     })
                 .collect(Collectors.toList());
       } else if (projectSearchBo.getProjectType() == 1) {
-        if (StringUtils.isEmpty(projectSearchBo.getUserId())) {
-          return SaResult.error("用户id不为空");
-        }
         // 查询自己发布的信息
         list =
             list.stream()
@@ -259,6 +254,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   @Override
   public SaResult getPhoneNumberByProjectId(GetPhoneNumberBo getPhoneNumberBo) {
     try {
+      String loginId = (String) StpUtil.getLoginId();
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+      getPhoneNumberBo.setUserId(sysUser.getUserId());
       List<SysProject> list;
       List<SysProject> sysProjectList;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
@@ -280,19 +278,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         return SaResult.error("项目不存在");
       }
       SysProject sysProject = sysProjectList.get(0);
-
-      List<SysUser> sysUsers = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      List<SysUser> resultSysUsers =
-          sysUsers.stream()
-              .filter(
-                  user -> {
-                    return user.getUserId().equals(getPhoneNumberBo.getUserId());
-                  })
-              .collect(Collectors.toList());
-      if (resultSysUsers.size() == 0) {
-        return SaResult.error("用户不存在");
-      }
-      SysUser sysUser = resultSysUsers.get(0);
       // 如果项目发布人id和userId相同，直接返回用户联系方式
       if (sysProject.getReleaseUserId().equals(getPhoneNumberBo.getUserId())) {
         return SaResult.ok().setData(sysUser.getPhoneNumber());

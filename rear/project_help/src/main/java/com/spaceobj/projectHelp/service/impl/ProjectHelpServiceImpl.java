@@ -1,5 +1,6 @@
 package com.spaceobj.projectHelp.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -42,23 +43,9 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
   public SaResult createProjectHelpLink(ProjectHelpBo projectHelpBo) {
 
     try {
+      String loginId = StpUtil.getLoginId().toString();
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       // 如果用户的创建剩余次数小于10次，提醒明天再来
-      List<SysUser> sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      if (sysUserList.size() == 0) {
-        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-        return SaResult.error("系统用户数据同步中，请稍后再试");
-      }
-      List<SysUser> resultSysUserList =
-          sysUserList.stream()
-              .filter(
-                  u -> {
-                    return u.getUserId().equals(projectHelpBo.getCreateUserId());
-                  })
-              .collect(Collectors.toList());
-      if (resultSysUserList.size() == 0) {
-        return SaResult.error("用户不存在");
-      }
-      SysUser sysUser = resultSysUserList.get(0);
       if (sysUser.getCreateProjectHelpTimes() <= 0) {
         return SaResult.error("今日分享链接创建已上限，明天再来吧！");
       }
@@ -107,7 +94,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
           list.stream()
               .filter(
                   ph -> {
-                    return ph.getCreateUserId().equals(projectHelpBo.getCreateUserId())
+                    return ph.getCreateUserId().equals(sysUser.getUserId())
                         && ph.getPId() == projectHelpBo.getPId();
                   })
               .collect(Collectors.toList());
@@ -121,7 +108,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
           ProjectHelp.builder()
               .hpId(UUID.randomUUID().toString())
               .pId(sysProject.getPId())
-              .createUserId(projectHelpBo.getCreateUserId())
+              .createUserId(sysUser.getUserId())
               .hpNumber(0)
               .pContent(sysProject.getContent())
               .pPrice(sysProject.getPrice())
@@ -145,6 +132,8 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
   public SaResult updateProjectHelpNumber(ProjectHelpBo projectHelpBo) {
 
     try {
+      String loginId = StpUtil.getLoginId().toString();
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       List<ProjectHelp> list = redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
       if (list.size() == 0) {
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_HELP_PROJECT_LIST);
@@ -164,27 +153,17 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       }
       ProjectHelp projectHelp = resultList.get(0);
       // 如果项目已经助力成功，那么直接返回好友已经成功
-      if (projectHelp.getHpNumber() >= 10||projectHelp.getHpStatus()==1) {
+      if (projectHelp.getHpNumber() >= 10 || projectHelp.getHpStatus() == 1) {
         return SaResult.error("助力成功，快通知好友联系吧！");
       }
-      if (projectHelp.getCreateUserId().equals(projectHelpBo.getCreateUserId())) {
+      if (projectHelp.getCreateUserId().equals(sysUser.getUserId())) {
         return SaResult.error("助力失败，请分享给好友助力！");
       }
-      List<SysUser> sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      List<SysUser> resultSysUser =
-          sysUserList.stream()
-              .filter(
-                  user -> {
-                    return user.getUserId().equals(projectHelpBo.getCreateUserId());
-                  })
-              .collect(Collectors.toList());
-      if (resultSysUser.size() == 0) {
-        return SaResult.error("用户不存在");
-      }
-      SysUser sysUser = resultSysUser.get(0);
       if (sysUser.getProjectHelpTimes() <= 0) {
         return SaResult.error("您今日的助力次数已经用尽，请改天再来吧");
       }
+      List<SysUser> sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+
       //  用户的助力次数减少一，返回助力成功
       sysUser.setProjectHelpTimes(sysUser.getProjectHelpTimes() - 1);
       kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
@@ -223,6 +202,8 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     List<ProjectHelp> resultList = null;
 
     try {
+      String loginId = StpUtil.getLoginId().toString();
+      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
       List<ProjectHelp> list = null;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_HELP_LIST);
       // 如果缓存中的数据为0，那么从数据库中查询，并缓存到Redis中
@@ -237,7 +218,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
             list.stream()
                 .filter(
                     hp -> {
-                      return hp.getCreateUserId().equals(projectHelpBo.getCreateUserId());
+                      return hp.getCreateUserId().equals(sysUser.getUserId());
                     })
                 .collect(Collectors.toList());
       }

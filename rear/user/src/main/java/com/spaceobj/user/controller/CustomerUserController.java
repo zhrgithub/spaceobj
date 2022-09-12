@@ -1,5 +1,6 @@
 package com.spaceobj.user.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.SysUserBo;
@@ -7,6 +8,7 @@ import com.spaceobj.user.dto.CustomerUserDto;
 import com.spaceobj.user.group.customer.*;
 import com.spaceobj.user.service.CustomerUserService;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
+import com.spaceobj.user.utils.HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +31,10 @@ public class CustomerUserController {
   public SaResult loginOrRegister(
       @Validated(LoginOrRegisterGroup.class) CustomerUserDto customerUserDto) {
 
+    customerUserDto.setIp(HttpUtils.getIPAddress());
+
     LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
+
     // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginOrRegisterBo);
 
@@ -42,15 +47,17 @@ public class CustomerUserController {
   }
 
   @PostMapping("getUserInfo")
-  public SaResult getUserInfo(@Validated(GetUserInfoGroup.class) CustomerUserDto customerUserDto) {
+  public SaResult getUserInfo() {
 
-    return customerUserService.getUserInfo(customerUserDto.getAccount());
+    return customerUserService.getUserInfo();
   }
 
   @PostMapping("updateUserInfo")
   public SaResult updateUserInfo(
       @Validated(UpdateUserInfoGroup.class) CustomerUserDto customerUserDto) {
 
+    customerUserDto.setIp(HttpUtils.getIPAddress());
+    customerUserDto.setLoginId(StpUtil.getLoginId().toString());
     SysUserBo sysUserBo = SysUserBo.builder().build();
     // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
@@ -68,6 +75,7 @@ public class CustomerUserController {
   public SaResult resetPassword(
       @Validated(ResetPassWordGroup.class) CustomerUserDto customerUserDto) {
 
+    customerUserDto.setLoginId(StpUtil.getLoginId().toString());
     SysUserBo sysUserBo = SysUserBo.builder().build();
     // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
@@ -78,6 +86,7 @@ public class CustomerUserController {
   @PostMapping("realName")
   public SaResult realName(@Validated(RealNameGroup.class) CustomerUserDto customerUserDto) {
 
+    customerUserDto.setLoginId(StpUtil.getLoginId().toString());
     SysUserBo sysUserBo = SysUserBo.builder().build();
     // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);

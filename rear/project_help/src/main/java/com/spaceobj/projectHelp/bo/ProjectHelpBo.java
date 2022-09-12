@@ -32,6 +32,4 @@ public class ProjectHelpBo {
   /** 项目预算 */
   private BigDecimal pPrice;
 
-  /** 项目发起人 */
-  private String pReleaseUserId;
 }
