@@ -76,4 +76,11 @@ public class ProjectController {
     BeanConvertToTargetUtils.copyNotNullProperties(getPhoneNumberDto, getPhoneNumberBo);
     return sysProjectService.getPhoneNumberByProjectId(getPhoneNumberBo);
   }
+
+
+  @PostMapping(value = "queryListAdmin")
+  public SaResult queryListAdmin(){
+    return sysProjectService.queryListAdmin();
+  }
+
 }

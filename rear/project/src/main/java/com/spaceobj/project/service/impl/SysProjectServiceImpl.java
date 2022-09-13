@@ -1,8 +1,8 @@
 package com.spaceobj.project.service.impl;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
-import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.domain.ProjectHelp;
@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -162,7 +161,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SaResult findList(ProjectSearchBo projectSearchBo) {
     try {
 
-
       if (projectSearchBo.getProjectType() == 1) {
         String loginId = StpUtil.getLoginId().toString();
         SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
@@ -200,36 +198,35 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                       return p.getReleaseUserId().equals(projectSearchBo.getUserId());
                     })
                 .collect(Collectors.toList());
-      } else if (projectSearchBo.getProjectType() == 2) {
-        if (!StpUtil.hasPermission("project")) {
-          return SaResult.error("权限不够");
-        }
-        // 管理员查询信息全部的信息
-        list =
-            list.stream()
-                .filter(
-                    p -> {
-                      if (ObjectUtils.isNotNull(projectSearchBo.getContent())) {
-                        // 如果是项目编号，匹配项目编号然后返回
-                        if (Pattern.matches(RegexPool.NUMBERS, projectSearchBo.getContent())) {
-                          return Long.valueOf(projectSearchBo.getContent()).longValue()
-                              == p.getPId();
-                        }
-                        // 如果是内容，匹配内容
-                        return p.getContent().contains(projectSearchBo.getContent());
-                      }
-                      return true;
-                    })
-                .collect(Collectors.toList());
       } else {
         return SaResult.error("请求参数错误");
       }
 
       return SaResult.ok().setData(list);
-    } catch (Exception e) {
+    }catch (NotLoginException e){
+      return SaResult.error(e.getMessage());
+    }catch (Exception e) {
       e.printStackTrace();
       LOG.error("system project find error", e.getMessage());
       return SaResult.error("项目列表查询结果异常");
+    }
+  }
+
+  @Override
+  public SaResult queryListAdmin() {
+    try {
+      List<SysProject> list;
+      long size = redisTemplate.opsForList().size(RedisKey.PROJECT_LIST);
+      if (size == 0) {
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
+        return SaResult.error("系统项目数据同步中，请稍后");
+      } else {
+        list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+      }
+      return SaResult.ok().setData(list);
+    } catch (RuntimeException e) {
+      e.printStackTrace();
+      return SaResult.error("服务器异常");
     }
   }
 

@@ -50,6 +50,13 @@ public interface SysProjectService extends IService<SysProject> {
   SaResult findList(ProjectSearchBo projectSearchBo);
 
   /**
+   * 管理员查询所有项目列表
+   *
+   * @return
+   */
+  SaResult queryListAdmin();
+
+  /**
    * 项目浏览量：根据项目的ID通过消息队列对持久层的浏览量数据修改，然后存储到缓存
    *
    * <p>校验项目中是否存在这个id
