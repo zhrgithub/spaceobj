@@ -1,5 +1,6 @@
 package com.spaceobj.handler;
 
+import cn.dev33.satoken.util.SaResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.cloud.gateway.support.NotFoundException;
@@ -34,6 +35,7 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
 
     String msg;
 
+
     if (ex instanceof NotFoundException) {
       msg = "服务未找到";
     } else if (ex instanceof ResponseStatusException) {
@@ -56,8 +58,9 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
    */
   private static Mono<Void> responseWrap(ServerHttpResponse response,String msg) {
     response.setStatusCode(HttpStatus.BAD_REQUEST);
-    String data = msg;
-    DataBuffer wrap = response.bufferFactory().wrap(data.getBytes());
+    // String data = msg;
+    SaResult saResult =  SaResult.error(msg);
+    DataBuffer wrap = response.bufferFactory().wrap(saResult.toString().getBytes());
     return response.writeWith(Mono.just(wrap));
   }
 }

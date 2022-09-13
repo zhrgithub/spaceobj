@@ -57,6 +57,9 @@ public class SaTokenConfigure {
               SaRouter.match(
                   "/spaceobj-project/project/auditProject",
                   r -> StpUtil.checkPermission("project"));
+              SaRouter.match(
+                  "/spaceobj-project/project/queryListAdmin",
+                  r -> StpUtil.checkPermission("project"));
             })
         // 异常处理方法：每次setAuth函数出现异常时进入
         .setError(
