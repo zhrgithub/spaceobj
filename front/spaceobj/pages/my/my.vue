@@ -14,12 +14,12 @@
 		<!-- 已登录 -->
 		<view class="login-background-style" v-if="loginStatus" @click="editUserInfo">
 			<view class="photo-image-background-style">
-				<image :src="loginPhoto" mode=""></image>
+				<image :src="photoUrl" mode=""></image>
 			</view>
 			<view class="userinfo-background-style">
 
-				<text class="nick-name-style">{{loginName}}</text>
-				<text class="address-background-style">位置：广东深圳</text>
+				<text class="nick-name-style">{{username}}</text>
+				<text class="address-background-style">IP属地：{{ipTerritory}}</text>
 			</view>
 		</view>
 
@@ -113,44 +113,44 @@
 				审核项目
 			</view>
 		</view>
-		
+
 		<!-- 头像管理 -->
 		<view class="invite-value-background-style">
 			<view class="link-us-style">
 				头像管理
 			</view>
-		
+
 			<view class="invite-btn-stye" @click="photoManagement">
 				管理头像
 			</view>
 		</view>
-		
+
 		<!-- 广告投放 -->
 		<view class="invite-value-background-style">
 			<view class="link-us-style">
 				广告投放
 			</view>
-		
+
 			<view class="invite-btn-stye" @click="advertiseManagement">
 				广告管理
 			</view>
 		</view>
-		
+
 		<!-- 其它管理 -->
 		<view class="invite-value-background-style">
 			<view class="link-us-style">
 				其它管理
 			</view>
-		
+
 			<view class="invite-btn-stye" @click="otherManagement">
 				管理
 			</view>
 		</view>
 		<view class="space-line-style">
-			
+
 		</view>
 
-		
+
 
 	</view>
 </template>
@@ -158,12 +158,14 @@
 <script>
 	var that;
 	import app from '@/App.vue'
+	import sk from '@/common/StoryKeys.js'
 	export default {
 		data() {
 			return {
 				loginStatus: true,
-				loginPhoto: '/static/photo.jpg',
-				loginName: 'spaceobj'
+				photoUrl: '/static/photo.jpg',
+				username: 'spaceobj',
+				ipTerritory:'广东 深圳'
 			}
 		},
 		created() {
@@ -171,7 +173,11 @@
 		},
 		onShow() {
 			this.timer = setTimeout(() => {
-				that.loginStatus = app.globalData.loginStatus
+				that.loginStatus = uni.getStorageSync(sk.loginStatus);
+				var userInfo = uni.getStorageSync(sk.userInfo);
+				that.photoUrl = userInfo.photoUrl;
+				that.username = userInfo.username;
+				that.ipTerritory = userInfo.ipTerritory;
 			}, 200)
 		},
 		methods: {
@@ -186,50 +192,50 @@
 					url: '/pages/my/editUser/editUser'
 				})
 			},
-			auditProject(){
+			auditProject() {
 				uni.navigateTo({
-					url:'/pages/my/auditProject/auditProject'
+					url: '/pages/my/auditProject/auditProject'
 				})
 			},
-			logManagement(){
+			logManagement() {
 				uni.navigateTo({
-					url:'/pages/my/logManagement/logManagement'
+					url: '/pages/my/logManagement/logManagement'
 				})
 			},
-			userManagement(){
+			userManagement() {
 				uni.navigateTo({
-					url:'/pages/my/userManageMent/userManageMent'
+					url: '/pages/my/userManageMent/userManageMent'
 				})
 			},
-			userVerified(){
+			userVerified() {
 				uni.navigateTo({
-					url:'/pages/my/userVerified/userVerified'
+					url: '/pages/my/userVerified/userVerified'
 				})
 			},
-			photoManagement(){
+			photoManagement() {
 				uni.navigateTo({
-					url:'/pages/my/photoManagement/photoManagement'
+					url: '/pages/my/photoManagement/photoManagement'
 				})
 			},
-			advertiseManagement(){
+			advertiseManagement() {
 				uni.navigateTo({
-					url:'/pages/my/advertiseManagement/advertiseManagement'
+					url: '/pages/my/advertiseManagement/advertiseManagement'
 				})
 			},
-			userVerifiedMangeMent(){
+			userVerifiedMangeMent() {
 				uni.navigateTo({
-					url:'/pages/my/userVerifiedMangeMent/userVerifiedMangeMent'
+					url: '/pages/my/userVerifiedMangeMent/userVerifiedMangeMent'
 				})
 			},
-			otherManagement(){
+			otherManagement() {
 				uni.navigateTo({
-					url:'/pages/my/otherManagement/otherManagement'
+					url: '/pages/my/otherManagement/otherManagement'
 				})
 			},
-			copyWeChat(){
+			copyWeChat() {
 				uni.setClipboardData({
 					data: 'hello',
-					success: function () {
+					success: function() {
 						console.log('success');
 					}
 				});
@@ -244,7 +250,8 @@
 		height: 100%;
 		position: absolute;
 	}
-	.space-line-style{
+
+	.space-line-style {
 		width: 100%;
 		height: 200rpx;
 	}
@@ -268,6 +275,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		
 	}
 
 	.photo-image-background-style image {
@@ -284,7 +292,7 @@
 	}
 
 	.nick-name-style {
-		width: 55%;
+		width: 25%;
 		display: block;
 		justify-content: left;
 		align-items: center;
@@ -294,12 +302,11 @@
 	}
 
 	.address-background-style {
-		width: 40%;
-		margin-left: 5%;
-		display: flex;
-		justify-content: center;
-		align-items: center;
+		width: 60%;
 		font-size: 14px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.btn-login-background {

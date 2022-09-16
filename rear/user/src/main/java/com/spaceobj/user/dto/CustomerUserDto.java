@@ -46,7 +46,7 @@ public class CustomerUserDto {
   /** 电话 */
   @NotBlank(
       message = "电话不为空",
-      groups = {LoginOrRegisterGroup.class, UpdateUserInfoGroup.class})
+      groups = {UpdateUserInfoGroup.class})
   private String phoneNumber;
 
   /** ip */

@@ -42,8 +42,8 @@ public class CustomerUserController {
   }
 
   @PostMapping("loginOut")
-  public SaResult loginOut(@Validated(LoginOutGroup.class) CustomerUserDto customerUserDto) {
-    return customerUserService.loginOut(customerUserDto.getAccount());
+  public SaResult loginOut() {
+    return customerUserService.loginOut();
   }
 
   @PostMapping("getUserInfo")
@@ -75,7 +75,6 @@ public class CustomerUserController {
   public SaResult resetPassword(
       @Validated(ResetPassWordGroup.class) CustomerUserDto customerUserDto) {
 
-    customerUserDto.setLoginId(StpUtil.getLoginId().toString());
     SysUserBo sysUserBo = SysUserBo.builder().build();
     // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
@@ -101,6 +100,6 @@ public class CustomerUserController {
 
   @PostMapping("aesEncrypt")
   public SaResult aesEncrypt(String text) {
-    return customerUserService.aesEncrypt(text);
+    return customerUserService.rsaEncrypt(text);
   }
 }

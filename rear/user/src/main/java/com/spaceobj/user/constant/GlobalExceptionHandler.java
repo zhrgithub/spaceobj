@@ -57,6 +57,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NullPointerException.class)
   @ResponseBody
   public SaResult nullPointerException(NullPointerException ex) {
+    ex.printStackTrace();
     log.error("null point exception info:" + ex.getMessage());
     return SaResult.error("请求参数为空");
   }
@@ -104,6 +105,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NotLoginException.class)
   @ResponseBody
   public SaResult notLoginException(NotLoginException ex) {
+    ex.printStackTrace();
     log.error("not login exception:" + ex.getMessage());
     return SaResult.error("登录后操作");
   }

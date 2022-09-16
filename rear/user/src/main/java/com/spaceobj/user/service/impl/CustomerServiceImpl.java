@@ -14,6 +14,7 @@ import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.constant.OperationType;
+import com.spaceobj.user.constant.RedisKey;
 import com.spaceobj.user.constant.Resource;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.service.CustomerUserService;
@@ -29,6 +30,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -45,8 +47,11 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Autowired private KafkaSender kafkaSender;
 
-  @Value("${aseKey}")
-  private String key;
+  @Value("${publicKey}")
+  private String publicKey;
+
+  @Value("${privateKey}")
+  private String privateKey;
 
   @Override
   public SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo) {
@@ -59,10 +64,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     if (!Pattern.matches(RegexPool.EMAIL, loginOrRegisterBo.getAccount())) {
       return SaResult.error("邮箱格式错误");
     }
-    // 校验电话号码
-    if (!Pattern.matches(RegexPool.MOBILE, loginOrRegisterBo.getPhoneNumber())) {
-      return SaResult.error("电话格式错误");
-    }
 
     try {
       if (loginOrRegisterBo.getOperateType().equals(OperationType.LOGIN)) {
@@ -70,12 +71,16 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           SysUser sysUser =
               (SysUser) redisTemplate.opsForValue().get(loginOrRegisterBo.getAccount());
           // 密码解密
-          String aesDecryptPassword = SaSecureUtil.aesDecrypt(key, loginOrRegisterBo.getPassword());
-          if (sysUser.getPassword().equals(aesDecryptPassword)) {
+          String rsaDecryptPasswordFromSys =
+              SaSecureUtil.rsaDecryptByPrivate(privateKey, sysUser.getPassword());
+          // 密码解密
+          String rsaDecryptPasswordFromLogin =
+              SaSecureUtil.rsaDecryptByPrivate(privateKey, loginOrRegisterBo.getPassword());
+
+          if (rsaDecryptPasswordFromSys.equals(rsaDecryptPasswordFromLogin)) {
             StpUtil.login(loginOrRegisterBo.getAccount());
             sysUser.setOnlineStatus(1);
             sysUser.setToken(StpUtil.getTokenValue());
-            loginOrRegisterBo.setPassword(null);
             BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
             // 更新用户当前登录信息
             kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
@@ -84,6 +89,13 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             return SaResult.error("密码不正确");
           }
         } else {
+          // 校验用户列表缓存长度是否是0，如果不是0并且没有查到该用户的基本信息，那么返回用户不存在
+          List<SysUser> sysUserList =
+              redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+          if (sysUserList.size() > 0) {
+            return SaResult.error("用户不存在");
+          }
+
           // 先刷新缓存然后再次查询
           SysUser sysUser = SysUser.builder().account(loginOrRegisterBo.getAccount()).build();
           kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER_LIST);
@@ -94,8 +106,18 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (redisTemplate.hasKey(loginOrRegisterBo.getAccount())) {
           return SaResult.error("请勿重复注册");
         }
+        // 校验昵称
+        // 校验头像
 
         SysUser sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
+        if (StringUtils.isEmpty(loginOrRegisterBo.getPhoneNumber())) {
+          return SaResult.error("手机号不为空");
+        }
+
+        // 校验电话号码
+        if (!Pattern.matches(RegexPool.MOBILE, loginOrRegisterBo.getPhoneNumber())) {
+          return SaResult.error("电话格式错误");
+        }
         BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
 
         StpUtil.login(loginOrRegisterBo.getAccount());
@@ -128,8 +150,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult loginOut(String loginId) {
+  public SaResult loginOut() {
     try {
+      String loginId = StpUtil.getLoginId().toString();
       if (StringUtils.isEmpty(loginId)) {
         return SaResult.error("登录id不为空");
       }
@@ -265,8 +288,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       String emailCodeFromRedis = sysUser.getEmailCode();
       if (emailCodeFromRedis.equals(sysUserBo.getEmailCode())) {
         // 缓存更新
-        String password = SaSecureUtil.aesDecrypt(key, sysUserBo.getNewPassword());
-        sysUser.setPassword(password);
+        sysUser.setPassword(sysUserBo.getNewPassword());
+        sysUser.setEmailCode(null);
         // kafka通知MySQL修改
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         return SaResult.ok("密码修改成功");
@@ -329,8 +352,11 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult aesEncrypt(String text) {
-    String ciphertext = SaSecureUtil.aesEncrypt(key, text);
+  public SaResult rsaEncrypt(String text) {
+    if (StringUtils.isBlank(text)) {
+      return SaResult.error("密码不为空");
+    }
+    String ciphertext = SaSecureUtil.rsaEncryptByPublic(publicKey, text);
     return SaResult.ok().setData(ciphertext);
   }
 }

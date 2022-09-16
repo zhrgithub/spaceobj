@@ -25,15 +25,13 @@ public interface CustomerUserService extends IService<SysUser> {
   /**
    * 退出登录，根据当前登录账号的cookie退出登录
    *
-   * @param loginId
    * @return
    */
-  SaResult loginOut(String loginId);
+  SaResult loginOut();
 
   /**
    * 通过用户当前登录的cookie返回用户基本信息
    *
-   * @param loginId
    * @return
    */
   SaResult getUserInfo();
@@ -91,10 +89,10 @@ public interface CustomerUserService extends IService<SysUser> {
   SaResult uploadFile(MultipartFile multipartFile);
 
   /**
-   * 密码加密
+   * 密码非对称加密
    *
    * @param text
    * @return
    */
-  SaResult aesEncrypt(String text);
+  SaResult rsaEncrypt(String text);
 }

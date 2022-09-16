@@ -72,6 +72,8 @@
 
 <script>
 	var that = this;
+	import sk from "@/common/StoryKeys.js"
+	import api from "@/common/api.js"
 	export default {
 		data() {
 			return {
@@ -89,7 +91,11 @@
 		created() {
 			that = this;
 			const res = uni.getSystemInfoSync();
-			console.log("设备信息", res) // 设备信息
+			uni.setStorage({
+				key: sk.deviceModel,
+				data: res
+			})
+			console.log("设备信息:", res) // 设备信息
 			if (res.model != "PC") {
 				uni.switchTab({
 					url: '/pages/project/project'

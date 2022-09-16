@@ -72,7 +72,7 @@
 
 <script>
 	var that;
-	import app from '@/App.vue'
+	import sk from '@/common/StoryKeys.js'
 	export default {
 		data() {
 			return {
@@ -88,7 +88,7 @@
 				this.$refs.popup.open('bottom');
 			},
 			logout() {
-				app.globalData.loginStatus = false;
+				uni.clearStorage();
 				uni.switchTab({
 					url: '/pages/my/my'
 				})
