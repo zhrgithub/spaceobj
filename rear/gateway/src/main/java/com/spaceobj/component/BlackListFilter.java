@@ -1,5 +1,6 @@
 package com.spaceobj.component;
 
+import cn.dev33.satoken.util.SaResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -101,8 +102,8 @@ public class BlackListFilter implements GlobalFilter, Ordered {
    */
   private static Mono<Void> responseWrap(ServerHttpResponse response) {
     response.setStatusCode(HttpStatus.BAD_REQUEST);
-    String data = "服务器繁忙";
-    DataBuffer wrap = response.bufferFactory().wrap(data.getBytes());
+    String data = "loading";
+    DataBuffer wrap = response.bufferFactory().wrap(SaResult.error(data).toString().getBytes());
     return response.writeWith(Mono.just(wrap));
   }
 

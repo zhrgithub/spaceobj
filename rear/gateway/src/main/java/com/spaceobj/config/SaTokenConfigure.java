@@ -64,7 +64,7 @@ public class SaTokenConfigure {
         // 异常处理方法：每次setAuth函数出现异常时进入
         .setError(
             e -> {
-                e.printStackTrace();
+              e.printStackTrace();
               return SaResult.error(e.getMessage());
             });
   }
