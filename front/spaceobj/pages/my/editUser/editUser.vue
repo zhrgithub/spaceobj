@@ -88,7 +88,12 @@
 				this.$refs.popup.open('bottom');
 			},
 			logout() {
-				uni.clearStorage();
+				// 移除缓存中的key
+				for (var i = 0; i < sk.clearKey.length; i++) {
+					uni.removeStorage({
+						key: sk.clearKey[i]
+					})
+				}
 				uni.switchTab({
 					url: '/pages/my/my'
 				})

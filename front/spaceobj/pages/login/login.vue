@@ -35,12 +35,13 @@
 			</view>
 
 		</view>
-		<!-- 登录、注册、重置密码 -->
+		<!-- 登录、注册、重置密码按钮 -->
 		<view class="login-background-style">
 			<button @click="doLogin" v-if="operationType==0">登录</button>
 			<button @click="doRegister" v-if="operationType==1">注册</button>
 			<button @click="doResetPassword" v-if="operationType==2">重置密码</button>
 		</view>
+		<!-- 底部选择按钮 -->
 		<view class="reset-password-register">
 			<view class="choose-other-style" @click="toRegister" v-if="operationType==0||operationType==2">注册
 			</view>
@@ -58,6 +59,7 @@
 	import api from '@/common/api.js'
 	import sk from '@/common/StoryKeys.js'
 	import rgx from '@/utils/Regexs.js'
+	import JSEncrypt from '@/utils/jsencrypt.min.js'
 	var that;
 	export default {
 		data() {
@@ -78,7 +80,6 @@
 		onShow() {
 
 			this.timer = setTimeout(() => {
-				// that.number = 0;
 				that.number = "获取验证码"
 
 			}, 200)
@@ -112,58 +113,48 @@
 				}
 				uni.showLoading();
 				// 密码加密
+				var en = new JSEncrypt();
+				en.setPublicKey(api.publicKey);
 				api.post({
-					text: password,
-				}, api.passwordEncryption).then(res => {
+					operateType: 0,
+					account: email,
+					password: en.encrypt(that.password),
+					ipTerritory: uni.getStorageSync(sk.ipTerritory),
+					deviceType: uni.getStorageSync(sk.deviceModel).model,
+					phoneNumber: phoneNumber
+				}, api.login).then(res => {
+					uni.hideLoading();
+					uni.showToast({
+						icon: 'none',
+						title: res.msg,
+					})
 					if (res.code == 200) {
-						api.post({
-							operateType: 0,
-							account: email,
-							password: res.data,
-							ipTerritory: uni.getStorageSync(sk.ipTerritory),
-							deviceType: uni.getStorageSync(sk.deviceModel).model,
-							phoneNumber:phoneNumber
-						}, api.login).then(res => {
-							uni.hideLoading();
-							uni.showToast({
-								icon: 'none',
-								title: res.msg,
-							})
-							if (res.code == 200) {
-								// 缓存用户基本信息
-								uni.setStorage({
-									key: sk.userInfo,
-									data: res.data
-								})
-								//缓存token
-								uni.setStorage({
-									key: sk.token,
-									data: res.data.token
-								})
-								// 缓存登录状态
-								uni.setStorage({
-									key: sk.loginStatus,
-									data: true
-								})
-								uni.showToast({
-									icon: 'none',
-									title: res.msg,
-									success() {
-										uni.switchTab({
-											url: '/pages/project/project'
-										})
-									}
+						// 缓存用户基本信息
+						uni.setStorage({
+							key: sk.userInfo,
+							data: res.data
+						})
+						//缓存token
+						uni.setStorage({
+							key: sk.token,
+							data: res.data.token
+						})
+						// 缓存登录状态
+						uni.setStorage({
+							key: sk.loginStatus,
+							data: true
+						})
+						uni.showToast({
+							icon: 'none',
+							title: res.msg,
+							success() {
+								uni.switchTab({
+									url: '/pages/project/project'
 								})
 							}
 						})
 					}
-
-				});
-
-
-
-
-
+				})
 			},
 			doResetPassword() {
 				var email = that.email;
@@ -193,29 +184,23 @@
 				}
 				uni.showLoading();
 				// 密码加密
+				var en = new JSEncrypt();
+				en.setPublicKey(api.publicKey);
+				// 重置密码
 				api.post({
-					text: that.password,
-				}, api.passwordEncryption).then(res => {
-					//判断是否加密成功
-					if (res.code == 200) {
-						// 重置密码
-						api.post({
-							account: that.email,
-							emailCode: that.verificatioin,
-							newPassword: res.data
-						}, api.resetPassword).then(res => {
-							uni.hideLoading();
-							uni.showToast({
-								icon: 'none',
-								title: res.msg,
+					account: that.email,
+					emailCode: that.verificatioin,
+					newPassword: en.encrypt(that.password),
+				}, api.resetPassword).then(res => {
+					uni.hideLoading();
+					uni.showToast({
+						icon: 'none',
+						title: res.msg,
 
-							})
-						})
-					} else {
-						uni.hideLoading();
-					}
-
+					})
 				});
+
+
 
 
 			},
@@ -257,50 +242,47 @@
 					return;
 				}
 				var deviceModel = uni.getStorageSync(sk.deviceModel);
-				console.log(that.phoneNumber, that.email, that.password, deviceModel)
+				console.log(that.phoneNumber, that.email, that.password, deviceModel);
+
+				var en = new JSEncrypt();
+				en.setPublicKey(api.publicKey);
+				var encryPassword = en.encrypt(that.password);
+				console.log(encryPassword)
 				api.post({
-					text: that.password,
-				}, api.passwordEncryption).then(res => {
-					var encryPassword = res.data;
+					operateType: 3,
+					account: that.email,
+					password: encryPassword,
+					ipTerritory: uni.getStorageSync(sk.ipTerritory),
+					deviceType: deviceModel.model
+				}, api.login).then(res => {
 					if (res.code == 200) {
-						api.post({
-							operateType: 3,
-							account: that.email,
-							password: encryPassword,
-							ipTerritory: uni.getStorageSync(sk.ipTerritory),
-							deviceType: deviceModel.model
-						}, api.login).then(res => {
-							// console.log("登录结果：", res)
-							if (res.code == 200) {
-								// 缓存用户基本信息
-								uni.setStorage({
-									key: sk.userInfo,
-									data: res.data
-								})
-								//缓存token
-								uni.setStorage({
-									key: sk.token,
-									data: res.data.token
-								})
-								// 缓存登录状态
-								uni.setStorage({
-									key: sk.loginStatus,
-									data: true
-								})
-								uni.showToast({
-									icon: 'none',
-									title: res.msg,
-									success() {
-										uni.switchTab({
-											url: '/pages/project/project'
-										})
-									}
+						// 缓存用户基本信息
+						uni.setStorage({
+							key: sk.userInfo,
+							data: res.data
+						})
+						//缓存token
+						uni.setStorage({
+							key: sk.token,
+							data: res.data.token
+						})
+						// 缓存登录状态
+						uni.setStorage({
+							key: sk.loginStatus,
+							data: true
+						})
+						uni.showToast({
+							icon: 'none',
+							title: res.msg,
+							success() {
+								uni.switchTab({
+									url: '/pages/project/project'
 								})
 							}
-
-
 						})
 					}
+
+
 				})
 			},
 

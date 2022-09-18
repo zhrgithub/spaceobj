@@ -159,13 +159,14 @@
 	var that;
 	import app from '@/App.vue'
 	import sk from '@/common/StoryKeys.js'
+	import strigUtils from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
 				loginStatus: true,
-				photoUrl: '/static/photo.jpg',
-				username: 'spaceobj',
-				ipTerritory:'广东 深圳'
+				photoUrl: '/static/photo.png',
+				username: '昵称未设置',
+				ipTerritory: '广东 深圳'
 			}
 		},
 		created() {
@@ -175,8 +176,9 @@
 			this.timer = setTimeout(() => {
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
 				var userInfo = uni.getStorageSync(sk.userInfo);
-				that.photoUrl = userInfo.photoUrl;
-				that.username = userInfo.username;
+				console.log(userInfo)
+				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
+				that.username = strigUtils.isBlank(userInfo.username) ? that.username : userInfo.username;
 				that.ipTerritory = userInfo.ipTerritory;
 			}, 200)
 		},
@@ -275,7 +277,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		
+
 	}
 
 	.photo-image-background-style image {
@@ -292,8 +294,9 @@
 	}
 
 	.nick-name-style {
-		width: 25%;
+		width: 30%;
 		display: block;
+		font-size: 14px;
 		justify-content: left;
 		align-items: center;
 		overflow: hidden;
@@ -302,7 +305,7 @@
 	}
 
 	.address-background-style {
-		width: 60%;
+		width: 55%;
 		font-size: 14px;
 		overflow: hidden;
 		text-overflow: ellipsis;
