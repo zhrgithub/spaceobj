@@ -2,6 +2,7 @@ package com.spaceobj.user.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.spaceobj.domain.SysUser;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.dto.CustomerUserDto;
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author zhr_java@163.com
@@ -101,5 +105,30 @@ public class CustomerUserController {
   @PostMapping("aesEncrypt")
   public SaResult aesEncrypt(String text) {
     return customerUserService.rsaEncrypt(text);
+  }
+
+  @PostMapping("getJson")
+  public SaResult getJson() {
+
+    List<SysUser> userList = new ArrayList<>();
+    for (int i = 0; i < 1000; i++) {
+      SysUser sysUser =
+          SysUser.builder().account("fsafsfsdadfsa").deviceType("fsfdsaddsfsfds").build();
+      userList.add(sysUser);
+    }
+
+    return SaResult.ok().setData(userList);
+  }
+
+  @PostMapping("getString")
+  public String getString() {
+    List<SysUser> userList = new ArrayList<>();
+    for (int i = 0; i < 1000; i++) {
+      SysUser sysUser =
+          SysUser.builder().account("fsafsfsdadfsa").deviceType("fsfdsaddsfsfds").build();
+      userList.add(sysUser);
+    }
+
+    return SaResult.ok().setData(userList).toString();
   }
 }

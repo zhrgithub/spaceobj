@@ -22,6 +22,7 @@ import com.spaceobj.user.service.kafka.KafkaSender;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import com.spaceobj.user.utils.EmailVerifyCode;
 import com.spaceobj.user.utils.FileUtil;
+import com.spaceobj.user.utils.PassWordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,18 +67,16 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     }
 
     try {
+      // 获取md5格式的密码
+      String md5Password = PassWordUtils.passwordToMD5(privateKey, loginOrRegisterBo.getPassword());
+      // 传递过来的密码设置成md5格式
+      loginOrRegisterBo.setPassword(md5Password);
       if (loginOrRegisterBo.getOperateType().equals(OperationType.LOGIN)) {
         if (redisTemplate.hasKey(loginOrRegisterBo.getAccount())) {
           SysUser sysUser =
               (SysUser) redisTemplate.opsForValue().get(loginOrRegisterBo.getAccount());
-          // 密码解密
-          String rsaDecryptPasswordFromSys =
-              SaSecureUtil.rsaDecryptByPrivate(privateKey, sysUser.getPassword());
-          // 密码解密
-          String rsaDecryptPasswordFromLogin =
-              SaSecureUtil.rsaDecryptByPrivate(privateKey, loginOrRegisterBo.getPassword());
-
-          if (rsaDecryptPasswordFromSys.equals(rsaDecryptPasswordFromLogin)) {
+          // 校验密码
+          if (sysUser.getPassword().equals(loginOrRegisterBo.getPassword())) {
             StpUtil.login(loginOrRegisterBo.getAccount());
             sysUser.setOnlineStatus(1);
             sysUser.setToken(StpUtil.getTokenValue());
@@ -106,14 +105,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (redisTemplate.hasKey(loginOrRegisterBo.getAccount())) {
           return SaResult.error("请勿重复注册");
         }
-        // 校验昵称
-        // 校验头像
-
         SysUser sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
         if (StringUtils.isEmpty(loginOrRegisterBo.getPhoneNumber())) {
           return SaResult.error("手机号不为空");
         }
-
         // 校验电话号码
         if (!Pattern.matches(RegexPool.MOBILE, loginOrRegisterBo.getPhoneNumber())) {
           return SaResult.error("电话格式错误");
@@ -141,6 +136,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("请求参数错误");
       }
     } catch (SaTokenException e) {
+      e.printStackTrace();
       return SaResult.error("密码格式不正确");
     } catch (RuntimeException e) {
       e.printStackTrace();
@@ -287,8 +283,15 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 验证邮箱验证码是否和服务器保存的一致
       String emailCodeFromRedis = sysUser.getEmailCode();
       if (emailCodeFromRedis.equals(sysUserBo.getEmailCode())) {
+
+        // 获取md5格式的密码
+        String md5Password = PassWordUtils.passwordToMD5(privateKey, sysUserBo.getNewPassword());
+        if (StringUtils.isBlank(md5Password)) {
+          return SaResult.error("数据格式错误");
+        }
+
         // 缓存更新
-        sysUser.setPassword(sysUserBo.getNewPassword());
+        sysUser.setPassword(md5Password);
         sysUser.setEmailCode(null);
         // kafka通知MySQL修改
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
