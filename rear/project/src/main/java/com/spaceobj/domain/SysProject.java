@@ -22,9 +22,15 @@ import java.util.Date;
 @NoArgsConstructor
 public class SysProject implements Serializable {
 
+  /**
+   * 项目id
+   */
   @TableId(value = "p_id")
   private long pId;
 
+  /**
+   * 项目新增时候的UUID
+   */
   @TableField(value = "p_uuid")
   private String uuid;
 
@@ -55,4 +61,7 @@ public class SysProject implements Serializable {
 
   @TableField(value = "create_time")
   private Date createTime;
+
+  @TableField(value = "version")
+  private long version;
 }

@@ -24,13 +24,13 @@ import java.util.Optional;
  */
 @Component
 @Slf4j
-public class KafkaUserConsumer {
+public class KafkaProjectConsumer {
 
   @Autowired private SysProjectMapper sysProjectMapper;
 
   @Autowired private RedisTemplate redisTemplate;
 
-  private static final Logger LOG = LoggerFactory.getLogger(KafkaUserConsumer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(KafkaProjectConsumer.class);
 
   @KafkaListener(topics = {KafKaTopics.ADD_PROJECT})
   public void addProject(ConsumerRecord<?, ?> record) {

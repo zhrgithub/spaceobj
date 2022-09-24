@@ -77,4 +77,9 @@ public class SysProjectDto implements Serializable {
   private String message;
 
   private Date createTime;
+
+  @NotBlank(
+      message = "版本号不为空",
+      groups = {UpdateProjectGroup.class, AuditProjectGroup.class})
+  private long version;
 }

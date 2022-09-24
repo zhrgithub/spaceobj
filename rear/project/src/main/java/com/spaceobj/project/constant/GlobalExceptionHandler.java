@@ -1,5 +1,6 @@
 package com.spaceobj.project.constant;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.util.SaResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -45,6 +46,20 @@ public class GlobalExceptionHandler {
       }
     }
     return SaResult.error(stringBuilder.toString());
+  }
+
+  /**
+   * 登录校验
+   *
+   * @param ex
+   * @return
+   */
+  @ExceptionHandler(NotLoginException.class)
+  @ResponseBody
+  public SaResult notLoginException(NotLoginException ex) {
+    ex.printStackTrace();
+    log.error("not login exception:" + ex.getMessage());
+    return SaResult.error("登录后操作");
   }
 
   /**

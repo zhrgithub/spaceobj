@@ -26,4 +26,10 @@ public class KafKaTopics {
 
   /** 待审核项目通知 */
   public static final String PENDING_REVIEW_PROJECT = "pending_review_project";
+
+  /** 更新项目浏览次数 */
+  public static final String UPDATE_PROJECT_VIEWS = "update_project_views";
+
+  /** 添加项目浏览次数信息 */
+  public static final String ADD_PROJECT_VIEWS = "add_project_views";
 }
