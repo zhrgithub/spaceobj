@@ -102,7 +102,7 @@ public class BlackListFilter implements GlobalFilter, Ordered {
    */
   private static Mono<Void> responseWrap(ServerHttpResponse response) {
     response.setStatusCode(HttpStatus.BAD_REQUEST);
-    String data = "loading";
+    String data = "请求频繁";
     DataBuffer wrap = response.bufferFactory().wrap(SaResult.error(data).toString().getBytes());
     return response.writeWith(Mono.just(wrap));
   }
