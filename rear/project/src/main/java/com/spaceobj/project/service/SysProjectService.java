@@ -52,9 +52,10 @@ public interface SysProjectService extends IService<SysProject> {
   /**
    * 管理员查询所有项目列表
    *
+   * @param projectSearchBo
    * @return
    */
-  SaResult queryListAdmin();
+  SaResult queryListAdmin(ProjectSearchBo projectSearchBo);
 
   /**
    * 项目浏览量：根据项目的ID通过消息队列对持久层的浏览量数据修改，然后存储到缓存

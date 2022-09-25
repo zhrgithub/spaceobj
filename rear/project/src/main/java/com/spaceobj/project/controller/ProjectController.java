@@ -7,10 +7,7 @@ import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.dto.GetPhoneNumberDto;
 import com.spaceobj.project.dto.ProjectSearchDto;
 import com.spaceobj.project.dto.SysProjectDto;
-import com.spaceobj.project.group.AddPageViewsGroup;
-import com.spaceobj.project.group.AuditProjectGroup;
-import com.spaceobj.project.group.InsertProjectGroup;
-import com.spaceobj.project.group.UpdateProjectGroup;
+import com.spaceobj.project.group.*;
 import com.spaceobj.project.service.SysProjectService;
 import com.spaceobj.project.util.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +55,8 @@ public class ProjectController {
   }
 
   @PostMapping("findList")
-  public SaResult findList(@Validated ProjectSearchDto projectSearchDto) {
+  public SaResult findList(
+      @Validated(ProjectSearchCustomer.class) ProjectSearchDto projectSearchDto) {
 
     ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
@@ -77,10 +75,11 @@ public class ProjectController {
     return sysProjectService.getPhoneNumberByProjectId(getPhoneNumberBo);
   }
 
-
   @PostMapping(value = "queryListAdmin")
-  public SaResult queryListAdmin(){
-    return sysProjectService.queryListAdmin();
-  }
+  public SaResult queryListAdmin(@Validated(ProjectSearchAdmin.class) ProjectSearchDto projectSearchDto) {
 
+    ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
+    BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
+    return sysProjectService.queryListAdmin(projectSearchBo);
+  }
 }

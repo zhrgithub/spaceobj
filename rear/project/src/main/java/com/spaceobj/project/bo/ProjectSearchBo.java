@@ -14,9 +14,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ProjectSearchBo {
+
+  /** 搜索内容 */
   private String content;
 
+  /** 查询类型：0表示查询首页，1表示查询自己的 */
   private Integer projectType;
 
+  /** 发布者id */
   private String userId;
+
+  /** 当前页 */
+  private Integer pageNumber;
+
+  /** 每页条数 */
+  private Integer pageSize;
+
+  /** 项目id */
+  private Long pId;
 }

@@ -4,7 +4,10 @@ import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.domain.ProjectHelp;
 import com.spaceobj.domain.SysProject;
@@ -112,7 +115,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (result == 0) {
         return SaResult.error("新增失败");
       }
-      //删除缓存
+      // 删除缓存
       redisTemplate.delete(RedisKey.PROJECT_LIST);
       return SaResult.ok();
     } catch (Exception e) {
@@ -257,11 +260,23 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                       }
                     })
                 .collect(Collectors.toList());
+        int pageSiz = 0;
+        if (list.size() > projectSearchBo.getPageSize()) {
+          pageSiz = projectSearchBo.getPageSize();
+        } else {
+          pageSiz = list.size();
+        }
+        list =
+            list.subList(
+                (projectSearchBo.getPageNumber() - 1) * projectSearchBo.getPageSize(), pageSiz);
       } else if (projectSearchBo.getProjectType() == 1) {
         // 查询自己发布的信息,根据项目创建人id查询项目
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("p_release_user_id", projectSearchBo.getUserId());
-        list = sysProjectMapper.selectList(queryWrapper);
+        Page<SysProject> page =
+            new Page<>(projectSearchBo.getPageNumber(), projectSearchBo.getPageSize());
+        IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
+        list = iPage.getRecords();
       } else {
         return SaResult.error("请求参数错误");
       }
@@ -295,11 +310,19 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   @Override
-  public SaResult queryListAdmin() {
+  public SaResult queryListAdmin(ProjectSearchBo projectSearchBo) {
     try {
       List<SysProject> list;
       QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-      list = sysProjectMapper.selectList(queryWrapper);
+      if (StringUtils.isNotBlank(projectSearchBo.getContent())) {
+        queryWrapper.like("p_content", projectSearchBo.getContent());
+      }
+      if (ObjectUtils.isNotEmpty(projectSearchBo.getPId())) {
+        queryWrapper.like("p_id", projectSearchBo.getPId());
+      }
+      Page<SysProject> page = new Page<>();
+      IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
+      list = iPage.getRecords();
       return SaResult.ok().setData(list);
     } catch (RuntimeException e) {
       e.printStackTrace();
