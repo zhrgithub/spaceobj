@@ -17,4 +17,7 @@ public class RedisKey {
 
   /** 项目助力列表 */
   public static final String PROJECT_HELP_LIST = "project_help_list";
+
+  /** 系统用户列表 */
+  public static final String SYS_USER_LIST = "sys_user_list";
 }

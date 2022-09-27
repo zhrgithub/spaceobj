@@ -74,24 +74,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     try {
       // 获取md5格式的密码
       String md5Password = PassWordUtils.passwordToMD5(privateKey, loginOrRegisterBo.getPassword());
-      // 判断数据是否同步
-      List<SysUser> sysUserList = null;
-      // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，在缓存中校验用户是否存在，存在则递归，不存在返回不存在
-      boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
-      if (!hasKey) {
-        // 数据同步,先判断用户数据同步状态
-        if (getRedisSysUserListSyncStatus()) {
-          Thread.sleep(50);
-          this.loginOrRegister(loginOrRegisterBo);
-        } else {
-          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
-          // 数据同步
-          sysUserList = sysUserListSync();
-          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
-        }
-      } else {
-        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      }
+      // 获取用户列表数据
+      List<SysUser> sysUserList = this.getUserList();
+
       SysUser getUser = getUser(sysUserList, loginOrRegisterBo.getAccount());
       // 判断操作类型
       if (loginOrRegisterBo.getOperateType().equals(OperationType.LOGIN)) {
@@ -220,23 +205,32 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   /**
-   * 用户列表同步到Redis缓存中
+   * 获取用户列表信息，如果缓存中不存在，同步到Redis缓存中
    *
    * @return
    */
-  public List<SysUser> sysUserListSync() {
-    // 查询用户列表信息
+  public List<SysUser> getUserList() throws InterruptedException {
     List<SysUser> sysUserList = null;
-    QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-    sysUserList = sysUserMapper.selectList(queryWrapper);
-    // 更新用户列表信息
-    redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
-    sysUserList.stream()
-        .forEachOrdered(
-            s -> {
-              // 根据用户的账户id，更新用户登录信息
-              redisTemplate.opsForValue().set(s.getAccount(), s);
-            });
+    // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，在缓存中校验用户是否存在，存在则递归，不存在返回不存在
+    boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+    if (!hasKey) {
+      if (getRedisSysUserListSyncStatus()) {
+        Thread.sleep(50);
+        this.getUserList();
+      } else {
+        redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
+        // 数据同步
+        // 查询用户列表信息
+        QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+        sysUserList = sysUserMapper.selectList(queryWrapper);
+        // 更新用户列表信息
+        redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
+        redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+      }
+    } else {
+      sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+    }
+
     return sysUserList;
   }
 
@@ -244,25 +238,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult loginOut() {
     try {
       String loginId = StpUtil.getLoginId().toString();
-
-      // 判断数据是否同步
-      List<SysUser> sysUserList = null;
-      // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，获取用户缓存列表
-      boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
-      if (!hasKey) {
-        // 数据同步,先判断用户数据同步状态
-        if (getRedisSysUserListSyncStatus()) {
-          Thread.sleep(50);
-          this.loginOut();
-        } else {
-          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
-          // 数据同步
-          sysUserList = sysUserListSync();
-          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
-        }
-      } else {
-        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      }
+      // 获取用户列表数据
+      List<SysUser> sysUserList = this.getUserList();
       SysUser sysUser = getUser(sysUserList, loginId);
       StpUtil.logout(loginId);
       sysUser.setOnlineStatus(0);
@@ -283,12 +260,14 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     SysUser sysUser = null;
     try {
       String loginId = StpUtil.getLoginId().toString();
-      sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+      // 获取用户列表数据
+      List<SysUser> sysUserList = this.getUserList();
+      sysUser = getUser(sysUserList, loginId);
       if (ObjectUtils.isNull(sysUser)) {
         return SaResult.error("账号不存在");
       }
       return SaResult.ok().setData(sysUser);
-    } catch (RuntimeException e) {
+    } catch (RuntimeException | InterruptedException e) {
       LOG.error("getUserInfo failed", e.getMessage());
       return SaResult.error("服务器异常");
     }
@@ -300,9 +279,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
       // 校验当前登录用户是否是和修改用户一样
       String account = StpUtil.getLoginId().toString();
-
       // 如果当前账号已经被封禁
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(account);
+      List<SysUser> sysUserList = this.getUserList();
+      SysUser sysUser = getUser(sysUserList, account);
       if (sysUser.getDisableStatus() == 1) {
         return SaResult.error("账号已被封禁，禁止操作！");
       }
@@ -357,10 +336,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     try {
       SysUser sysUser = null;
       // 校验缓存中是否存在用户基本信息
-      if (redisTemplate.hasKey(account)) {
-        sysUser = (SysUser) redisTemplate.opsForValue().get(account);
-      } else {
-        return SaResult.error("账号不存在");
+      List<SysUser> sysUserList = this.getUserList();
+      sysUser = getUser(sysUserList, account);
+      if (ObjectUtils.isEmpty(sysUser)) {
+        return SaResult.error("用户不存在");
       }
       // 校验剩余修改次数是否小于0
       if (sysUser.getSendCodeTimes() <= 0) {
@@ -395,8 +374,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult resetPassword(SysUserBo sysUserBo) {
     try {
 
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(sysUserBo.getAccount());
-
+      SysUser sysUser = null;
+      List<SysUser> sysUserList = this.getUserList();
+      sysUser = getUser(sysUserList, sysUserBo.getAccount());
       // 验证邮箱验证码是否和服务器保存的一致
       String emailCodeFromRedis = sysUser.getEmailCode();
       if (emailCodeFromRedis.equals(sysUserBo.getEmailCode())) {
@@ -406,7 +386,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (StringUtils.isBlank(md5Password)) {
           return SaResult.error("数据格式错误");
         }
-
         // 缓存更新
         sysUser.setPassword(md5Password);
         sysUser.setEmailCode(null);
@@ -424,6 +403,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     } catch (RuntimeException e) {
       LOG.error("resetPassword failed", e.getMessage());
       return SaResult.error("密码重置失败，服务器异常");
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      return SaResult.error("线程异常");
     }
   }
 

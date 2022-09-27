@@ -50,9 +50,9 @@ public class KafkaProjectHelpConsumer {
                 if (result == 0) {
                   LOG.error("project help info save to mysql failed !");
                 }
-                // 新增成功，那么刷新缓存
+                // 新增成功，删除缓存
                 if (result == 1) {
-                  this.updateRedis();
+                  redisTemplate.delete(RedisKey.PROJECT_HELP_LIST);
                 }
               } catch (Exception e) {
                 LOG.error("project help info save to mysql failed !fail info {}", e.getMessage());
@@ -80,7 +80,7 @@ public class KafkaProjectHelpConsumer {
                 }
                 // 更新成功，那么刷新缓存
                 if (result == 1) {
-                  this.updateRedis();
+                  redisTemplate.delete(RedisKey.PROJECT_HELP_LIST);
                 }
               } catch (Exception e) {
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
@@ -100,22 +100,10 @@ public class KafkaProjectHelpConsumer {
         .ifPresent(
             message -> {
               try {
-                this.updateRedis();
+                redisTemplate.delete(RedisKey.PROJECT_HELP_LIST);
               } catch (Exception e) {
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
               }
             });
-  }
-
-  /** 刷新Redis缓存 */
-  private void updateRedis() {
-
-    redisTemplate.delete(RedisKey.PROJECT_HELP_LIST);
-    List<ProjectHelp> projectHelpList;
-    QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
-    projectHelpList = projectHelpMapper.selectList(queryWrapper);
-    if(projectHelpList.size() != 0){
-        redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_HELP_LIST, projectHelpList.toArray());
-    }
   }
 }

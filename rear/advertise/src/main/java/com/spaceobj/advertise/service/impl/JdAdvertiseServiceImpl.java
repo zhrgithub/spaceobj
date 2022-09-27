@@ -48,14 +48,27 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
      *
      * @return
      */
-    private List<JdAdvertis> syncAdvertiseList() {
+    private List<JdAdvertis> getJdAdvertisList() throws InterruptedException {
 
         List<JdAdvertis> list = null;
-        redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
-        QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
-        queryWrapper.orderByDesc("create_time");
-        list = jdAdvertisMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, list.toArray());
+
+        Long size = redisTemplate.opsForList().size(RedisKey.JD_ADVERTISE_LIST);
+        if (size == 0) {
+            if (this.getJdAdvertiseListSyncStatus()) {
+                Thread.sleep(50);
+                this.getJdAdvertisList();
+            } else {
+                redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, true);
+                redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
+                QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
+                queryWrapper.orderByDesc("create_time");
+                list = jdAdvertisMapper.selectList(queryWrapper);
+                redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, list.toArray());
+                redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
+            }
+        } else {
+            list = redisTemplate.opsForList().range(RedisKey.JD_ADVERTISE_LIST, 0, -1);
+        }
         return list;
     }
 
@@ -64,21 +77,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
         List<JdAdvertis> list = null;
         try {
-
-            Long size = redisTemplate.opsForList().size(RedisKey.JD_ADVERTISE_LIST);
-            if (size == 0) {
-                if (this.getJdAdvertiseListSyncStatus()) {
-                    Thread.sleep(50);
-                    this.findList();
-                } else {
-                    redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, true);
-                    list = this.syncAdvertiseList();
-                    redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
-
-                }
-            } else {
-                list = redisTemplate.opsForList().range(RedisKey.JD_ADVERTISE_LIST, 0, -1);
-            }
+            list = getJdAdvertisList();
             return SaResult.ok().setData(list);
         } catch (Exception e) {
             LOG.error("search advertise list error", e.getMessage());
@@ -95,8 +94,8 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
         try {
             int result = jdAdvertisMapper.insert(jdAdvertis);
             if (result == 1) {
-                //刷新缓存
-                this.updateRedis();
+                //删除缓存
+                redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
             } else {
 
                 LOG.error("Logic add advertise error");
@@ -117,7 +116,8 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
             System.out.println(id);
             int result = jdAdvertisMapper.deleteById(id);
             if (result == 1) {
-                this.updateRedis();
+                //删除缓存
+                redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
             } else {
                 LOG.error("Logic delete advertise error !");
                 return SaResult.error("删除失败");
@@ -139,7 +139,8 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
         try {
             int result = jdAdvertisMapper.updateById(jdAdvertis);
             if (result == 1) {
-                this.updateRedis();
+                //删除缓存
+                redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
             } else {
                 LOG.error("Logic update advertise error !");
                 return SaResult.error("更新失败");
@@ -151,15 +152,4 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
             return SaResult.error("广告更新失败！服务器异常！");
         }
     }
-
-    /** 刷新Redis缓存 */
-    private void updateRedis() {
-
-        redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
-        List<JdAdvertis> jdAdvertiseList;
-        QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
-        jdAdvertiseList = jdAdvertisMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, jdAdvertiseList.toArray());
-    }
-
 }

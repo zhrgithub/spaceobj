@@ -56,34 +56,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     }
   }
 
-  public void setRedisProjectSyncStatus(Boolean status) {
-    redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, status);
-  }
-
   @Override
   public SaResult addProject(SysProject sysProject) {
 
     try {
       // 校验内容是否重复
-      List<SysProject> sysProjectList = null;
-      boolean hasKey = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
-      // 数据同步
-      if (!hasKey) {
-        // 数据同步中,等待50毫秒再次递归
-        if (getRedisProjectSyncStatus()) {
-          Thread.sleep(50);
-          this.addProject(sysProject);
-        } else {
-          //  把数据同步状态设置成TRUE
-          setRedisProjectSyncStatus(true);
-          // 数据同步
-          sysProjectList = this.syncRedisAndGetSysProject();
-          //  同步成功，设置同步状态为false
-          setRedisProjectSyncStatus(false);
-        }
-      } else {
-        sysProjectList = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
-      }
+      List<SysProject> sysProjectList = getSysProjectList();
       List<SysProject> resultSysProjectList =
           sysProjectList.stream()
               .filter(
@@ -97,13 +75,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
       // 校验当前提交次数是否超过最大次数
       String loginId = (String) StpUtil.getLoginId();
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
-      if(ObjectUtils.isEmpty(sysUser)){
-        //刷新用户缓存信息
-        kafkaSender.send(new Object(),KafKaTopics.UPDATE_USER_LIST);
-        Thread.sleep(50);
-        this.addProject(sysProject);
-      }
+      SysUser sysUser = getSysUser(loginId);
       if (sysUser.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线");
       }
@@ -138,25 +110,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         // 校验是否存在该项目，如果存在该项目，给checkCacheProject赋值
         SysProject checkProject = null;
         // 从缓存中获取数据
-        List<SysProject> cacheProject = null;
-        boolean hasKey = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
-        // 判断缓存是否为空
-        if (!hasKey) {
-          // 数据同步中,等待50毫秒再次递归
-          if (getRedisProjectSyncStatus()) {
-            Thread.sleep(50);
-            this.updateProject(sysProject);
-          } else {
-            //  把数据同步状态设置成TRUE
-            setRedisProjectSyncStatus(true);
-            // 数据同步
-            cacheProject = this.syncRedisAndGetSysProject();
-            //  同步成功，设置同步状态为false
-            setRedisProjectSyncStatus(false);
-          }
-        } else {
-          cacheProject = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
-        }
+        List<SysProject> cacheProject = getSysProjectList();
         // 如果当前项目是在审核中那么返回不可重复修改
         List<SysProject> checkCacheProjectList =
             cacheProject.stream()
@@ -183,13 +137,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           return SaResult.error("审核中");
         }
         String loginId = StpUtil.getLoginId().toString();
-        SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
-        if(ObjectUtils.isEmpty(sysUser)){
-          //刷新用户缓存信息
-          kafkaSender.send(new Object(),KafKaTopics.UPDATE_USER_LIST);
-          Thread.sleep(50);
-          this.updateProject(sysProject);
-        }
+        SysUser sysUser = getSysUser(loginId);
         if (!sysUser.getUserId().equals(checkProject.getReleaseUserId())) {
           return SaResult.error("违规操作");
         }
@@ -237,33 +185,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       if (projectSearchBo.getProjectType() == 1) {
         String loginId = StpUtil.getLoginId().toString();
-        SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
-        if(ObjectUtils.isEmpty(sysUser)){
-          //刷新用户缓存信息
-          kafkaSender.send(new Object(),KafKaTopics.UPDATE_USER_LIST);
-          Thread.sleep(50);
-          this.findList(projectSearchBo);
-        }
+        SysUser sysUser = getSysUser(loginId);
         projectSearchBo.setUserId(sysUser.getUserId());
       }
-      List<SysProject> list = null;
-      boolean hasKey = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
-      if (!hasKey) {
-        // 数据同步中,等待50毫秒再次递归
-        if (getRedisProjectSyncStatus()) {
-          Thread.sleep(50);
-          this.findList(projectSearchBo);
-        } else {
-          //  把数据同步状态设置成TRUE
-          setRedisProjectSyncStatus(true);
-          // 数据同步
-          list = this.syncRedisAndGetSysProject();
-          //  同步成功，设置同步状态为false
-          setRedisProjectSyncStatus(false);
-        }
-      } else {
-        list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
-      }
+      List<SysProject> list = getSysProjectList();
       // 查询首页信息
       if (projectSearchBo.getProjectType() == 0) {
         list =
@@ -314,16 +239,28 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
    *
    * @return
    */
-  private List<SysProject> syncRedisAndGetSysProject() {
+  private List<SysProject> getSysProjectList() throws InterruptedException {
     List<SysProject> list = null;
-    redisTemplate.delete(RedisKey.PROJECT_LIST);
-    QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
-    queryWrapper.orderByDesc("create_time");
-    list = sysProjectMapper.selectList(queryWrapper);
-    redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_LIST, list.toArray());
-    // 设置过期时间
-    redisTemplate.expire(
-        RedisKey.PROJECT_LIST, RedisKey.PROJECT_LIST_EXPIRE_TIME, TimeUnit.MINUTES);
+    boolean flag = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
+    if (!flag) {
+      if (this.getRedisProjectSyncStatus()) {
+        Thread.sleep(50);
+        this.getSysProjectList();
+      } else {
+        redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, true);
+        redisTemplate.delete(RedisKey.PROJECT_LIST);
+        QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
+        queryWrapper.orderByDesc("create_time");
+        list = sysProjectMapper.selectList(queryWrapper);
+        redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_LIST, list.toArray());
+        // 设置过期时间
+        redisTemplate.expire(
+            RedisKey.PROJECT_LIST, RedisKey.PROJECT_LIST_EXPIRE_TIME, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, false);
+      }
+    } else {
+      list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+    }
     return list;
   }
 
@@ -353,25 +290,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
 
       // 只有发布成功，并且同步到缓存中的项目才可以追加浏览次数，从Redis中先判断是否存在，不存在的话，停止执行
-      List<SysProject> sysProjectList = null;
-      boolean hasKey = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
-      // 判断缓存中是否有数据,没有的话同步数据
-      if (!hasKey) {
-        // 数据同步中,等待50毫秒再次递归
-        if (getRedisProjectSyncStatus()) {
-          Thread.sleep(50);
-          this.addPageViews(projectId);
-        } else {
-          //  把数据同步状态设置成TRUE
-          setRedisProjectSyncStatus(true);
-          // 数据同步
-          sysProjectList = this.syncRedisAndGetSysProject();
-          //  同步成功，设置同步状态为false
-          setRedisProjectSyncStatus(false);
-        }
-      } else {
-        sysProjectList = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
-      }
+      List<SysProject> sysProjectList = getSysProjectList();
       List<SysProject> resultSysProject =
           sysProjectList.stream().filter(p -> p.getPId() == projectId).collect(Collectors.toList());
       if (resultSysProject.size() == 0) {
@@ -411,33 +330,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SaResult getPhoneNumberByProjectId(GetPhoneNumberBo getPhoneNumberBo) {
     try {
       String loginId = (String) StpUtil.getLoginId();
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
-      if(ObjectUtils.isEmpty(sysUser)){
-        //刷新用户缓存信息
-        kafkaSender.send(new Object(),KafKaTopics.UPDATE_USER_LIST);
-        Thread.sleep(50);
-        this.getPhoneNumberByProjectId(getPhoneNumberBo);
-      }
+      SysUser sysUser = getSysUser(loginId);
       getPhoneNumberBo.setUserId(sysUser.getUserId());
-      List<SysProject> list = null;
-      List<SysProject> sysProjectList;
-      boolean hasKey = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
-      if (!hasKey) {
-        // 数据同步中,等待50毫秒再次递归
-        if (getRedisProjectSyncStatus()) {
-          Thread.sleep(50);
-          this.getPhoneNumberByProjectId(getPhoneNumberBo);
-        } else {
-          //  把数据同步状态设置成TRUE
-          setRedisProjectSyncStatus(true);
-          // 数据同步
-          list = this.syncRedisAndGetSysProject();
-          //  同步成功，设置同步状态为false
-          setRedisProjectSyncStatus(false);
-        }
-      } else {
-        list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
-      }
+      List<SysProject> list = getSysProjectList();
+      List<SysProject> sysProjectList = null;
       sysProjectList =
           list.stream()
               .filter(
@@ -527,5 +423,35 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     queryWrapper.eq("p_status", 0);
     List<SysProject> sysProjectList = sysProjectMapper.selectList(queryWrapper);
     return SaResult.ok().setData(sysProjectList.size());
+  }
+
+  /**
+   * 根据账户获取用户信息
+   *
+   * @param account
+   * @return
+   * @throws InterruptedException
+   */
+  public SysUser getSysUser(String account) throws InterruptedException {
+    boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+    List<SysUser> sysUserList = null;
+    SysUser sysUser = null;
+    if (!flag) {
+      // 刷新用户缓存信息
+      kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
+      Thread.sleep(200);
+      this.getSysUser(account);
+    } else {
+      sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+      sysUser =
+          sysUserList.stream()
+              .filter(
+                  user -> {
+                    return user.getAccount().equals(account);
+                  })
+              .collect(Collectors.toList())
+              .get(0);
+    }
+    return sysUser;
   }
 }
