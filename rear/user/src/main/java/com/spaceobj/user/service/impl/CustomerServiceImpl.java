@@ -5,6 +5,7 @@ import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -34,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author zhr_java@163.com
@@ -47,6 +49,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Autowired private RedisTemplate redisTemplate;
 
   @Autowired private KafkaSender kafkaSender;
+
+  @Autowired private SysUserMapper sysUserMapper;
+
+  public static final int USER_AUDIT_STATUS = 2;
 
   @Value("${publicKey}")
   private String publicKey;
@@ -65,44 +71,55 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     if (!Pattern.matches(RegexPool.EMAIL, loginOrRegisterBo.getAccount())) {
       return SaResult.error("邮箱格式错误");
     }
-
     try {
       // 获取md5格式的密码
       String md5Password = PassWordUtils.passwordToMD5(privateKey, loginOrRegisterBo.getPassword());
-      // 传递过来的密码设置成md5格式
-      loginOrRegisterBo.setPassword(md5Password);
+      // 判断数据是否同步
+      List<SysUser> sysUserList = null;
+      // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，在缓存中校验用户是否存在，存在则递归，不存在返回不存在
+      boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+      if (!hasKey) {
+        // 数据同步,先判断用户数据同步状态
+        if (getRedisSysUserListSyncStatus()) {
+          Thread.sleep(50);
+          this.loginOrRegister(loginOrRegisterBo);
+        } else {
+          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
+          // 数据同步
+          sysUserList = sysUserListSync();
+          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+        }
+      } else {
+        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+      }
+      SysUser getUser = getUser(sysUserList, loginOrRegisterBo.getAccount());
+      // 判断操作类型
       if (loginOrRegisterBo.getOperateType().equals(OperationType.LOGIN)) {
-        if (redisTemplate.hasKey(loginOrRegisterBo.getAccount())) {
+        // 判断缓存中是否有次账号
+        if (ObjectUtils.isNotEmpty(getUser)) {
           SysUser sysUser =
               (SysUser) redisTemplate.opsForValue().get(loginOrRegisterBo.getAccount());
           // 校验密码
-          if (sysUser.getPassword().equals(loginOrRegisterBo.getPassword())) {
+          if (sysUser.getPassword().equals(md5Password)) {
             StpUtil.login(loginOrRegisterBo.getAccount());
             sysUser.setOnlineStatus(1);
             sysUser.setToken(StpUtil.getTokenValue());
             BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
-            // 更新用户当前登录信息
-            kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+            // 更新用户登录位置
+            int updateResult = sysUserMapper.updateById(sysUser);
+            if (updateResult == 0) {
+              LOG.error("用户登录信息更新失败");
+            }
             return SaResult.ok("登录成功").setData(sysUser);
           } else {
             return SaResult.error("密码不正确");
           }
         } else {
-          // 校验用户列表缓存长度是否是0，如果不是0并且没有查到该用户的基本信息，那么返回用户不存在
-          List<SysUser> sysUserList =
-              redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-          if (sysUserList.size() > 0) {
-            return SaResult.error("用户不存在");
-          }
-
-          // 先刷新缓存然后再次查询
-          SysUser sysUser = SysUser.builder().account(loginOrRegisterBo.getAccount()).build();
-          kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER_LIST);
-          return SaResult.error("系统用户数据同步中，请稍后再试");
+          return SaResult.error("用户不存在");
         }
       } else if (loginOrRegisterBo.getOperateType().equals(OperationType.ADD)) {
         // 用户注册校验，是否已经创建过
-        if (redisTemplate.hasKey(loginOrRegisterBo.getAccount())) {
+        if (ObjectUtils.isNotEmpty(getUser)) {
           return SaResult.error("请勿重复注册");
         }
         SysUser sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
@@ -113,28 +130,19 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (!Pattern.matches(RegexPool.MOBILE, loginOrRegisterBo.getPhoneNumber())) {
           return SaResult.error("电话格式错误");
         }
-        BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
-
+        // 创建一个新的用户对象信息
+        sysUser = registerUserObj(loginOrRegisterBo, sysUser, md5Password);
+        // 新增到MySQL
+        int result = sysUserMapper.insert(sysUser);
+        if (result == 0) {
+          return SaResult.error("注册失败");
+        }
+        // 删除缓存
+        redisTemplate.delete(RedisKey.SYS_USER_LIST);
         StpUtil.login(loginOrRegisterBo.getAccount());
-        sysUser.setOnlineStatus(1);
-        sysUser.setToken(StpUtil.getTokenValue());
-        sysUser.setAssistValue(0);
-        sysUser.setInvitationValue(0);
-        sysUser.setUserInfoEditStatus(0);
-        sysUser.setRealNameStatus(0);
-        sysUser.setEditInfoTimes(3);
-        sysUser.setSendCodeTimes(3);
-        sysUser.setReleaseProjectTimes(10);
-        sysUser.setProjectHelpTimes(10);
-        sysUser.setCreateProjectHelpTimes(10);
-        sysUser.setDisableStatus(0);
-        // 消息队列通知MySQL
-        kafkaSender.send(sysUser, KafKaTopics.ADD_USER);
         return SaResult.ok("注册成功，正在跳转").setData(sysUser);
-      } else {
-        // 逻辑参数校验错误
-        return SaResult.error("请求参数错误");
       }
+      return SaResult.error("请求参数错误");
     } catch (SaTokenException e) {
       e.printStackTrace();
       return SaResult.error("密码格式不正确");
@@ -142,23 +150,121 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       e.printStackTrace();
       LOG.error("loginOrRegister failed", e.getMessage());
       return SaResult.error("服务器异常");
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      return SaResult.error("服务器异常");
     }
+  }
+
+  /**
+   * 返回一个注册用户的基本信息
+   *
+   * @param loginOrRegisterBo
+   * @param sysUser
+   * @param md5Password
+   * @return
+   */
+  private SysUser registerUserObj(
+      LoginOrRegisterBo loginOrRegisterBo, SysUser sysUser, String md5Password) {
+    BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
+    sysUser.setOnlineStatus(1);
+    sysUser.setToken(StpUtil.getTokenValue());
+    sysUser.setAssistValue(0);
+    sysUser.setInvitationValue(0);
+    sysUser.setUserInfoEditStatus(0);
+    sysUser.setRealNameStatus(0);
+    sysUser.setEditInfoTimes(3);
+    sysUser.setSendCodeTimes(3);
+    sysUser.setReleaseProjectTimes(10);
+    sysUser.setProjectHelpTimes(10);
+    sysUser.setCreateProjectHelpTimes(10);
+    sysUser.setDisableStatus(0);
+    sysUser.setPassword(md5Password);
+    return sysUser;
+  }
+
+  /**
+   * 根据账户获取账户信息，不存在则返回null
+   *
+   * @param sysUserList
+   * @param account
+   * @return
+   */
+  public SysUser getUser(List<SysUser> sysUserList, String account) {
+    List<SysUser> getResultList =
+        sysUserList.stream()
+            .filter(
+                s -> {
+                  return s.getAccount().equals(account);
+                })
+            .collect(Collectors.toList());
+    if (getResultList.size() > 0) {
+      return getResultList.get(0);
+    }
+    return null;
+  }
+
+  /**
+   * 获取用户同步的状态
+   *
+   * @return
+   */
+  public boolean getRedisSysUserListSyncStatus() {
+    boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_SYNC_STATUS);
+    if (!hasKey) {
+      redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+      return false;
+    } else {
+      return (boolean) redisTemplate.opsForValue().get(RedisKey.SYS_USER_SYNC_STATUS);
+    }
+  }
+
+  /**
+   * 用户列表同步到Redis缓存中
+   *
+   * @return
+   */
+  public List<SysUser> sysUserListSync() {
+    // 查询用户列表信息
+    List<SysUser> sysUserList = null;
+    QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+    sysUserList = sysUserMapper.selectList(queryWrapper);
+    // 更新用户列表信息
+    redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
+    return sysUserList;
   }
 
   @Override
   public SaResult loginOut() {
     try {
       String loginId = StpUtil.getLoginId().toString();
-      if (StringUtils.isEmpty(loginId)) {
-        return SaResult.error("登录id不为空");
+
+      // 判断数据是否同步
+      List<SysUser> sysUserList = null;
+      // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，获取用户缓存列表
+      boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+      if (!hasKey) {
+        // 数据同步,先判断用户数据同步状态
+        if (getRedisSysUserListSyncStatus()) {
+          Thread.sleep(50);
+          this.loginOut();
+        } else {
+          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
+          // 数据同步
+          sysUserList = sysUserListSync();
+          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+        }
+      } else {
+        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
       }
+      SysUser sysUser = getUser(sysUserList, loginId);
       StpUtil.logout(loginId);
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
-      if (ObjectUtils.isNull(sysUser)) {
-        return SaResult.error("账号不存在");
-      }
       sysUser.setOnlineStatus(0);
-      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+      int updateResult = sysUserMapper.updateById(sysUser);
+      if (updateResult == 0) {
+        LOG.error("用户基本信息更新失败");
+      }
+      redisTemplate.delete(RedisKey.SYS_USER_LIST);
       return SaResult.ok("登出成功");
     } catch (Exception e) {
       LOG.error("login out error", e.getMessage());
@@ -226,8 +332,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       sysUser.setUserInfoEditStatus(0);
       // 设置修改次数减一
       sysUser.setEditInfoTimes(sysUser.getEditInfoTimes() - 1);
-      // 发送到kafka,如果MySQL修改成功，那么刷新缓存
-      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+      // 修改用户信息，删除缓存
+      int result = sysUserMapper.updateById(sysUser);
+      if (result == 0) {
+        return SaResult.error("修改失败");
+      }
+      redisTemplate.delete(RedisKey.SYS_USER_LIST);
       return SaResult.ok("提交成功");
     } catch (Exception e) {
       e.printStackTrace();
@@ -265,8 +375,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       sysUser.setSendCodeTimes(sysUser.getSendCodeTimes() - 1);
       // 消息队列通知邮箱服务器发送邮件
       kafkaSender.send(receiveEmail, KafKaTopics.EMAIL_VERIFICATION_CODE);
-      // Redis缓存刷新用户今天剩余邮件、短信发送次数
-      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+      // 更新用户发送邮件次数,删除Redis缓存
+      sysUserMapper.updateById(sysUser);
+      redisTemplate.delete(RedisKey.SYS_USER_LIST);
       return SaResult.ok("发送成功");
     } catch (Exception e) {
       LOG.error("Error send failed", e.getMessage());
@@ -293,12 +404,14 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 缓存更新
         sysUser.setPassword(md5Password);
         sysUser.setEmailCode(null);
-        // kafka通知MySQL修改
-        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+        // 修改用户数据，并删除缓存
+        int result = sysUserMapper.updateById(sysUser);
+        if (result == 0) {
+          return SaResult.error("修改失败");
+        }
+        redisTemplate.delete(RedisKey.SYS_USER_LIST);
         return SaResult.ok("密码修改成功");
       }
-      sysUser.setEmailCode(null);
-      redisTemplate.opsForValue().set(sysUser.getAccount(), sysUser);
       return SaResult.error("验证码错误，密码修改失败");
     } catch (SaTokenException e) {
       return SaResult.error("密码格式不正确");
@@ -320,7 +433,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(user.getLoginId());
 
       // 校验当前账户是否是在审核中
-      if (sysUser.getRealNameStatus() == 2) {
+      if (sysUser.getRealNameStatus() == USER_AUDIT_STATUS) {
         return SaResult.error("审核中，请勿重复提交");
       }
 
@@ -329,8 +442,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 设置身份证号码与身份证图片名称
       sysUser.setIdCardNum(user.getIdCardNum());
       sysUser.setIdCardPic(user.getIdCardPic());
-      // 消息队列通知MySQL修改用户实名状态，定时任务检测当前实名状态是否大于十个，大于十个审核需求，那么邮件通知管理员审核
-      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+      // 修改用户实名状态
+      int result = sysUserMapper.updateById(sysUser);
+      if (result == 0) {
+        return SaResult.error("提交失败");
+      }
+      redisTemplate.delete(RedisKey.SYS_USER_LIST);
       return SaResult.ok("提交成功,大概需要一到两个工作日审核").setData(sysUser);
     } catch (RuntimeException e) {
       LOG.error("realName failed", e.getMessage());

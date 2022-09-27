@@ -45,7 +45,6 @@ public class KafkaCustomerUserConsumer {
             message -> {
               try {
                 SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
-                System.out.println("sysUser:" + sysUser.toString());
                 int result = sysUserMapper.insert(sysUser);
                 // 刷新缓存
                 if (result == 1) {

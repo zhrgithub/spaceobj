@@ -56,8 +56,6 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
         if (sysPhotoBo.getPhotoId() == null) {
           return SaResult.error("图片id不为空");
         }
-
-        System.out.println("photo:" + photo);
         result = sysPhotoMapper.updateById(photo);
         if (result == 1) {
           redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
@@ -102,20 +100,39 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
     List<SysPhoto> list = null;
 
     try {
-      Long size = redisTemplate.opsForList().size(RedisKey.SYS_PHOTO_LIST);
-      if (size == 0) {
-        QueryWrapper<SysPhoto> queryWrapper = new QueryWrapper<>();
-        synchronized (this) {
+      boolean size = redisTemplate.hasKey(RedisKey.SYS_PHOTO_LIST);
+      if (!size) {
+        // 如果是否在同步中，那么等待50ms后重新调用
+        if (getRedisPhotoListSyncStatus()) {
+          Thread.sleep(50);
+          this.photoList();
+        } else {
+          redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, true);
+
+          QueryWrapper<SysPhoto> queryWrapper = new QueryWrapper<>();
           list = sysPhotoMapper.selectList(queryWrapper);
           redisTemplate.opsForList().leftPushAll(RedisKey.SYS_PHOTO_LIST, list.toArray());
+
+          redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, false);
         }
+
       } else {
         list = redisTemplate.opsForList().range(RedisKey.SYS_PHOTO_LIST, 0, -1);
       }
-    } catch (RuntimeException e) {
+    } catch (RuntimeException | InterruptedException e) {
       LOG.error("Photo list failed", e.getMessage());
       return SaResult.error(e.getMessage()).setData(list);
     }
     return SaResult.ok().setData(list);
+  }
+
+  public boolean getRedisPhotoListSyncStatus() {
+    boolean hasKey = redisTemplate.hasKey(RedisKey.PHOTO_LIST_SYNC_STATUS);
+    if (!hasKey) {
+      redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, false);
+      return false;
+    } else {
+      return (boolean) redisTemplate.opsForValue().get(RedisKey.PHOTO_LIST_SYNC_STATUS);
+    }
   }
 }

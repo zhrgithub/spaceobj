@@ -13,6 +13,7 @@ import com.spaceobj.domain.SysUser;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.constant.KafKaTopics;
+import com.spaceobj.user.constant.RedisKey;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.service.SysUserService;
 import com.spaceobj.user.service.kafka.KafkaSender;
@@ -101,10 +102,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult updateSysUser(SysUserBo sysUserBo) {
     SysUser sysUser = new SysUser();
     try {
-      if (!redisTemplate.hasKey(sysUserBo.getAccount())) {
-        return SaResult.error("账户不存在！");
-      }
-
       BeanConvertToTargetUtils.copyNotNullProperties(sysUserBo, sysUser);
       if (sysUserBo.getDisableStatus() == 1) {
         StpUtil.kickout(sysUserBo.getAccount());
@@ -112,13 +109,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       } else {
         StpUtil.untieDisable(sysUserBo.getAccount());
       }
-      kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+      int result = sysUserMapper.updateById(sysUser);
+      if (result == 0) {
+        return SaResult.error("修改失败");
+      } else {
+        // 删除用户列表信息
+        redisTemplate.delete(RedisKey.SYS_USER_LIST);
+      }
     } catch (Exception e) {
       e.printStackTrace();
       LOG.error("update sysUser failed", e.getMessage());
       return SaResult.error("用户更新失败");
     }
-
     return SaResult.ok("用户更新成功");
   }
 
@@ -131,9 +133,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       int result = sysUserMapper.update(sysUser, sysUserWrapper);
       if (result == 0) {
         LOG.error("logic update all system user failed");
-      }
-      if (result == 1) {
-        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
+      } else {
+        // 删除用户列表信息
+        redisTemplate.delete(RedisKey.SYS_USER_LIST);
       }
 
     } catch (Exception e) {
