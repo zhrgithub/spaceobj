@@ -82,14 +82,18 @@
 				nickName: "spaceObj",
 				titleContext: "天下熙熙攘攘皆为利来天下攘攘熙熙皆为利往",
 				aboutMe: "Java工程师",
-				link: "微信：spaceobj"
+				link: "微信：spaceobj"  
 			}
 		},
 		onLoad() {
 
 		},
+		onShow() {
+			
+		},
 		created() {
 			that = this;
+			
 			const res = uni.getSystemInfoSync();
 			uni.setStorage({
 				key: sk.deviceModel,

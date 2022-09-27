@@ -19,7 +19,7 @@ public class OtherController {
     private OtherService otherService;
 
 
-    @GetMapping("getOther")
+    @PostMapping("getOther")
     public SaResult getOther(){
         return otherService.getOther();
     }

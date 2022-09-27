@@ -5,7 +5,7 @@
 				修改头像
 			</view>
 			<view class="photo-image-background-style">
-				<image :src="loginPhoto" mode=""></image>
+				<image :src="photoUrl" mode=""></image>
 			</view>
 		</view>
 
@@ -14,7 +14,7 @@
 				昵称
 			</view>
 			<view class="change-input-style">
-				<input type="text" placeholder="哈哈哈">
+				<input type="text" maxlength="5" :placeholder="nickName" @input="setNickName">
 			</view>
 		</view>
 
@@ -23,7 +23,7 @@
 				手机号
 			</view>
 			<view class="change-input-style">
-				<input type="text" placeholder="哈哈哈">
+				<input type="number" maxlength="11" :placeholder="phoneNumber" @input="setPhoneNumber">
 			</view>
 		</view>
 
@@ -32,15 +32,16 @@
 				邮箱
 			</view>
 			<view class="change-input-style">
-				<input type="text" placeholder="哈哈哈">
+				{{account}}
 			</view>
+
 		</view>
 		<view class="edit-background-style">
 			<view class="change-tips">
 				实名状态
 			</view>
 			<view class="change-input-style">
-				未实名
+				{{realNameStatus}}
 			</view>
 		</view>
 		<view class="edit-background-style">
@@ -48,14 +49,14 @@
 				位置
 			</view>
 			<view class="change-input-style">
-				广东深圳
+				{{ipTerritory}}
 			</view>
 		</view>
 
 
 
 		<view class="save-btn-style">
-			<button @click="logout">退出登录</button> <button>保存</button>
+			<button @click="logout">退出登录</button> <button @click="saveUserInfo">保存</button>
 		</view>
 
 		<uni-popup ref="popup" background-color="#fff">
@@ -64,7 +65,8 @@
 			</view>
 			<view class="scroll-item-line-two-style"></view>
 			<view class="description-doller-style">
-				<image src="/static/photo.jpg" mode="" v-for="(item,idx) in selectPhotoList" :key="idx"></image>
+				<image @click="setPhoto(item.photoUrl)" :src="item.photoUrl" mode=""
+					v-for="(item,idx) in selectPhotoList" :key="idx"></image>
 			</view>
 		</uni-popup>
 	</view>
@@ -73,31 +75,137 @@
 <script>
 	var that;
 	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
+	import strigUtils from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
-				loginPhoto: '/static/photo.jpg',
+				photoUrl: '/static/photo.jpg',
 				selectPhotoList: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+				ipTerritory: "未知",
+				nickName: "未设置",
+				phoneNumber: "未设置",
+				account: "未知",
+				realNameStatus: '未实名'
 			}
+		},
+		onShow() {
+			this.timer = setTimeout(() => {
+				var userInfo = uni.getStorageSync(sk.userInfo);
+				console.log(userInfo)
+				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
+				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
+				that.phoneNumber = strigUtils.isBlank(userInfo.phoneNumber) ? that.nickName : userInfo.phoneNumber;
+				that.account = strigUtils.isBlank(userInfo.account) ? that.nickName : userInfo.account;
+				that.realNameStatus = userInfo.realNameStatus != 1 ? '未实名' : '已实名';
+				that.ipTerritory = userInfo.ipTerritory;
+
+			}, 200)
+
 		},
 		created() {
 			that = this;
 		},
 		methods: {
+			setPhoneNumber(e) {
+				that.phoneNumber = e.detail.value;
+			},
+			setNickName(e) {
+				that.nickName = e.detail.value;
+			},
+
 			editPhoto() {
+				uni.showLoading({
+					title: '加载中...',
+				})
 				this.$refs.popup.open('bottom');
+				api.post({
+
+				}, api.sysPhotoList).then(res => {
+					console.log("res:", res)
+					that.selectPhotoList = res.data;
+					uni.hideLoading();
+				});
+
+			},
+			setPhoto(e) {
+				that.photoUrl = e;
+				this.$refs.popup.close();
 			},
 			logout() {
-				// 移除缓存中的key
-				for (var i = 0; i < sk.clearKey.length; i++) {
-					uni.removeStorage({
-						key: sk.clearKey[i]
-					})
-				}
-				uni.switchTab({
-					url: '/pages/my/my'
+
+				uni.showLoading({
+					title: '加载中...',
 				})
+				api.post({
+
+				}, api.loginOut).then(res => {
+					uni.hideLoading();
+					console.log("res:", res)
+					if (res.code == 200) {
+						// 移除缓存中的key
+						for (var i = 0; i < sk.clearKey.length; i++) {
+							uni.removeStorage({
+								key: sk.clearKey[i]
+							})
+						}
+						uni.switchTab({
+							url: '/pages/my/my'
+						})
+						uni.showToast({
+							title: res.data,
+							icon: 'none'
+						})
+					} else {
+						uni.showToast({
+							title: res.data,
+							icon: 'error'
+						})
+					}
+				});
+
+			},
+			saveUserInfo() {
+
+				uni.showLoading({
+					title: '修改中...',
+				})
+				if (that.phoneNumber.length < 11) {
+					uni.showToast({
+						icon: 'none',
+						title: "手机号不正确"
+					})
+					return;
+				}
+				if (that.nickName.length == 0) {
+					uni.showToast({
+						icon: 'none',
+						title: '未设置昵称'
+					})
+					return;
+				}
+				api.post({
+					phoneNumber: that.phoneNumber,
+					nickName: that.nickName,
+					photoUrl: that.photoUrl,
+					ipTerritory: that.ipTerritory
+				}, api.customerUpdateUserInfo).then(res => {
+					console.log("res:", res)
+					uni.hideLoading();
+					if (res.code == 200) {
+						uni.setStorage({
+							key: sk.userInfo,
+							data: res.data
+						})
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
+					}
+
+				});
 			}
+
 		}
 	}
 </script>

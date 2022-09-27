@@ -14,12 +14,12 @@
 
 			<view class="phone-background-style" v-if="operationType==0||operationType==2||operationType==1">
 				<view class="phone-style">
-					<input type="text" maxlength="20" placeholder="请输入邮箱号" @input="getEmail">
+					<input type="text" maxlength="18" placeholder="请输入邮箱号" @input="getEmail">
 				</view>
 			</view>
 			<view class="phone-background-style">
 				<view class="phone-style">
-					<input type="password" maxlength="20" placeholder="请输入密码" @input="getPassword">
+					<input type="password" maxlength="18" placeholder="请输入密码" @input="getPassword">
 				</view>
 			</view>
 			<view class="phone-background-style" v-if="operationType==2">

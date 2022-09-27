@@ -18,7 +18,7 @@
 			</view>
 			<view class="userinfo-background-style">
 
-				<text class="nick-name-style">{{username}}</text>
+				<text class="nick-name-style">{{nickName}}</text>
 				<text class="address-background-style">IP属地：{{ipTerritory}}</text>
 			</view>
 		</view>
@@ -65,7 +65,7 @@
 				安卓APP
 			</view>
 
-			<view class="invite-btn-stye">
+			<view class="invite-btn-stye" @click="downloadFunction">
 				下载
 			</view>
 		</view>
@@ -165,8 +165,10 @@
 			return {
 				loginStatus: true,
 				photoUrl: '/static/photo.png',
-				username: '昵称未设置',
-				ipTerritory: '广东 深圳'
+				nickName: '昵称未设置',
+				ipTerritory: '广东 深圳',
+				downloadUrl: "www.baidu.com",
+				wechat: "spaceobj"
 			}
 		},
 		created() {
@@ -174,11 +176,15 @@
 		},
 		onShow() {
 			this.timer = setTimeout(() => {
+				var otherInfo = uni.getStorageSync(sk.otherInfo);
+				console.log("otherInfo",otherInfo)
+				that.otherInfo = otherInfo.downloadUrl;
+				that.wechat = otherInfo.wechat;
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
 				var userInfo = uni.getStorageSync(sk.userInfo);
 				console.log(userInfo)
 				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
-				that.username = strigUtils.isBlank(userInfo.username) ? that.username : userInfo.username;
+				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
 				that.ipTerritory = userInfo.ipTerritory;
 			}, 200)
 		},
@@ -235,8 +241,17 @@
 				})
 			},
 			copyWeChat() {
+				console.log(that.wechat)
 				uni.setClipboardData({
-					data: 'hello',
+					data: that.wechat,
+					success: function() {
+						console.log('success');
+					}
+				});
+			},
+			downloadFunction(){
+				uni.setClipboardData({
+					data: that.downloadUrl,
 					success: function() {
 						console.log('success');
 					}
