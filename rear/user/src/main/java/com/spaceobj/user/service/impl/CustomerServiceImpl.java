@@ -1,7 +1,6 @@
 package com.spaceobj.user.service.impl;
 
 import cn.dev33.satoken.exception.SaTokenException;
-import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
@@ -456,14 +455,5 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             Resource.SYS_USER_ID_CARD_DIRECTORY, fileName, multipartFile);
 
     return SaResult.ok().setData(url);
-  }
-
-  @Override
-  public SaResult rsaEncrypt(String text) {
-    if (StringUtils.isBlank(text)) {
-      return SaResult.error("密码不为空");
-    }
-    String ciphertext = SaSecureUtil.rsaEncryptByPublic(publicKey, text);
-    return SaResult.ok().setData(ciphertext);
   }
 }

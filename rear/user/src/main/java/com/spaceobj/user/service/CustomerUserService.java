@@ -87,12 +87,4 @@ public interface CustomerUserService extends IService<SysUser> {
    * @return
    */
   SaResult uploadFile(MultipartFile multipartFile);
-
-  /**
-   * 密码非对称加密
-   *
-   * @param text
-   * @return
-   */
-  SaResult rsaEncrypt(String text);
 }
