@@ -231,6 +231,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     sysUserList = sysUserMapper.selectList(queryWrapper);
     // 更新用户列表信息
     redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
+    sysUserList.stream()
+        .forEachOrdered(
+            s -> {
+              // 根据用户的账户id，更新用户登录信息
+              redisTemplate.opsForValue().set(s.getAccount(), s);
+            });
     return sysUserList;
   }
 

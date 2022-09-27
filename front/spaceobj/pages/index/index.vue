@@ -79,7 +79,7 @@
 			return {
 				bgImage: "/static/bg.jpg",
 				headImage: "/static/photo.jpg",
-				nickName: "空间对象",
+				nickName: "spaceObj",
 				titleContext: "天下熙熙攘攘皆为利来天下攘攘熙熙皆为利往",
 				aboutMe: "Java工程师",
 				link: "微信：spaceobj"
