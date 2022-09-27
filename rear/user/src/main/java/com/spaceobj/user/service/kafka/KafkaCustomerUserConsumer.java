@@ -109,20 +109,42 @@ public class KafkaCustomerUserConsumer {
   }
 
   /** 刷新Redis缓存 */
-  private void updateRedis() {
-    // 删除用户列表信息
-    redisTemplate.delete(RedisKey.SYS_USER_LIST);
-    // 查询用户列表信息
-    List<SysUser> sysUserList;
-    QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-    sysUserList = sysUserMapper.selectList(queryWrapper);
-    // 更新用户列表信息
-    redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
-    sysUserList.stream()
-        .forEachOrdered(
-            s -> {
-              // 根据用户的账户id，更新用户登录信息
-              redisTemplate.opsForValue().set(s.getAccount(), s);
-            });
+  private void updateRedis() throws InterruptedException {
+    if (getRedisSysUserListSyncStatus()) {
+      Thread.sleep(50);
+      this.updateRedis();
+    } else {
+      redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
+      // 删除用户列表信息
+      redisTemplate.delete(RedisKey.SYS_USER_LIST);
+      // 查询用户列表信息
+      List<SysUser> sysUserList;
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+      sysUserList = sysUserMapper.selectList(queryWrapper);
+      // 更新用户列表信息
+      redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
+      sysUserList.stream()
+          .forEachOrdered(
+              s -> {
+                // 根据用户的账户id，更新用户登录信息
+                redisTemplate.opsForValue().set(s.getAccount(), s);
+              });
+      redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+    }
+  }
+
+  /**
+   * 获取用户同步的状态
+   *
+   * @return
+   */
+  public boolean getRedisSysUserListSyncStatus() {
+    boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_SYNC_STATUS);
+    if (!hasKey) {
+      redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+      return false;
+    } else {
+      return (boolean) redisTemplate.opsForValue().get(RedisKey.SYS_USER_SYNC_STATUS);
+    }
   }
 }

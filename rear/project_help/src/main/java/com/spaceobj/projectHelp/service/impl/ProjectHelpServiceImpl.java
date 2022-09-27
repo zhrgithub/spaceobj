@@ -3,6 +3,7 @@ package com.spaceobj.projectHelp.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.projectHelp.bo.ProjectHelpBo;
 import com.spaceobj.projectHelp.bo.ReceiveEmailBo;
@@ -45,6 +46,14 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+
+      if (ObjectUtils.isEmpty(sysUser)) {
+        // 刷新用户缓存信息
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
+        Thread.sleep(50);
+        this.createProjectHelpLink(projectHelpBo);
+      }
+
       // 如果用户的创建剩余次数小于10次，提醒明天再来
       if (sysUser.getCreateProjectHelpTimes() <= 0) {
         return SaResult.error("今日分享链接创建已上限，明天再来吧！");
@@ -134,6 +143,14 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+
+      if (ObjectUtils.isEmpty(sysUser)) {
+        // 刷新用户缓存信息
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
+        Thread.sleep(50);
+        this.updateProjectHelpNumber(projectHelpBo);
+      }
+
       List<ProjectHelp> list = redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
       if (list.size() == 0) {
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_HELP_PROJECT_LIST);
@@ -204,6 +221,14 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+
+      if (ObjectUtils.isEmpty(sysUser)) {
+        // 刷新用户缓存信息
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
+        Thread.sleep(50);
+        this.projectHelpList(projectHelpBo);
+      }
+
       List<ProjectHelp> list = null;
       long size = redisTemplate.opsForList().size(RedisKey.PROJECT_HELP_LIST);
       // 如果缓存中的数据为0，那么从数据库中查询，并缓存到Redis中

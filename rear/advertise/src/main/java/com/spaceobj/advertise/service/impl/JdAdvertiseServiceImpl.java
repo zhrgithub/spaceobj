@@ -4,6 +4,7 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.advertise.bo.JdAdvertisBo;
+import com.spaceobj.advertise.constant.RedisKey;
 import com.spaceobj.advertise.mapper.JdAdvertisMapper;
 import com.spaceobj.domain.JdAdvertis;
 import com.spaceobj.advertise.service.JdAdvertiseService;
@@ -29,25 +30,54 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     @Autowired
     private RedisTemplate redisTemplate;
 
-    /**
-     * 京东广告列表
-     */
-    private static final String JD_ADVERTISE_LIST = "jd_advertise_list";
-
     private static final Logger LOG = LoggerFactory.getLogger(JdAdvertiseServiceImpl.class);
+
+    public boolean getJdAdvertiseListSyncStatus() {
+
+        boolean hasKey = redisTemplate.hasKey(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS);
+        if (!hasKey) {
+            redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
+            return false;
+        } else {
+            return (boolean) redisTemplate.opsForValue().get(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS);
+        }
+    }
+
+    /**
+     * 同步数据到Redis缓存，并返回查询到的数据
+     *
+     * @return
+     */
+    private List<JdAdvertis> syncAdvertiseList() {
+
+        List<JdAdvertis> list = null;
+        redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
+        QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
+        queryWrapper.orderByDesc("create_time");
+        list = jdAdvertisMapper.selectList(queryWrapper);
+        redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, list.toArray());
+        return list;
+    }
 
     @Override
     public SaResult findList() {
 
         List<JdAdvertis> list = null;
         try {
-            Long size = redisTemplate.opsForList().size(JD_ADVERTISE_LIST);
+
+            Long size = redisTemplate.opsForList().size(RedisKey.JD_ADVERTISE_LIST);
             if (size == 0) {
-                QueryWrapper queryWrapper = new QueryWrapper();
-                list = jdAdvertisMapper.selectList(queryWrapper);
-                redisTemplate.opsForList().rightPushAll(JD_ADVERTISE_LIST, list.toArray());
+                if (this.getJdAdvertiseListSyncStatus()) {
+                    Thread.sleep(50);
+                    this.findList();
+                } else {
+                    redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, true);
+                    list = this.syncAdvertiseList();
+                    redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
+
+                }
             } else {
-                list = redisTemplate.opsForList().range(JD_ADVERTISE_LIST, 0, -1);
+                list = redisTemplate.opsForList().range(RedisKey.JD_ADVERTISE_LIST, 0, -1);
             }
             return SaResult.ok().setData(list);
         } catch (Exception e) {
@@ -125,11 +155,11 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     /** 刷新Redis缓存 */
     private void updateRedis() {
 
-        redisTemplate.delete(JD_ADVERTISE_LIST);
+        redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
         List<JdAdvertis> jdAdvertiseList;
         QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
         jdAdvertiseList = jdAdvertisMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().rightPushAll(JD_ADVERTISE_LIST, jdAdvertiseList.toArray());
+        redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, jdAdvertiseList.toArray());
     }
 
 }

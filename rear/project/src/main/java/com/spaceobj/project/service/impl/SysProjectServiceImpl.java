@@ -98,6 +98,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 校验当前提交次数是否超过最大次数
       String loginId = (String) StpUtil.getLoginId();
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+      if(ObjectUtils.isEmpty(sysUser)){
+        //刷新用户缓存信息
+        kafkaSender.send(new Object(),KafKaTopics.UPDATE_USER_LIST);
+        Thread.sleep(50);
+        this.addProject(sysProject);
+      }
       if (sysUser.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线");
       }
@@ -178,6 +184,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         }
         String loginId = StpUtil.getLoginId().toString();
         SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+        if(ObjectUtils.isEmpty(sysUser)){
+          //刷新用户缓存信息
+          kafkaSender.send(new Object(),KafKaTopics.UPDATE_USER_LIST);
+          Thread.sleep(50);
+          this.updateProject(sysProject);
+        }
         if (!sysUser.getUserId().equals(checkProject.getReleaseUserId())) {
           return SaResult.error("违规操作");
         }
@@ -226,6 +238,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (projectSearchBo.getProjectType() == 1) {
         String loginId = StpUtil.getLoginId().toString();
         SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+        if(ObjectUtils.isEmpty(sysUser)){
+          //刷新用户缓存信息
+          kafkaSender.send(new Object(),KafKaTopics.UPDATE_USER_LIST);
+          Thread.sleep(50);
+          this.findList(projectSearchBo);
+        }
         projectSearchBo.setUserId(sysUser.getUserId());
       }
       List<SysProject> list = null;
@@ -394,6 +412,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       String loginId = (String) StpUtil.getLoginId();
       SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(loginId);
+      if(ObjectUtils.isEmpty(sysUser)){
+        //刷新用户缓存信息
+        kafkaSender.send(new Object(),KafKaTopics.UPDATE_USER_LIST);
+        Thread.sleep(50);
+        this.getPhoneNumberByProjectId(getPhoneNumberBo);
+      }
       getPhoneNumberBo.setUserId(sysUser.getUserId());
       List<SysProject> list = null;
       List<SysProject> sysProjectList;
