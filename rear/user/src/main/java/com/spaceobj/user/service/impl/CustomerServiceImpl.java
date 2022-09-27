@@ -82,8 +82,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (loginOrRegisterBo.getOperateType().equals(OperationType.LOGIN)) {
         // 判断缓存中是否有次账号
         if (ObjectUtils.isNotEmpty(getUser)) {
-          SysUser sysUser =
-              (SysUser) redisTemplate.opsForValue().get(loginOrRegisterBo.getAccount());
+          SysUser sysUser = getUser(sysUserList, loginOrRegisterBo.getAccount());
           // 校验密码
           if (sysUser.getPassword().equals(md5Password)) {
             StpUtil.login(loginOrRegisterBo.getAccount());
