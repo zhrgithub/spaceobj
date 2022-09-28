@@ -48,7 +48,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
      *
      * @return
      */
-    private List<JdAdvertis> getJdAdvertisList() throws InterruptedException {
+    private List<JdAdvertis> getJdAdvertiseList() throws InterruptedException {
 
         List<JdAdvertis> list = null;
 
@@ -56,12 +56,11 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
         if (size == 0) {
             if (this.getJdAdvertiseListSyncStatus()) {
                 Thread.sleep(50);
-                this.getJdAdvertisList();
+                this.getJdAdvertiseList();
             } else {
                 redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, true);
                 redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
                 QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
-                queryWrapper.orderByDesc("create_time");
                 list = jdAdvertisMapper.selectList(queryWrapper);
                 redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, list.toArray());
                 redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
@@ -77,9 +76,10 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
         List<JdAdvertis> list = null;
         try {
-            list = getJdAdvertisList();
+            list = getJdAdvertiseList();
             return SaResult.ok().setData(list);
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.error("search advertise list error", e.getMessage());
             return SaResult.error("广告列表查询异常");
         }

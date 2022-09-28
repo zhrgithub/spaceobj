@@ -31,7 +31,7 @@ public class OtherServiceImpl implements OtherService {
             return SaResult.error("修改失败");
         }
 
-        return SaResult.ok();
+        return SaResult.ok("修改成功").setData(other);
     }
 
     @Override

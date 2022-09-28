@@ -104,7 +104,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
       if (!size) {
         // 如果是否在同步中，那么等待50ms后重新调用
         if (getRedisPhotoListSyncStatus()) {
-          Thread.sleep(50);
+          Thread.sleep(200);
           this.photoList();
         } else {
           redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, true);

@@ -21,7 +21,7 @@ import java.io.Serializable;
 public class SysPhoto implements Serializable {
 
   @TableId(value = "photo_id")
-  private Long photoId;
+  private Integer photoId;
 
   @TableField(value = "photo_url")
   private String photoUrl;

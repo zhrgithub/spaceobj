@@ -14,6 +14,13 @@
 					data: res.replace(/[\r\n]/g, "")
 				})
 			});
+			api.post({
+			}, api.getOther).then(res => {
+				uni.setStorage({
+					key:sk.otherInfo,
+					data:res.data
+				})
+			})
 			// 获取设备信息
 			const res = uni.getSystemInfoSync();
 			uni.setStorage({

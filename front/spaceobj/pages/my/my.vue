@@ -26,7 +26,7 @@
 		<!-- 实名认证 -->
 		<view class="invite-value-background-style">
 			<view class="link-us-style">
-				实名认证：未实名
+				实名认证：{{realNameStatus}}
 			</view>
 
 			<view class="invite-btn-stye" @click="userVerified">
@@ -40,10 +40,10 @@
 				邀请值：
 			</view>
 			<view class="invite-numbers-style">
-				200
+				{{invitationValue}}
 			</view>
 			<view class="invite-btn-stye">
-				邀请链接
+				邀请好友
 			</view>
 		</view>
 		<view class="invite-hint-background">
@@ -69,85 +69,44 @@
 				下载
 			</view>
 		</view>
+		<view v-if="userType=='root'">
 
-		<!-- 日志管理 -->
-		<view class="invite-value-background-style">
-			<view class="link-us-style">
-				日志管理
+
+			<!-- 管理 -->
+			<view class="invite-value-background-style">
+				
+				<view class="manage-btn-style" @click="auditProject">
+					项目管理
+				</view>
+
+				<view class="manage-btn-style" @click="userManagement">
+					用户管理
+				</view>
+				<view class="manage-btn-style" @click="userVerifiedMangeMent">
+					实名管理
+				</view>
+				<view class="manage-btn-style" @click="photoManagement">
+					头像管理
+				</view>
 			</view>
 
-			<view class="invite-btn-stye" @click="logManagement">
-				查看日志
-			</view>
-		</view>
-
-		<!-- 用户管理 -->
-		<view class="invite-value-background-style">
-			<view class="link-us-style">
-				用户管理
-			</view>
-
-			<view class="invite-btn-stye" @click="userManagement">
-				查看用户
-			</view>
-		</view>
-
-		<!-- 实名管理 -->
-		<view class="invite-value-background-style">
-			<view class="link-us-style">
-				实名管理
+			<view class="invite-value-background-style">
+				
+				<view class="manage-btn-style" @click="advertiseManagement">
+					广告管理
+				</view>
+				<view class="manage-btn-style" @click="logManagement">
+					日志管理
+				</view>
+				<view class="manage-btn-style" @click="otherManagement">
+					其它管理
+				</view>
 			</view>
 
-			<view class="invite-btn-stye" @click="userVerifiedMangeMent">
-				审核实名
-			</view>
-		</view>
+			<!-- 其它管理 -->
+			<view class="space-line-style">
 
-		<!-- 项目管理 -->
-		<view class="invite-value-background-style">
-			<view class="link-us-style">
-				项目管理
 			</view>
-
-			<view class="invite-btn-stye" @click="auditProject">
-				审核项目
-			</view>
-		</view>
-
-		<!-- 头像管理 -->
-		<view class="invite-value-background-style">
-			<view class="link-us-style">
-				头像管理
-			</view>
-
-			<view class="invite-btn-stye" @click="photoManagement">
-				管理头像
-			</view>
-		</view>
-
-		<!-- 广告投放 -->
-		<view class="invite-value-background-style">
-			<view class="link-us-style">
-				广告投放
-			</view>
-
-			<view class="invite-btn-stye" @click="advertiseManagement">
-				广告管理
-			</view>
-		</view>
-
-		<!-- 其它管理 -->
-		<view class="invite-value-background-style">
-			<view class="link-us-style">
-				其它管理
-			</view>
-
-			<view class="invite-btn-stye" @click="otherManagement">
-				管理
-			</view>
-		</view>
-		<view class="space-line-style">
-
 		</view>
 
 
@@ -168,7 +127,10 @@
 				nickName: '昵称未设置',
 				ipTerritory: '广东 深圳',
 				downloadUrl: "www.baidu.com",
-				wechat: "spaceobj"
+				wechat: "spaceobj",
+				userType: "user",
+				invitationValue:0,
+				realNameStatus:'未实名',
 			}
 		},
 		created() {
@@ -177,14 +139,16 @@
 		onShow() {
 			this.timer = setTimeout(() => {
 				var otherInfo = uni.getStorageSync(sk.otherInfo);
-				console.log("otherInfo",otherInfo)
-				that.otherInfo = otherInfo.downloadUrl;
+				that.downloadUrl = otherInfo.downloadUrl;
 				that.wechat = otherInfo.wechat;
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
 				var userInfo = uni.getStorageSync(sk.userInfo);
-				console.log(userInfo)
+				that.userType = userInfo.userType;
 				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
+				that.invitationValue = strigUtils.isBlank(userInfo.invitationValue) ? that.invitationValue : userInfo.invitationValue;
+				that.realNameStatus = userInfo.realNameStatus!=1? '未实名' : '已实名'
+				
 				that.ipTerritory = userInfo.ipTerritory;
 			}, 200)
 		},
@@ -244,16 +208,24 @@
 				console.log(that.wechat)
 				uni.setClipboardData({
 					data: that.wechat,
+					showToast:false,
 					success: function() {
-						console.log('success');
+						uni.showToast({
+							icon:'none',
+							title:'客服微信已复制'
+						})
 					}
 				});
 			},
-			downloadFunction(){
+			downloadFunction() {
 				uni.setClipboardData({
 					data: that.downloadUrl,
+					showToast:false,
 					success: function() {
-						console.log('success');
+						uni.showToast({
+							icon:'none',
+							title:'下载链接已复制，请到浏览器打开' 
+						});
 					}
 				});
 			}
@@ -346,7 +318,7 @@
 		margin-left: 2%;
 		height: 90rpx;
 		display: flex;
-		justify-content: center;
+		justify-content: left;
 		align-items: center;
 		margin-top: 20rpx;
 		margin-bottom: 20rpx;
@@ -359,14 +331,18 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		margin-right: 20rpx;
+		margin-left: 20rpx;
 	}
 
 	.link-us-style {
-		width: 60%;
+		width: 80%;
+		margin-left: 20rpx;
+		margin-right: 20rpx;
 	}
 
 	.invite-numbers-style {
-		width: 40%;
+		width: 50%;
 	}
 
 	.invite-btn-stye {
@@ -375,12 +351,28 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		margin-left: 10%;
+		margin-right: 20rpx;
+		margin-left: 20rpx;
 		border-radius: 10rpx;
 		box-shadow: darkgray 0px 0px 2px 0px;
 		font-size: 14px;
 		background-color: #49A8E7;
 		color: #fff;
+	}
+
+	.manage-btn-style {
+		width: 20%;
+		height: 60%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border-radius: 10rpx;
+		box-shadow: darkgray 0px 0px 2px 0px;
+		font-size: 14px;
+		background-color: #49A8E7;
+		color: #fff;
+		margin-left: 20rpx;
+		margin-right: 20rpx;
 	}
 
 	.invite-hint-background {

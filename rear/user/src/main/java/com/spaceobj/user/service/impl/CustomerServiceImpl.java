@@ -82,7 +82,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 判断缓存中是否有次账号
         if (ObjectUtils.isNotEmpty(getUser)) {
           SysUser sysUser = getUser;
-          System.out.println(sysUser);
           // 校验密码
           if (sysUser.getPassword().equals(md5Password)) {
             StpUtil.login(loginOrRegisterBo.getAccount());

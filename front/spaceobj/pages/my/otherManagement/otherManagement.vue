@@ -5,7 +5,7 @@
 				客服微信
 			</view>
 			<view class="change-input-style">
-				<input type="text" placeholder="spaceobj">
+				<input type="text" :placeholder="wechat" @input="setWechat">
 			</view>
 		</view>
 
@@ -14,11 +14,11 @@
 				下载链接
 			</view>
 			<view class="change-input-style">
-				<input type="text" placeholder="www.spaceobj.com">
+				<input type="text" :placeholder="downloadUrl" @input="setDownLoad">
 			</view>
 		</view>
 		<view class="save-btn-style">
-			<button>保存</button>
+			<button @click="save">保存</button>
 		</view>
 
 
@@ -26,14 +26,68 @@
 </template>
 
 <script>
+	let that;
+	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
 	export default {
 		data() {
 			return {
+				downloadUrl: null,
+				wechat: null,
+				otherInfo: null,
 
 			}
 		},
+		created() {
+			that = this;
+		},
+		onShow() {
+			that.timer = setTimeout(() => {
+				var otherInfo = uni.getStorageSync(sk.otherInfo);
+				console.log(otherInfo.downloadUrl)
+				that.downloadUrl = otherInfo.downloadUrl;
+				that.wechat = otherInfo.wechat;
+			}, 200);
+		},
 		methods: {
-
+			setWechat(e){
+				that.wechat = e.detail.value;
+			},
+			setDownLoad(e){
+				that.downloadUrl = e.detail.value;
+			},
+			save() {
+				if(that.downloadUrl==''){
+					uni.showToast({
+						icon:'none',
+						title:'下载链接不为空'
+					})
+					return;
+				}
+				if(that.wechat==''){
+					uni.showToast({
+						icon:'none',
+						title:'客服微信不为空'
+					})
+					return;
+				}
+				console.log(that.wechat,that.downloadUrl)
+				api.post({
+					wechat:that.wechat,
+					downloadUrl:that.downloadUrl
+				}, api.updateOther).then(res => {
+					if(res.code==200){
+						uni.showToast({
+							icon:'none',
+							title:res.msg
+						})
+						uni.setStorage({
+							key:sk.otherInfo,
+							data:res.data
+						})
+					}
+				})
+			}
 		}
 	}
 </script>
@@ -78,8 +132,8 @@
 	.change-input-style input {
 		width: 100%;
 	}
-	
-	
+
+
 	.save-btn-style {
 		width: 96%;
 		margin-left: 2%;
@@ -90,7 +144,7 @@
 		position: fixed;
 		bottom: 20rpx;
 	}
-	
+
 	.save-btn-style button {
 		width: 90%;
 		height: 90%;
