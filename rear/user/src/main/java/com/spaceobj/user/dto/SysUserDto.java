@@ -102,4 +102,9 @@ public class SysUserDto implements Serializable {
 
   /** 每页大小 */
   private Integer pageSize;
+
+  /** 搜索内容 */
+  private String content;
+
+  private String email;
 }

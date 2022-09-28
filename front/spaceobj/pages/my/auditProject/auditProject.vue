@@ -107,7 +107,7 @@
 		justify-content: center;
 		align-items: center;
 		border-radius: 10px;
-		background-color: #e6e6e6;
+		background-color: #F5F5F5;
 	}
 
 	.image-background-style {

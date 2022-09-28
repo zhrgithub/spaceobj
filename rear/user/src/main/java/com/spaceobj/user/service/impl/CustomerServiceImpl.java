@@ -150,7 +150,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
    */
   private SysUser registerUserObj(
       LoginOrRegisterBo loginOrRegisterBo, SysUser sysUser, String md5Password) {
+
     BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
+    sysUser.setEmail(loginOrRegisterBo.getAccount());
     sysUser.setOnlineStatus(1);
     sysUser.setToken(StpUtil.getTokenValue());
     sysUser.setAssistValue(0);
@@ -215,7 +217,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     if (!hasKey) {
       if (getRedisSysUserListSyncStatus()) {
         Thread.sleep(50);
-        this.getUserList();
+        return this.getUserList();
       } else {
         redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
         // 数据同步
@@ -225,6 +227,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 更新用户列表信息
         redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
         redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+        return sysUserList;
       }
     } else {
       sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
@@ -293,7 +296,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("本月剩余修改次数为0，下个月再修改吧！");
       }
 
-      // 昵称、手机号，其余设置为空
+      // 昵称、手机号、邮箱不为空，其余设置为空
       // 校验电话号码
       if (!Pattern.matches(RegexPool.MOBILE, user.getPhoneNumber())) {
         return SaResult.error("电话格式错误");
@@ -301,6 +304,11 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 校验昵称
       if (!Pattern.matches(RegexPool.GENERAL_WITH_CHINESE, user.getNickName())) {
         return SaResult.error("昵称格式错误");
+      }
+
+      // 校验邮箱
+      if (!Pattern.matches(RegexPool.EMAIL, user.getEmail())) {
+        return SaResult.error("邮箱格式错误");
       }
 
       sysUser.setPhoneNumber(user.getPhoneNumber());
@@ -349,7 +357,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 设置邮件的标题，内容，收件人
       ReceiveEmailBo receiveEmail =
           ReceiveEmailBo.builder()
-              .receiverEmail(account)
+              .receiverEmail(sysUser.getEmail())
               .title("spaceObj")
               .content("邮箱验证码:" + getEmailCodeVerify)
               .build();

@@ -5,7 +5,6 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -47,41 +46,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     List<SysUser> list = null;
     try {
       QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-      if (ObjectUtils.isNotEmpty(sysUserBo)) {
-        if (StringUtils.isNotBlank(sysUserBo.getAccount())) {
-          queryWrapper.like("account", sysUserBo.getAccount());
-        }
-        if (StringUtils.isNotBlank(sysUserBo.getPhoneNumber())) {
-          queryWrapper.like("phone_number", sysUserBo.getPhoneNumber());
-        }
 
-        if (StringUtils.isNotBlank(sysUserBo.getUserType())) {
-          queryWrapper.eq("user_type", sysUserBo.getUserType());
-        }
-
-        if (StringUtils.isNotBlank(sysUserBo.getUsername())) {
-          queryWrapper.like("username", sysUserBo.getUsername());
-        }
-
-        if (StringUtils.isNotBlank(sysUserBo.getNickName())) {
-          queryWrapper.like("nick_name", sysUserBo.getNickName());
-        }
-
-        if (sysUserBo.getOnlineStatus() != null) {
-          queryWrapper.eq("online_status", sysUserBo.getOnlineStatus());
-        }
-
-        if (StringUtils.isNotBlank(sysUserBo.getIdCardNum())) {
-          queryWrapper.eq("id_card_num", sysUserBo.getIdCardNum());
-        }
-
-        if (sysUserBo.getRealNameStatus() != null) {
-          queryWrapper.eq("real_name_status", sysUserBo.getRealNameStatus());
-        }
-
-        if (sysUserBo.getDisableStatus() != null) {
-          queryWrapper.eq("disable_status", sysUserBo.getDisableStatus());
-        }
+      if (StringUtils.isNotBlank(sysUserBo.getContent())) {
+        queryWrapper
+            .like("phone_number", sysUserBo.getContent())
+            .or()
+            .like("nick_name", sysUserBo.getContent())
+            .or()
+            .like("account", sysUserBo.getContent())
+            .or()
+            .like("username", sysUserBo.getContent())
+            .or()
+            .like("id_card_num", sysUserBo.getContent())
+            .or()
+            .like("email", sysUserBo.getContent());
       }
       if (sysUserBo.getCurrentPage() == null || sysUserBo.getPageSize() == null) {
         sysUserBo.setCurrentPage(0);

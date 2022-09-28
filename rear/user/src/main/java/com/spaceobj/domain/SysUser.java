@@ -107,4 +107,7 @@ public class SysUser implements Serializable {
 
   @TableField(value = "disable_status")
   private Integer disableStatus;
+
+  @TableField(value = "email")
+  private String email;
 }

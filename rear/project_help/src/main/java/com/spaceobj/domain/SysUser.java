@@ -68,8 +68,8 @@ public class SysUser implements Serializable {
 
   private Integer projectHelpTimes;
 
-
   private String deviceType;
 
   private Integer createProjectHelpTimes;
+  private String email;
 }

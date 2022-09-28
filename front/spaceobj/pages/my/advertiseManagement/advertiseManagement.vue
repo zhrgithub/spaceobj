@@ -1,28 +1,28 @@
 <template>
 	<view class="container">
-		<view class="shop-list-style" @click="editAdvertise">
+		<view class="shop-list-style" @click="editAdvertise(item)" v-for="(item,idx) in list" :key="idx">
 			<view class="commodity-image-description-background-style">
 				<view class="commodity-image-background-style">
-					<image src="/static/bg.jpg" mode=""></image>
+					<image :src="item.jdAdImageLink" mode=""></image>
 				</view>
 				<view class="description-background-style">
 					<view class="title-description-style">
-						京东：家香味 沂蒙土榨 花生仁油6.18L 食用油 中粮福临门出品
+						{{item.jdAdName}}
 					</view>
 					<view class="store-description-style">
-						商家：中粮家香味京东自营旗舰店
+						商家：{{item.jdAdStoreName}}
 					</view>
 
 					<view class="discount-description-style">
-						优惠卷：满11元可用、满169享8.5折
+						优惠卷：{{item.jdAdCoupon}}
 					</view>
 
 					<view class="price-good-diss-style">
 						<view class="price-num-style">
-							价格：￥300
+							价格：￥{{item.jdAdPrice}}
 						</view>
 						<view class="good-diss-style">
-							好评：99万+
+							好评：{{item.jdAdCommentNum}}万+
 						</view>
 					</view>
 
@@ -31,9 +31,6 @@
 		</view>
 
 		<view class="click-release-style" @click="addAdvertise">添加</view>
-
-
-
 		<uni-popup ref="popup" background-color="#fff">
 			<view class="need-description-budget-style">
 				广告表单
@@ -42,26 +39,47 @@
 			<view class="description-doller-style">
 
 				<view class="doller-num-style">
-					<input placeholder="商品超链接">
+					<view class="title-context-style">
+						商品超链接：
+					</view>
+					<input :placeholder="jdAdHyperlink" @input="setAdHyperlink">
 				</view>
 				<view class="doller-num-style">
-					<input placeholder="商品图片链接">
+					<view class="title-context-style">
+						图片超链接：
+					</view>
+					<input :placeholder="jdAdImageLink" @input="setAdImageLink">
 				</view>
 				<view class="doller-num-style">
-					<input placeholder="商品名称">
+					<view class="title-context-style">
+						商品名称：
+					</view>
+					<input :placeholder="jdAdName" @input="setAdName">
 				</view>
 				<view class="doller-num-style">
-					<input placeholder="商家名称">
+					<view class="title-context-style">
+						商店名称：
+					</view>
+					<input :placeholder="jdAdStoreName" @input="setAdStoreName">
 				</view>
 				<view class="doller-num-style">
-					<input placeholder="优惠券描述">
+					<view class="title-context-style">
+						优惠券描述：
+					</view>
+					<input :placeholder="jdAdCoupon" @input="setAdCoupon">
 				</view>
 
 				<view class="doller-num-style">
-					<input placeholder="价格描述">
+					<view class="title-context-style">
+						价格：
+					</view>
+					<input :placeholder="jdAdPrice" @input="setAdPrice">
 				</view>
 				<view class="doller-num-style">
-					<input placeholder="好评数量">
+					<view class="title-context-style">
+						好评数量：
+					</view>
+					<input :placeholder="jdAdCommentNum" @input="setAdCommentNum">
 				</view>
 
 				<view class="button-style">
@@ -77,36 +95,241 @@
 </template>
 
 <script>
+	let that;
+	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
+	import strigUtils from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
-
+				list: [],
+				jdAdCommentNum: null, //商品评论数量
+				jdAdCoupon: null, //优惠券描述
+				jdAdHyperlink: null, //商品超链接
+				jdAdId: null, //商品id
+				jdAdImageLink: null, //商品图片链接
+				jdAdName: null, //商品名称
+				jdAdPrice: null, //商品价格
+				jdAdStoreName: null, //商家名称
+				operationType: null, //操作类型：0表示修改，1表示新增，默认为null
 			}
 		},
+		created() {
+			that = this;
+		},
+		onShow() {
+			uni.showLoading({
+				title: '加载中...',
+			})
+			that.loadList();
+		},
 		methods: {
+			setAdHyperlink(e) {
+				that.jdAdHyperlink = e.detail.value;
+			},
+			setAdImageLink(e) {
+				that.jdAdImageLink = e.detail.value;
+			},
+			setAdName(e) {
+				that.jdAdName = e.detail.value;
+			},
+			setAdStoreName(e) {
+				that.jdAdStoreName = e.detail.value;
+			},
+			setAdCoupon(e) {
+				that.jdAdCoupon = e.detail.value;
+			},
+			setAdPrice(e) {
+				that.jdAdPrice = e.detail.value;
+			},
+			setAdCommentNum(e) {
+				that.jdAdCommentNum = e.detail.value;
+			},
+			loadList() {
+				uni.showLoading();
+				api.post({
 
-			editAdvertise() {
+				}, api.jdList).then(res => {
+					console.log("res:", res)
+					that.list = res.data;
+					uni.hideLoading();
+				});
+			},
+			editAdvertise(e) {
+				that.jdAdCommentNum = e.jdAdCommentNum;
+				that.jdAdCoupon = e.jdAdCoupon;
+				that.jdAdHyperlink = e.jdAdHyperlink;
+				that.jdAdId = e.jdAdId;
+				that.jdAdImageLink = e.jdAdImageLink;
+				that.jdAdName = e.jdAdName;
+				that.jdAdPrice = e.jdAdPrice;
+				that.jdAdStoreName = e.jdAdStoreName;
+
+				// 设置成修改的操作类型
+				that.operationType = 0;
+
 				this.$refs.popup.open('bottom')
+
 			},
 			addAdvertise() {
+				// 设置成添加的操作类型
+				that.operationType = 1;
+				that.jdAdCommentNum = '';
+				that.jdAdCoupon = '';
+				that.jdAdHyperlink = '';
+				that.jdAdId = '';
+				that.jdAdImageLink = '';
+				that.jdAdName = '';
+				that.jdAdPrice = '';
+				that.jdAdStoreName = '';
 				this.$refs.popup.open('bottom')
 			},
 			del() {
 				this.$refs.popup.close();
-				uni.showToast({
-					title: "删除成功",
-					icon: 'none',
-					duration: 2000
-				})
+				api.post({
+					jdAdId: that.jdAdId
+				}, api.jdDeleteAdvertise).then(res => {
+					if (res.code == 200) {
+						that.loadList();
+						uni.showToast({
+							title: res.msg,
+							icon: 'none',
+							duration: 2000
+						})
+					} else {
+						uni.showToast({
+							title: res.msg,
+							icon: 'none',
+							duration: 2000
+						})
+					}
+				});
+				
+				
 			},
 			submit() {
-				this.$refs.popup.close();
-				uni.showToast({
-					title: "提交成功",
-					icon: 'none',
-					duration: 2000
-				})
+				// 判断是新增还是修改
+				var operationType = that.operationType;
+				console.log(operationType)
+				if (that.jdAdHyperlink.length == 0) {
+					uni.showToast({
+						icon: 'none',
+						title: '商品超链接不为空'
+					})
+					return;
+				}
 
+				if (that.jdAdImageLink.length == 0) {
+					uni.showToast({
+						icon: 'none',
+						title: '图片超链接不为空'
+					})
+					return;
+				}
+				if (that.jdAdName.length == 0) {
+					uni.showToast({
+						icon: 'none',
+						title: '商品名称不为空'
+					})
+					return;
+				}
+				if (that.jdAdStoreName.length == 0) {
+					uni.showToast({
+						icon: 'none',
+						title: '商家名称不为空'
+					})
+					return;
+				}
+				if (that.jdAdCoupon.length == 0) {
+					uni.showToast({
+						icon: 'none',
+						title: '优惠卷描述不为空'
+					})
+					return;
+				}
+				if (that.jdAdPrice == '') {
+					uni.showToast({
+						icon: 'none',
+						title: '商品价格不为空'
+					})
+					return;
+				}
+				if (that.jdAdCommentNum.length == 0) {
+					uni.showToast({
+						icon: 'none',
+						title: '商品好评数不为空'
+					})
+					return;
+				}
+				if (operationType == 0) {
+					that.update();
+				} else {
+					that.add();
+				}
+				this.$refs.popup.close();
+
+
+			},
+
+			add() {
+				api.post({
+					jdAdHyperlink: that.jdAdHyperlink,
+					jdAdImageLink: that.jdAdImageLink,
+					jdAdName: that.jdAdName,
+					jdAdStoreName: that.jdAdStoreName,
+					jdAdCoupon: that.jdAdCoupon,
+					jdAdPrice: that.jdAdPrice,
+					jdAdCommentNum: that.jdAdCommentNum,
+				}, api.jdSaveAdvertise).then(res => {
+					if (res.code == 200) {
+						that.loadList();
+						uni.showToast({
+							title: res.msg,
+							icon: 'none',
+							duration: 2000
+						})
+					} else {
+						uni.showToast({
+							title: res.msg,
+							icon: 'none',
+							duration: 2000
+						})
+					}
+				});
+			},
+			update() {
+				if (that.jdAdId == '') {
+					uni.showToast({
+						icon: 'none',
+						title: '商品id不为空'
+					})
+					return;
+				}
+				api.post({
+					jdAdId: that.jdAdId,
+					jdAdHyperlink: that.jdAdHyperlink,
+					jdAdImageLink: that.jdAdImageLink,
+					jdAdName: that.jdAdName,
+					jdAdStoreName: that.jdAdStoreName,
+					jdAdCoupon: that.jdAdCoupon,
+					jdAdPrice: that.jdAdPrice,
+					jdAdCommentNum: that.jdAdCommentNum,
+				}, api.jdUpdateAdvertise).then(res => {
+					if (res.code == 200) {
+						that.loadList();
+						uni.showToast({
+							title: res.msg,
+							icon: 'none',
+							duration: 2000
+						})
+					} else {
+						uni.showToast({
+							title: res.msg,
+							icon: 'none',
+							duration: 2000
+						})
+					}
+				});
 			},
 		}
 	}
@@ -118,6 +341,15 @@
 		height: 100%;
 		position: absolute;
 	}
+	.discount-description-style{
+		font-size: 12px;
+		width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: black;
+		white-space: nowrap;
+	}
+
 
 	.shop-list-style {
 		width: 96%;
@@ -235,13 +467,21 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: darkgray 0px 0px 2px 0px;
+
 		margin-top: 30rpx;
-		border-radius: 10px;
+
 	}
 
+
 	.doller-num-style input {
-		width: 90%;
+		width: 70%;
+		box-shadow: darkgray 0px 0px 2px 0px;
+		border-radius: 10rpx;
+		height: 80rpx;
+	}
+
+	.title-context-style {
+		width: 30%;
 	}
 
 	.button-style {

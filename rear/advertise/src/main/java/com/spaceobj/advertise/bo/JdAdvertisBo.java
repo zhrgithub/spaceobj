@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Builder
 public class JdAdvertisBo implements Serializable {
 
-    private Long jdAdId;
+    private Integer jdAdId;
 
     private String jdAdHyperlink;
 

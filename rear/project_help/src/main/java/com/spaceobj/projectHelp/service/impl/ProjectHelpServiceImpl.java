@@ -2,6 +2,7 @@ package com.spaceobj.projectHelp.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -163,6 +165,9 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = getSysUser(loginId);
+      if (!Pattern.matches(RegexPool.EMAIL, sysUser.getEmail())) {
+        return SaResult.error("请设置正确邮箱");
+      }
 
       // 如果用户的创建剩余次数小于10次，提醒明天再来
       if (sysUser.getCreateProjectHelpTimes() <= 0) {
@@ -179,11 +184,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
                   })
               .collect(Collectors.toList());
       if (resultSysProjectList.size() == 0) {
-        return SaResult.error("项目id不正确");
+        return SaResult.error("id错误");
       }
       SysProject sysProject = resultSysProjectList.get(0);
       if (sysProject.getStatus() != 1) {
-        return SaResult.error("项目审核未通过，不可创建助力链接");
+        return SaResult.error("违规操作");
       }
       // 获取项目助力列表
       List<ProjectHelp> list = getProjectHelpList();
@@ -268,7 +273,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
         SysUser createSysUser = getSysUserByUserId(projectHelp.getCreateUserId());
         ReceiveEmailBo receiveEmailBo =
             ReceiveEmailBo.builder()
-                .receiverEmail(createSysUser.getAccount())
+                .receiverEmail(createSysUser.getEmail())
                 .title("项目助力成功")
                 .content("项目编号：" + projectHelp.getPId() + "助力成功！快去联系吧！")
                 .build();

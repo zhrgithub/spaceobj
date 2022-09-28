@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 public class JdAdvertisDto implements Serializable {
 
     @NotNull(message = "广告id不为空",groups = {DeleteAdvertiseGroup.class , UpdateAdvertiseGroup.class})
-    private Long jdAdId;
+    private Integer jdAdId;
 
     @NotBlank(message = "广告超链接不为空",groups = {InsertAdverTiseGroup.class , UpdateAdvertiseGroup.class})
     private String jdAdHyperlink;

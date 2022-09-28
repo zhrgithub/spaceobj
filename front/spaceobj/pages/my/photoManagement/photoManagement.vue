@@ -1,11 +1,11 @@
 <template>
 	<view class="container">
-		<view class="photo-image-btn-background-style">
+		<view class="photo-image-btn-background-style" v-for="(item,idx) in photoList" :key="idx">
 			<view class="photo-image-background-style">
-				<image src="/static/photo.jpg" mode=""></image>
+				<image :src="item.photoUrl" mode=""></image>
 			</view>
 			<view class="btn-background-style">
-				<button @click="editPhoto">编辑</button>
+				<button @click="editPhoto(item)">编辑</button>
 			</view>
 		</view>
 
@@ -15,52 +15,108 @@
 </template>
 
 <script>
+	let that;
+	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
+	import strigUtils from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
-
+				photoList: [],
 			}
 		},
+		created() {
+			that = this;
+		},
+		onShow() {
+			uni.showLoading({
+				title: '加载中...',
+			})
+			that.loadPhotoList();
+		},
 		methods: {
+			loadPhotoList() {
+				api.post({
+
+				}, api.sysPhotoList).then(res => {
+					console.log("res:", res)
+					that.photoList = res.data;
+					uni.hideLoading();
+				});
+			},
 			addPhoto() {
 				uni.showModal({
-					title:'新增头像',
-					editable:true,
-					confirmColor:'#000',
+					title: '新增头像',
+					editable: true,
+					confirmColor: '#000',
 					success(e) {
 						console.log(e.content)
-						if(e.confirm){
-							uni.showToast({
-								icon:"none",
-								title:'新增成功'
-							})
+						if (e.confirm) {
+							that.addOrUpdatePhoto('', e.content, 0)
 						}
 					}
 				})
 			},
-			editPhoto(){
+			editPhoto(e) {
+				console.log(e)
+				var photoId = e.photoId;
 				uni.showModal({
-					title:'编辑头像',
-					cancelText:'删除头像',
-					confirmText:'保存修改',
-					confirmColor:'#000',
-					editable:true,
+					title: '编辑头像',
+					placeholderText:e.photoUrl,
+					cancelText: '删除头像',
+					confirmText: '保存修改',
+					confirmColor: '#000',
+					editable: true,
 					success(e) {
 						console.log(e.content)
-						if(e.confirm){
-							uni.showToast({
-								icon:"none",
-								title:'保存成功'
-							})
+						if (e.confirm) {
+							that.addOrUpdatePhoto(photoId, e.content, 2)
 						}
-						if(e.cancel){
-							uni.showToast({
-								icon:"none",
-								title:'删除成功'
-							})
+						if (e.cancel) {
+							that.delete(photoId);
 						}
 					}
 				})
+			},
+			addOrUpdatePhoto(photoId, photoUrl, operation) {
+				api.post({
+					photoUrl: photoUrl,
+					operation: operation,
+					photoId: photoId
+				}, api.addOrUpdatePhoto).then(res => {
+					console.log(res)
+					if (res.code == 200) {
+						that.loadPhotoList();
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
+					} else {
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
+					}
+				});
+			},
+			delete(photoId) {
+				api.post({
+					photoId: photoId
+				}, api.sysPhotoDelete).then(res => {
+					console.log("res:", res)
+					if (res.code == 200) {
+						that.loadPhotoList();
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
+					} else {
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
+					}
+				});
 			}
 		}
 	}

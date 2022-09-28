@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 public class JdAdvertis implements Serializable {
 
     @TableId(value = "jd_ad_id")
-    private Long jdAdId;
+    private Integer jdAdId;
 
     @TableField(value = "jd_ad_hyperlink")
     private String jdAdHyperlink;

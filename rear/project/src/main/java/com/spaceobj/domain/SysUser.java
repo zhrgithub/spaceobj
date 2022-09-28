@@ -89,4 +89,6 @@ public class SysUser implements Serializable {
 
   /** 每页大小 */
   private Integer pageSize;
+
+  private String email;
 }

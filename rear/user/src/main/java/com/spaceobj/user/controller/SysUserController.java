@@ -32,6 +32,7 @@ public class SysUserController {
 
   @PostMapping("updateUser")
   public SaResult updateUser(@Validated(UpdateSysUserGroup.class) SysUserDto sysUserDto) {
+    System.out.println("sysUser: " + sysUserDto.toString());
     SysUserBo sysUserBo = SysUserBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
     return sysUserService.updateSysUser(sysUserBo);

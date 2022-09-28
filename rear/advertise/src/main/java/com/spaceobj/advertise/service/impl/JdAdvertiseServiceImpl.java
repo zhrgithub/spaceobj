@@ -52,8 +52,8 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
         List<JdAdvertis> list = null;
 
-        Long size = redisTemplate.opsForList().size(RedisKey.JD_ADVERTISE_LIST);
-        if (size == 0) {
+        boolean hasKey = redisTemplate.hasKey(RedisKey.JD_ADVERTISE_LIST);
+        if (!hasKey) {
             if (this.getJdAdvertiseListSyncStatus()) {
                 Thread.sleep(50);
                 this.getJdAdvertiseList();
@@ -103,7 +103,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
             }
             return SaResult.ok("新增成功");
         } catch (Exception e) {
-
+            e.printStackTrace();
             LOG.error("add advertise error", e.getMessage());
             return SaResult.error("新增广告失败,服务器异常！");
         }
@@ -152,4 +152,5 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
             return SaResult.error("广告更新失败！服务器异常！");
         }
     }
+
 }
