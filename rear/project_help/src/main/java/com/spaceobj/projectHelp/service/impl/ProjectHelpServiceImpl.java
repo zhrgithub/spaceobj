@@ -4,7 +4,6 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.projectHelp.bo.ProjectHelpBo;
 import com.spaceobj.projectHelp.bo.ReceiveEmailBo;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -50,27 +48,32 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
    * @return
    * @throws InterruptedException
    */
-  public SysUser getSysUser(String account) throws InterruptedException {
-    boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+  public SysUser getSysUser(String account) {
     List<SysUser> sysUserList = null;
     SysUser sysUser = null;
-    if (!flag) {
-      // 刷新用户缓存信息
-      kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-      Thread.sleep(200);
-      this.getSysUser(account);
-    } else {
-      sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      sysUser =
-          sysUserList.stream()
-              .filter(
-                  user -> {
-                    return user.getAccount().equals(account);
-                  })
-              .collect(Collectors.toList())
-              .get(0);
+    try {
+      boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+      if (!flag) {
+        // 刷新用户缓存信息
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
+        Thread.sleep(200);
+        return this.getSysUser(account);
+      } else {
+        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+        sysUser =
+            sysUserList.stream()
+                .filter(
+                    user -> {
+                      return user.getAccount().equals(account);
+                    })
+                .collect(Collectors.toList())
+                .get(0);
+        return sysUser;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
-    return sysUser;
   }
 
   /**
@@ -79,47 +82,55 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
    * @param userId
    * @return
    */
-  public SysUser getSysUserByUserId(String userId) throws InterruptedException {
-    boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+  public SysUser getSysUserByUserId(String userId) {
     List<SysUser> sysUserList = null;
     SysUser sysUser = null;
-    if (!flag) {
-      // 刷新用户缓存信息
-      kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-      Thread.sleep(200);
-      this.getSysUserByUserId(userId);
-    } else {
-      sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      sysUser =
-          sysUserList.stream()
-              .filter(
-                  user -> {
-                    return user.getUserId().equals(userId);
-                  })
-              .collect(Collectors.toList())
-              .get(0);
+    try {
+      boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+      if (!flag) {
+        // 刷新用户缓存信息
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
+        Thread.sleep(200);
+        return this.getSysUserByUserId(userId);
+      } else {
+        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+        sysUser =
+            sysUserList.stream()
+                .filter(
+                    user -> {
+                      return user.getUserId().equals(userId);
+                    })
+                .collect(Collectors.toList())
+                .get(0);
+        return sysUser;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
-    return sysUser;
   }
 
   /**
    * 获取项目列表信息
    *
    * @return
-   * @throws InterruptedException
    */
-  public List<SysProject> getSysProjects() throws InterruptedException {
+  public List<SysProject> getSysProjects() {
     List<SysProject> sysProjectList = null;
 
-    boolean hasKey = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
-    if (!hasKey) {
-      kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
-      Thread.sleep(200);
-      this.getSysProjects();
-    } else {
-      sysProjectList = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+    try {
+      boolean hasKey = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
+      if (!hasKey) {
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
+        Thread.sleep(200);
+        return this.getSysProjects();
+      } else {
+        sysProjectList = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+        return sysProjectList;
+      }
+    } catch (Exception e) {
+      return null;
     }
-    return sysProjectList;
   }
 
   public boolean getProjectHelpSyncStatus() {
@@ -137,26 +148,32 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
    *
    * @return
    */
-  private List<ProjectHelp> getProjectHelpList() throws InterruptedException {
+  private List<ProjectHelp> getProjectHelpList() {
     List<ProjectHelp> list = null;
-    boolean flag = redisTemplate.hasKey(RedisKey.PROJECT_HELP_LIST);
-    if (!flag) {
-      if (this.getProjectHelpSyncStatus()) {
-        Thread.sleep(50);
-        this.getProjectHelpList();
-      } else {
-        redisTemplate.opsForValue().set(RedisKey.PROJECT_HELP_LIST_SYNC_STATUS, true);
-        QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
-        queryWrapper.orderByDesc("create_time");
-        list = projectHelpMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_HELP_LIST, list.toArray());
 
-        redisTemplate.opsForValue().set(RedisKey.PROJECT_HELP_LIST_SYNC_STATUS, false);
+    try {
+      boolean flag = redisTemplate.hasKey(RedisKey.PROJECT_HELP_LIST);
+      if (!flag) {
+        if (this.getProjectHelpSyncStatus()) {
+          Thread.sleep(50);
+          return this.getProjectHelpList();
+        } else {
+          redisTemplate.opsForValue().set(RedisKey.PROJECT_HELP_LIST_SYNC_STATUS, true);
+          QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
+          queryWrapper.orderByDesc("create_time");
+          list = projectHelpMapper.selectList(queryWrapper);
+          redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_HELP_LIST, list.toArray());
+          redisTemplate.opsForValue().set(RedisKey.PROJECT_HELP_LIST_SYNC_STATUS, false);
+          return list;
+        }
+      } else {
+        list = redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
+        return list;
       }
-    } else {
-      list = redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
-    return list;
   }
 
   @Override
