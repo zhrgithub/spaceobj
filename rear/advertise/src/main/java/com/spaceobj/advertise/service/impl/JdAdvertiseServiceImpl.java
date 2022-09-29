@@ -48,27 +48,31 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
      *
      * @return
      */
-    private List<JdAdvertis> getJdAdvertiseList() throws InterruptedException {
-
+    private List<JdAdvertis> getJdAdvertiseList() {
         List<JdAdvertis> list = null;
-
-        boolean hasKey = redisTemplate.hasKey(RedisKey.JD_ADVERTISE_LIST);
-        if (!hasKey) {
-            if (this.getJdAdvertiseListSyncStatus()) {
-                Thread.sleep(50);
-                this.getJdAdvertiseList();
+        try {
+            boolean hasKey = redisTemplate.hasKey(RedisKey.JD_ADVERTISE_LIST);
+            if (!hasKey) {
+                if (this.getJdAdvertiseListSyncStatus()) {
+                    Thread.sleep(50);
+                    return this.getJdAdvertiseList();
+                } else {
+                    redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, true);
+                    redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
+                    QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
+                    list = jdAdvertisMapper.selectList(queryWrapper);
+                    redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, list.toArray());
+                    redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
+                    return list;
+                }
             } else {
-                redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, true);
-                redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
-                QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
-                list = jdAdvertisMapper.selectList(queryWrapper);
-                redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, list.toArray());
-                redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
+                list = redisTemplate.opsForList().range(RedisKey.JD_ADVERTISE_LIST, 0, -1);
+                return list;
             }
-        } else {
-            list = redisTemplate.opsForList().range(RedisKey.JD_ADVERTISE_LIST, 0, -1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        return list;
     }
 
     @Override

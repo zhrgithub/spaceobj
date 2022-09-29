@@ -152,12 +152,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           sysProjectById.setContent(sysProject.getContent());
           sysProjectById.setPrice(sysProject.getPrice());
           sysProjectById.setIpAddress(sysProject.getIpAddress());
-          this.updateProject(sysProjectById);
+          return this.updateProject(sysProjectById);
         }
-
         return SaResult.ok();
       }
-
       return SaResult.error("请求错误");
     } catch (Exception e) {
       e.printStackTrace();
@@ -171,7 +169,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       int result = this.updateResult(project);
       if (result == 0) {
-        this.auditProject(project);
+        return SaResult.error("审核失败");
       }
       return SaResult.ok("审核成功");
     } catch (Exception e) {
@@ -241,27 +239,33 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
    */
   private List<SysProject> getSysProjectList() throws InterruptedException {
     List<SysProject> list = null;
-    boolean flag = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
-    if (!flag) {
-      if (this.getRedisProjectSyncStatus()) {
-        Thread.sleep(50);
-        this.getSysProjectList();
+    try {
+      boolean flag = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
+      if (!flag) {
+        if (this.getRedisProjectSyncStatus()) {
+          Thread.sleep(50);
+          return this.getSysProjectList();
+        } else {
+          redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, true);
+          redisTemplate.delete(RedisKey.PROJECT_LIST);
+          QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
+          queryWrapper.orderByDesc("create_time");
+          list = sysProjectMapper.selectList(queryWrapper);
+          redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_LIST, list.toArray());
+          // 设置过期时间
+          redisTemplate.expire(
+              RedisKey.PROJECT_LIST, RedisKey.PROJECT_LIST_EXPIRE_TIME, TimeUnit.MINUTES);
+          redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, false);
+          return list;
+        }
       } else {
-        redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, true);
-        redisTemplate.delete(RedisKey.PROJECT_LIST);
-        QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
-        queryWrapper.orderByDesc("create_time");
-        list = sysProjectMapper.selectList(queryWrapper);
-        redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_LIST, list.toArray());
-        // 设置过期时间
-        redisTemplate.expire(
-            RedisKey.PROJECT_LIST, RedisKey.PROJECT_LIST_EXPIRE_TIME, TimeUnit.MINUTES);
-        redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, false);
+        list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+        return list;
       }
-    } else {
-      list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
-    return list;
   }
 
   @Override
@@ -433,25 +437,30 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
    * @throws InterruptedException
    */
   public SysUser getSysUser(String account) throws InterruptedException {
-    boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
     List<SysUser> sysUserList = null;
     SysUser sysUser = null;
-    if (!flag) {
-      // 刷新用户缓存信息
-      kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-      Thread.sleep(200);
-      this.getSysUser(account);
-    } else {
-      sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-      sysUser =
-          sysUserList.stream()
-              .filter(
-                  user -> {
-                    return user.getAccount().equals(account);
-                  })
-              .collect(Collectors.toList())
-              .get(0);
+    try {
+      boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+      if (!flag) {
+        // 刷新用户缓存信息
+        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
+        Thread.sleep(200);
+        return this.getSysUser(account);
+      } else {
+        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+        sysUser =
+            sysUserList.stream()
+                .filter(
+                    user -> {
+                      return user.getAccount().equals(account);
+                    })
+                .collect(Collectors.toList())
+                .get(0);
+        return sysUser;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
-    return sysUser;
   }
 }

@@ -212,28 +212,32 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
    */
   public List<SysUser> getUserList() throws InterruptedException {
     List<SysUser> sysUserList = null;
-    // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，在缓存中校验用户是否存在，存在则递归，不存在返回不存在
-    boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
-    if (!hasKey) {
-      if (getRedisSysUserListSyncStatus()) {
-        Thread.sleep(50);
-        return this.getUserList();
+    try {
+      // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，在缓存中校验用户是否存在，存在则递归，不存在返回不存在
+      boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+      if (!hasKey) {
+        if (getRedisSysUserListSyncStatus()) {
+          Thread.sleep(50);
+          return this.getUserList();
+        } else {
+          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
+          // 数据同步
+          // 查询用户列表信息
+          QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+          sysUserList = sysUserMapper.selectList(queryWrapper);
+          // 更新用户列表信息
+          redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
+          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+          return sysUserList;
+        }
       } else {
-        redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
-        // 数据同步
-        // 查询用户列表信息
-        QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-        sysUserList = sysUserMapper.selectList(queryWrapper);
-        // 更新用户列表信息
-        redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
-        redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
         return sysUserList;
       }
-    } else {
-      sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
-
-    return sysUserList;
   }
 
   @Override
