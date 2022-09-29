@@ -3,6 +3,7 @@ package com.spaceobj.user.controller;
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.dto.SysUserDto;
+import com.spaceobj.user.group.sysUser.FindListSysUserGroup;
 import com.spaceobj.user.group.sysUser.UpdateSysUserGroup;
 import com.spaceobj.user.service.SysUserService;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
@@ -24,7 +25,7 @@ public class SysUserController {
   @Autowired private SysUserService sysUserService;
 
   @PostMapping("findList")
-  public SaResult findList(SysUserDto sysUserDto) {
+  public SaResult findList(@Validated(FindListSysUserGroup.class) SysUserDto sysUserDto) {
     SysUserBo sysUserBo = SysUserBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
     return sysUserService.findList(sysUserBo);

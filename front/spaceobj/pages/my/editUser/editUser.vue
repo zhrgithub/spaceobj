@@ -32,7 +32,7 @@
 				邮箱
 			</view>
 			<view class="change-input-style">
-				{{account}}
+				<input type="text" maxlength="20" :placeholder="email" @input="setEmail">
 			</view>
 
 		</view>
@@ -86,7 +86,8 @@
 				nickName: "未设置",
 				phoneNumber: "未设置",
 				account: "未知",
-				realNameStatus: '未实名'
+				realNameStatus: '未实名',
+				email: '未设置'
 			}
 		},
 		onShow() {
@@ -95,8 +96,10 @@
 				console.log(userInfo)
 				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
-				that.phoneNumber = strigUtils.isBlank(userInfo.phoneNumber) ? that.nickName : userInfo.phoneNumber;
-				that.account = strigUtils.isBlank(userInfo.account) ? that.nickName : userInfo.account;
+				that.phoneNumber = strigUtils.isBlank(userInfo.phoneNumber) ? that.phoneNumber : userInfo
+					.phoneNumber;
+				that.account = strigUtils.isBlank(userInfo.account) ? that.account : userInfo.account;
+				that.email = strigUtils.isBlank(userInfo.email) ? that.email : userInfo.email;
 				that.realNameStatus = userInfo.realNameStatus != 1 ? '未实名' : '已实名';
 				that.ipTerritory = userInfo.ipTerritory;
 
@@ -107,6 +110,9 @@
 			that = this;
 		},
 		methods: {
+			setEmail(e) {
+				that.email = e.detail.value;
+			},
 			setPhoneNumber(e) {
 				that.phoneNumber = e.detail.value;
 			},
@@ -184,11 +190,20 @@
 					})
 					return;
 				}
+				console.log(that.email)
+				if (that.email.length == 0 || that.email == '未设置') {
+					uni.showToast({
+						icon: 'none',
+						title: '未设置邮箱'
+					})
+					return;
+				}
 				api.post({
 					phoneNumber: that.phoneNumber,
 					nickName: that.nickName,
 					photoUrl: that.photoUrl,
-					ipTerritory: that.ipTerritory
+					ipTerritory: that.ipTerritory,
+					email: that.email
 				}, api.customerUpdateUserInfo).then(res => {
 					console.log("res:", res)
 					uni.hideLoading();

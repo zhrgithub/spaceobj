@@ -137,7 +137,9 @@
 				phone: '',
 				seachText: '',
 				list: [],
-				userObj: null
+				userObj: null,
+				currentPage: 1,
+				pageSize: 10
 			}
 		},
 		created() {
@@ -147,6 +149,16 @@
 			uni.showLoading({
 				title: '加载中...',
 			})
+			that.loadList();
+		},
+		// 触底加载更多
+		onReachBottom() {
+			that.loadList();
+		},
+		// 下拉刷新
+		onPullDownRefresh() {
+			that.currentPage = 1;
+			that.list = [];
 			that.loadList();
 		},
 		methods: {
@@ -168,10 +180,15 @@
 			loadList() {
 				uni.showLoading();
 				api.post({
-					content: that.seachText
+					content: that.seachText,
+					currentPage: that.currentPage,
+					pageSize: that.pageSize
 				}, api.findSysUserList).then(res => {
 					if (res.code == 200) {
-						that.list = res.data;
+						if(res.data.length>0){
+							that.list = that.list.concat(res.data);
+							that.currentPage++;
+						}
 					} else {
 						uni.showToast({
 							icon: 'none',
@@ -204,6 +221,8 @@
 			},
 			doSearch(e) {
 				console.log(e.detail.value)
+				that.currentPage = 1;
+				that.list = [];
 				that.loadList();
 			},
 			inputText(e) {
@@ -211,6 +230,8 @@
 			},
 			clearInput() {
 				this.seachText = "";
+				that.list = [];
+				that.currentPage = 1;
 				that.loadList();
 			},
 		}

@@ -61,19 +61,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             .or()
             .like("email", sysUserBo.getContent());
       }
-      if (sysUserBo.getCurrentPage() == null || sysUserBo.getPageSize() == null) {
-        sysUserBo.setCurrentPage(0);
-        sysUserBo.setPageSize(10);
-      }
+      System.out.println(sysUserBo.toString());
       Page<SysUser> page = new Page<>(sysUserBo.getCurrentPage(), sysUserBo.getPageSize());
       IPage<SysUser> iPage = sysUserMapper.selectPage(page, queryWrapper);
       list = iPage.getRecords();
+      return SaResult.ok().setData(list);
     } catch (Exception e) {
       e.printStackTrace();
       LOG.error("system user find list failed ", e.getMessage());
       return SaResult.error("查询失败");
     }
-    return SaResult.ok().setData(list);
   }
 
   @Override

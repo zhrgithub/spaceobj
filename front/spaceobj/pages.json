@@ -112,7 +112,7 @@
             "style" :                                                                                    
             {
                 "navigationBarTitleText": "用户管理",
-                "enablePullDownRefresh": false
+                "enablePullDownRefresh": true
             }
             
         }

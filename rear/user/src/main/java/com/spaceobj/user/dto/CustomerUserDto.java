@@ -155,5 +155,8 @@ public class CustomerUserDto {
   /** 每页大小 */
   private Integer pageSize;
 
+  @NotBlank(
+      message = "邮箱不为空",
+      groups = {UpdateUserInfoGroup.class})
   private String email;
 }

@@ -98,14 +98,13 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
   public SaResult photoList() {
 
     List<SysPhoto> list = null;
-
     try {
       boolean size = redisTemplate.hasKey(RedisKey.SYS_PHOTO_LIST);
       if (!size) {
         // 如果是否在同步中，那么等待50ms后重新调用
         if (getRedisPhotoListSyncStatus()) {
           Thread.sleep(200);
-          this.photoList();
+          return this.photoList();
         } else {
           redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, true);
 
@@ -114,16 +113,17 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
           redisTemplate.opsForList().leftPushAll(RedisKey.SYS_PHOTO_LIST, list.toArray());
 
           redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, false);
+          return SaResult.ok().setData(list);
         }
 
       } else {
         list = redisTemplate.opsForList().range(RedisKey.SYS_PHOTO_LIST, 0, -1);
+        return SaResult.ok().setData(list);
       }
     } catch (RuntimeException | InterruptedException e) {
       LOG.error("Photo list failed", e.getMessage());
       return SaResult.error(e.getMessage()).setData(list);
     }
-    return SaResult.ok().setData(list);
   }
 
   public boolean getRedisPhotoListSyncStatus() {

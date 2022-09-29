@@ -1,5 +1,6 @@
 package com.spaceobj.user.dto;
 
+import com.spaceobj.user.group.sysUser.FindListSysUserGroup;
 import com.spaceobj.user.group.sysUser.UpdateSysUserGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -98,9 +99,15 @@ public class SysUserDto implements Serializable {
   private Integer createProjectHelpTimes;
 
   /** 当前页 */
+  @NotNull(
+      message = "当前页不为空",
+      groups = {FindListSysUserGroup.class})
   private Integer currentPage;
 
   /** 每页大小 */
+  @NotNull(
+      message = "每页大小不为空",
+      groups = {FindListSysUserGroup.class})
   private Integer pageSize;
 
   /** 搜索内容 */
