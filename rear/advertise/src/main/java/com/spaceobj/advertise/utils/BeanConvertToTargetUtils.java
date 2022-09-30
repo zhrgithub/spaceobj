@@ -22,7 +22,7 @@ public class BeanConvertToTargetUtils {
     Set<String> emptyNames = new HashSet<>();
     for (PropertyDescriptor pd : pds) {
       Object srcValue = src.getPropertyValue(pd.getName());
-      if (srcValue == null) {
+      if (srcValue == null||srcValue.equals("")) {
         emptyNames.add(pd.getName());
       }
     }
