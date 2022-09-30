@@ -10,12 +10,15 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+/**
+ * @author zhr
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @TableName(value = "jd_advertise")
 @Builder
-public class JdAdvertis implements Serializable {
+public class JdAdvertise implements Serializable {
 
     @TableId(value = "jd_ad_id")
     private Integer jdAdId;

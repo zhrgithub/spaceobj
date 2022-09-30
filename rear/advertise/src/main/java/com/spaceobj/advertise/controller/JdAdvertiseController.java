@@ -1,8 +1,7 @@
 package com.spaceobj.advertise.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
-import com.spaceobj.advertise.bo.JdAdvertisBo;
+import com.spaceobj.advertise.bo.JdAdvertiseBo;
 import com.spaceobj.advertise.dto.JdAdvertisDto;
 import com.spaceobj.advertise.group.DeleteAdvertiseGroup;
 import com.spaceobj.advertise.group.InsertAdverTiseGroup;
@@ -36,9 +35,9 @@ public class JdAdvertiseController {
             @Validated(InsertAdverTiseGroup.class)
                     JdAdvertisDto jdAdvertisDto) {
 
-        JdAdvertisBo jdAdvertisBo = JdAdvertisBo.builder().build();
-        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertisBo);
-        return jdAdvertiseService.saveAdvertise(jdAdvertisBo);
+        JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertiseBo);
+        return jdAdvertiseService.saveAdvertise(jdAdvertiseBo);
     }
 
     @PostMapping("deleteAdvertise")
@@ -46,9 +45,9 @@ public class JdAdvertiseController {
             @Validated(DeleteAdvertiseGroup.class)
                     JdAdvertisDto jdAdvertisDto) {
 
-        JdAdvertisBo jdAdvertisBo = JdAdvertisBo.builder().build();
-        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertisBo);
-        return jdAdvertiseService.deleteAdvertise(jdAdvertisBo.getJdAdId());
+        JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertiseBo);
+        return jdAdvertiseService.deleteAdvertise(jdAdvertiseBo.getJdAdId());
     }
 
     @PostMapping("updateAdvertise")
@@ -56,9 +55,9 @@ public class JdAdvertiseController {
             @Validated(UpdateAdvertiseGroup.class)
                     JdAdvertisDto jdAdvertisDto) {
 
-        JdAdvertisBo jdAdvertisBo = JdAdvertisBo.builder().build();
-        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertisBo);
-        return jdAdvertiseService.updateAdvertise(jdAdvertisBo);
+        JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertiseBo);
+        return jdAdvertiseService.updateAdvertise(jdAdvertiseBo);
     }
 
 }

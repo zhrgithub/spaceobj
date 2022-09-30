@@ -2,14 +2,14 @@ package com.spaceobj.advertise.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.spaceobj.advertise.bo.JdAdvertisBo;
-import com.spaceobj.domain.JdAdvertis;
+import com.spaceobj.advertise.bo.JdAdvertiseBo;
+import com.spaceobj.domain.JdAdvertise;
 
 /**
  * @author zhr_java@163.com
  * @date 2022/7/18 14:49
  */
-public interface JdAdvertiseService extends IService<JdAdvertis> {
+public interface JdAdvertiseService extends IService<JdAdvertise> {
 
     /**
      * 查询所有的广告内容
@@ -21,11 +21,11 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
     /**
      * 新增广告内容
      *
-     * @param jdAdvertisBo
+     * @param jdAdvertiseBo
      *
      * @return
      */
-    SaResult saveAdvertise(JdAdvertisBo jdAdvertisBo);
+    SaResult saveAdvertise(JdAdvertiseBo jdAdvertiseBo);
 
     /**
      * 删除广告内容
@@ -39,10 +39,10 @@ public interface JdAdvertiseService extends IService<JdAdvertis> {
     /**
      * 修改广告内容
      *
-     * @param jdAdvertisBo
+     * @param jdAdvertiseBo
      *
      * @return
      */
-    SaResult updateAdvertise(JdAdvertisBo jdAdvertisBo);
+    SaResult updateAdvertise(JdAdvertiseBo jdAdvertiseBo);
 
 }

@@ -8,11 +8,14 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+/**
+ * @author zhr
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class JdAdvertisBo implements Serializable {
+public class JdAdvertiseBo implements Serializable {
 
     private Integer jdAdId;
 

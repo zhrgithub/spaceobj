@@ -1,7 +1,7 @@
 package com.spaceobj.advertise.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.spaceobj.domain.JdAdvertis;
+import com.spaceobj.domain.JdAdvertise;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -9,6 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2022/7/18 14:48
  */
 @Mapper
-public interface JdAdvertisMapper extends BaseMapper<JdAdvertis> {
+public interface JdAdvertisMapper extends BaseMapper<JdAdvertise> {
 
 }

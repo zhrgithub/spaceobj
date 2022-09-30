@@ -3,10 +3,10 @@ package com.spaceobj.advertise.service.impl;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.spaceobj.advertise.bo.JdAdvertisBo;
+import com.spaceobj.advertise.bo.JdAdvertiseBo;
 import com.spaceobj.advertise.constant.RedisKey;
 import com.spaceobj.advertise.mapper.JdAdvertisMapper;
-import com.spaceobj.domain.JdAdvertis;
+import com.spaceobj.domain.JdAdvertise;
 import com.spaceobj.advertise.service.JdAdvertiseService;
 import com.spaceobj.advertise.utils.BeanConvertToTargetUtils;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import java.util.List;
  * @date 2022/7/18 14:53
  */
 @Service
-public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdvertis> implements JdAdvertiseService {
+public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdvertise> implements JdAdvertiseService {
 
     @Autowired
     private JdAdvertisMapper jdAdvertisMapper;
@@ -48,8 +48,8 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
      *
      * @return
      */
-    private List<JdAdvertis> getJdAdvertiseList() {
-        List<JdAdvertis> list = null;
+    private List<JdAdvertise> getJdAdvertiseList() {
+        List<JdAdvertise> list = null;
         try {
             boolean hasKey = redisTemplate.hasKey(RedisKey.JD_ADVERTISE_LIST);
             if (!hasKey) {
@@ -59,7 +59,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
                 } else {
                     redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, true);
                     redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
-                    QueryWrapper<JdAdvertis> queryWrapper = new QueryWrapper();
+                    QueryWrapper<JdAdvertise> queryWrapper = new QueryWrapper();
                     list = jdAdvertisMapper.selectList(queryWrapper);
                     redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, list.toArray());
                     redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
@@ -78,7 +78,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     @Override
     public SaResult findList() {
 
-        List<JdAdvertis> list = null;
+        List<JdAdvertise> list = null;
         try {
             list = getJdAdvertiseList();
             return SaResult.ok().setData(list);
@@ -90,13 +90,13 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     }
 
     @Override
-    public SaResult saveAdvertise(JdAdvertisBo jdAdvertisBo) {
+    public SaResult saveAdvertise(JdAdvertiseBo jdAdvertiseBo) {
 
-        JdAdvertis jdAdvertis = JdAdvertis.builder().build();
-        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisBo, jdAdvertis);
+        JdAdvertise jdAdvertise = JdAdvertise.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseBo, jdAdvertise);
 
         try {
-            int result = jdAdvertisMapper.insert(jdAdvertis);
+            int result = jdAdvertisMapper.insert(jdAdvertise);
             if (result == 1) {
                 //删除缓存
                 redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
@@ -135,13 +135,13 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
     }
 
     @Override
-    public SaResult updateAdvertise(JdAdvertisBo jdAdvertisBo) {
+    public SaResult updateAdvertise(JdAdvertiseBo jdAdvertiseBo) {
 
-        JdAdvertis jdAdvertis = JdAdvertis.builder().build();
-        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisBo, jdAdvertis);
+        JdAdvertise jdAdvertise = JdAdvertise.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseBo, jdAdvertise);
 
         try {
-            int result = jdAdvertisMapper.updateById(jdAdvertis);
+            int result = jdAdvertisMapper.updateById(jdAdvertise);
             if (result == 1) {
                 //删除缓存
                 redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
