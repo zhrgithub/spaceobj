@@ -2,7 +2,7 @@ package com.spaceobj.advertise.controller;
 
 import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.advertise.bo.JdAdvertiseBo;
-import com.spaceobj.advertise.dto.JdAdvertisDto;
+import com.spaceobj.advertise.dto.JdAdvertiseDto;
 import com.spaceobj.advertise.group.DeleteAdvertiseGroup;
 import com.spaceobj.advertise.group.InsertAdverTiseGroup;
 import com.spaceobj.advertise.group.UpdateAdvertiseGroup;
@@ -33,30 +33,30 @@ public class JdAdvertiseController {
     @PostMapping("saveAdvertise")
     public SaResult saveAdvertise(
             @Validated(InsertAdverTiseGroup.class)
-                    JdAdvertisDto jdAdvertisDto) {
+                    JdAdvertiseDto jdAdvertiseDto) {
 
         JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
-        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertiseBo);
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
         return jdAdvertiseService.saveAdvertise(jdAdvertiseBo);
     }
 
     @PostMapping("deleteAdvertise")
     public SaResult deleteAdvertise(
             @Validated(DeleteAdvertiseGroup.class)
-                    JdAdvertisDto jdAdvertisDto) {
+                    JdAdvertiseDto jdAdvertiseDto) {
 
         JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
-        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertiseBo);
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
         return jdAdvertiseService.deleteAdvertise(jdAdvertiseBo.getJdAdId());
     }
 
     @PostMapping("updateAdvertise")
     public SaResult updateAdvertise(
             @Validated(UpdateAdvertiseGroup.class)
-                    JdAdvertisDto jdAdvertisDto) {
+                    JdAdvertiseDto jdAdvertiseDto) {
 
         JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
-        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertisDto, jdAdvertiseBo);
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
         return jdAdvertiseService.updateAdvertise(jdAdvertiseBo);
     }
 

@@ -4,7 +4,7 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
-import com.spaceobj.domain.SysProject;
+import com.spaceobj.project.pojo.SysProject;
 
 /**
  * @author zhr_java@163.com

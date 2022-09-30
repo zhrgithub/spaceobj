@@ -3,7 +3,7 @@ package com.spaceobj.other.service.impl;
 import cn.dev33.satoken.util.SaResult;
 import com.alibaba.nacos.common.utils.StringUtils;
 import com.spaceobj.other.constant.RestData;
-import com.spaceobj.domain.Other;
+import com.spaceobj.other.pojo.Other;
 import com.spaceobj.other.service.OtherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

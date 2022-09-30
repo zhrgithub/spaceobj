@@ -3,7 +3,7 @@ package com.spaceobj.projectHelp.service;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spaceobj.projectHelp.bo.ProjectHelpBo;
-import com.spaceobj.domain.ProjectHelp;
+import com.spaceobj.projectHelp.pojo.ProjectHelp;
 
 /**
  * @author zhr_java@163.com

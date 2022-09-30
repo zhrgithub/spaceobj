@@ -1,7 +1,7 @@
 package com.spaceobj.projectHelp.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.spaceobj.domain.ProjectHelp;
+import com.spaceobj.projectHelp.pojo.ProjectHelp;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

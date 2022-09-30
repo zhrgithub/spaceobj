@@ -2,7 +2,6 @@ package com.spaceobj.project.component;
 
 import com.spaceobj.project.bo.ReceiveEmailBo;
 import com.spaceobj.project.constant.KafKaTopics;
-import com.spaceobj.project.constant.KafkaSender;
 import com.spaceobj.project.service.SysProjectService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

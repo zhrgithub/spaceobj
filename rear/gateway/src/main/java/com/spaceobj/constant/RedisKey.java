@@ -6,7 +6,6 @@ package com.spaceobj.constant;
  */
 public class RedisKey {
 
-
     /** 系统用户列表 */
     public static final String SYS_USER_LIST = "sys_user_list";
 }

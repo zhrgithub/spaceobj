@@ -4,7 +4,7 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.email.mapper.SysEmailMapper;
-import com.spaceobj.domain.SysEmail;
+import com.spaceobj.email.pojo.SysEmail;
 import com.spaceobj.email.service.SysEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

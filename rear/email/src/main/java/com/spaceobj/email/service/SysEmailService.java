@@ -2,7 +2,7 @@ package com.spaceobj.email.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.spaceobj.domain.SysEmail;
+import com.spaceobj.email.pojo.SysEmail;
 
 /**
  * @author zhr_java@163.com

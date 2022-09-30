@@ -147,27 +147,24 @@
 
 				}, api.loginOut).then(res => {
 					uni.hideLoading();
-					console.log("res:", res)
-					if (res.code == 200) {
-						// 移除缓存中的key
-						for (var i = 0; i < sk.clearKey.length; i++) {
-							uni.removeStorage({
-								key: sk.clearKey[i]
-							})
-						}
-						uni.switchTab({
-							url: '/pages/my/my'
-						})
-						uni.showToast({
-							title: res.data,
-							icon: 'none'
-						})
-					} else {
-						uni.showToast({
-							title: res.data,
-							icon: 'error'
+
+					// 移除缓存中的key
+					for (var i = 0; i < sk.clearKey.length; i++) {
+						uni.removeStorage({
+							key: sk.clearKey[i]
 						})
 					}
+					uni.switchTab({
+						url: '/pages/my/my'
+					})
+					uni.showToast({
+						title: res.data,
+						icon: 'none'
+					})
+					uni.showToast({
+						title: res.data,
+						icon: 'error'
+					})
 				});
 
 			},

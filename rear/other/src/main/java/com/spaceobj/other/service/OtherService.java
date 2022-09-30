@@ -1,7 +1,7 @@
 package com.spaceobj.other.service;
 
 import cn.dev33.satoken.util.SaResult;
-import com.spaceobj.domain.Other;
+import com.spaceobj.other.pojo.Other;
 
 /**
  * @author zhr_java@163.com

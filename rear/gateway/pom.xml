@@ -99,6 +99,12 @@
             <version>2.0.12</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.76</version>
+        </dependency>
+
         <!--    kafka    -->
 
         <dependency>

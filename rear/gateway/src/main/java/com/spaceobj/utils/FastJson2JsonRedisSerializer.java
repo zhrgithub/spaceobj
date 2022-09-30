@@ -1,8 +1,8 @@
 package com.spaceobj.utils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONReader;
-import com.alibaba.fastjson2.JSONWriter;
+import com.spaceobj.pojo.SysUser;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
 
@@ -30,7 +30,8 @@ public class FastJson2JsonRedisSerializer<T> implements RedisSerializer<T> {
     if (null == t) {
       return new byte[0];
     }
-    return JSON.toJSONString(t, JSONWriter.Feature.WriteClassName).getBytes(DEFAULT_CHARSET);
+
+    return JSON.toJSONString(t).getBytes(DEFAULT_CHARSET);
   }
 
   @Override
@@ -40,6 +41,6 @@ public class FastJson2JsonRedisSerializer<T> implements RedisSerializer<T> {
       return null;
     }
     String str = new String(bytes, DEFAULT_CHARSET);
-    return JSON.parseObject(str, clazz, JSONReader.Feature.SupportAutoType);
+    return JSON.parseObject(str, clazz);
   }
 }

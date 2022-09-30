@@ -2,9 +2,9 @@ package com.spaceobj.user.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.spaceobj.domain.SysUser;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.SysUserBo;
+import com.spaceobj.user.pojo.SysUser;
 import org.springframework.web.multipart.MultipartFile;
 
 /**

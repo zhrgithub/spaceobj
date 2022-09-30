@@ -1,7 +1,7 @@
 package com.spaceobj.test;
 
 import cn.dev33.satoken.util.SaResult;
-import com.spaceobj.domain.SysUser;
+import com.spaceobj.user.pojo.SysUser;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

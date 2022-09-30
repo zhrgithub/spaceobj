@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spaceobj.advertise.bo.JdAdvertiseBo;
 import com.spaceobj.advertise.constant.RedisKey;
-import com.spaceobj.advertise.mapper.JdAdvertisMapper;
-import com.spaceobj.domain.JdAdvertise;
+import com.spaceobj.advertise.mapper.JdAdvertiseMapper;
+import com.spaceobj.advertise.pojo.JdAdvertise;
 import com.spaceobj.advertise.service.JdAdvertiseService;
 import com.spaceobj.advertise.utils.BeanConvertToTargetUtils;
 import org.slf4j.Logger;
@@ -22,10 +22,10 @@ import java.util.List;
  * @date 2022/7/18 14:53
  */
 @Service
-public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdvertise> implements JdAdvertiseService {
+public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdvertise> implements JdAdvertiseService {
 
     @Autowired
-    private JdAdvertisMapper jdAdvertisMapper;
+    private JdAdvertiseMapper jdAdvertiseMapper;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -60,7 +60,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
                     redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, true);
                     redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
                     QueryWrapper<JdAdvertise> queryWrapper = new QueryWrapper();
-                    list = jdAdvertisMapper.selectList(queryWrapper);
+                    list = jdAdvertiseMapper.selectList(queryWrapper);
                     redisTemplate.opsForList().rightPushAll(RedisKey.JD_ADVERTISE_LIST, list.toArray());
                     redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
                     return list;
@@ -96,7 +96,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
         BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseBo, jdAdvertise);
 
         try {
-            int result = jdAdvertisMapper.insert(jdAdvertise);
+            int result = jdAdvertiseMapper.insert(jdAdvertise);
             if (result == 1) {
                 //删除缓存
                 redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
@@ -118,7 +118,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
 
         try {
             System.out.println(id);
-            int result = jdAdvertisMapper.deleteById(id);
+            int result = jdAdvertiseMapper.deleteById(id);
             if (result == 1) {
                 //删除缓存
                 redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);
@@ -141,7 +141,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertisMapper, JdAdve
         BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseBo, jdAdvertise);
 
         try {
-            int result = jdAdvertisMapper.updateById(jdAdvertise);
+            int result = jdAdvertiseMapper.updateById(jdAdvertise);
             if (result == 1) {
                 //删除缓存
                 redisTemplate.delete(RedisKey.JD_ADVERTISE_LIST);

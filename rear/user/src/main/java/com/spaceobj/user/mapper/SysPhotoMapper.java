@@ -1,7 +1,7 @@
 package com.spaceobj.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.spaceobj.domain.SysPhoto;
+import com.spaceobj.user.pojo.SysPhoto;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
