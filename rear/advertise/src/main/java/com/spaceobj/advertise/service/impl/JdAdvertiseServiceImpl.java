@@ -3,6 +3,7 @@ package com.spaceobj.advertise.service.impl;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.redis.common.service.RedisService;
 import com.spaceobj.advertise.bo.JdAdvertiseBo;
 import com.spaceobj.advertise.constant.RedisKey;
 import com.spaceobj.advertise.mapper.JdAdvertiseMapper;
@@ -12,6 +13,7 @@ import com.spaceobj.advertise.utils.BeanConvertToTargetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -30,13 +32,18 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private RedisService redisService;
+
     private static final Logger LOG = LoggerFactory.getLogger(JdAdvertiseServiceImpl.class);
+
 
     public boolean getJdAdvertiseListSyncStatus() {
 
-        boolean hasKey = redisTemplate.hasKey(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS);
+        boolean hasKey = redisService.hasKey(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS);
         if (!hasKey) {
             redisTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS, false);
+            // redisCommonTemplate.opsForValue().set(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS,false);
             return false;
         } else {
             return (boolean) redisTemplate.opsForValue().get(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS);
@@ -49,6 +56,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
      * @return
      */
     private List<JdAdvertise> getJdAdvertiseList() {
+
         List<JdAdvertise> list = null;
         try {
             boolean hasKey = redisTemplate.hasKey(RedisKey.JD_ADVERTISE_LIST);

@@ -1,4 +1,4 @@
-package com.spaceobj.advertise.utils;
+package com.redis.common.utils;
 
 import com.alibaba.fastjson2.JSON;
 import org.springframework.data.redis.serializer.RedisSerializer;

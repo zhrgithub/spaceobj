@@ -1,6 +1,7 @@
-package com.spaceobj.advertise.config;
+package com.redis.common.config;
 
-import com.spaceobj.advertise.utils.FastJson2JsonRedisSerializer;
+import com.redis.common.service.RedisService;
+import com.redis.common.utils.FastJson2JsonRedisSerializer;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -16,7 +17,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  */
 @Configuration
 @AutoConfigureBefore(RedisAutoConfiguration.class)
-public class RedisConfiguration extends CachingConfigurerSupport {
+public class RedisCommonAutoConfiguration extends CachingConfigurerSupport {
+
 
   @Bean
   public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
@@ -35,5 +37,10 @@ public class RedisConfiguration extends CachingConfigurerSupport {
 
     template.afterPropertiesSet();
     return template;
+  }
+
+  @Bean
+  public RedisService redisService(){
+    return new RedisService();
   }
 }
