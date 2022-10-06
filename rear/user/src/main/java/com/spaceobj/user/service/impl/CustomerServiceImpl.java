@@ -53,9 +53,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   public static final int USER_AUDIT_STATUS = 2;
 
-  @Value("${publicKey}")
-  private String publicKey;
-
   @Value("${privateKey}")
   private String privateKey;
 
