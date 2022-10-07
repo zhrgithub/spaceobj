@@ -139,12 +139,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         int result = this.updateResult(sysProject);
         if (result == 0) {
           //  如果修改失败，那么根据id查询最新的版本号再次修改
-          SysProject sysProjectById = sysProjectMapper.selectById(sysProject.getPId());
-          sysProjectById.setStatus(0);
-          sysProjectById.setContent(sysProject.getContent());
-          sysProjectById.setPrice(sysProject.getPrice());
-          sysProjectById.setIpAddress(sysProject.getIpAddress());
-          return this.updateProject(sysProjectById);
+          return SaResult.error("修改失败");
         }
         return SaResult.ok();
       }
@@ -317,7 +312,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     sysProject.setVersion(sysProject.getVersion() + 1);
     int result = sysProjectMapper.update(sysProject, queryWrapper);
     if (result == 0) {
-      sysProject.setVersion(sysProject.getVersion() - 1);
+      return this.updateResult(sysProject);
     }
     return result;
   }
@@ -428,31 +423,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
    * @return
    * @throws InterruptedException
    */
-  public SysUser getSysUser(String account) throws InterruptedException {
-    List<SysUser> sysUserList = null;
+  public SysUser getSysUser(String account) {
     SysUser sysUser = null;
-    try {
-      boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
-      if (!flag) {
-        // 刷新用户缓存信息
-        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-        Thread.sleep(200);
-        return this.getSysUser(account);
-      } else {
-        sysUserList = redisService.getCacheList(RedisKey.SYS_USER_LIST);
-        sysUser =
-            sysUserList.stream()
-                .filter(
-                    user -> {
-                      return user.getAccount().equals(account);
-                    })
-                .collect(Collectors.toList())
-                .get(0);
-        return sysUser;
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
+    sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST,account);
+    return sysUser;
   }
 }

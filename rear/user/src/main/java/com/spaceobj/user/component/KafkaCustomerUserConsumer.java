@@ -1,8 +1,8 @@
 package com.spaceobj.user.component;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.redis.common.service.RedisService;
-import com.redis.common.service.RedissonService;
 import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.constant.RedisKey;
 import com.spaceobj.user.mapper.SysUserMapper;
@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,36 +30,39 @@ public class KafkaCustomerUserConsumer {
 
   @Autowired private RedisService redisService;
 
-  @Autowired private RedissonService redissonService;
-
   private static final Logger LOG = LoggerFactory.getLogger(KafkaCustomerUserConsumer.class);
 
   /**
-   * 用户注册
+   * 邀请人的邀请值加一
    *
    * @param record
    */
-  @KafkaListener(topics = {KafKaTopics.ADD_USER})
-  public void userRegister(ConsumerRecord<?, ?> record) {
+  @KafkaListener(topics = {KafKaTopics.INVITER_VALUE_ADD})
+  public void inviterValueAdd(ConsumerRecord<?, ?> record) {
 
     Optional.ofNullable(record.value())
         .ifPresent(
             message -> {
               try {
                 SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
-                int result = sysUserMapper.insert(sysUser);
-                // 刷新缓存
-                if (result == 1) {
-                  this.updateRedis();
+
+                // 判断该用户是否存在
+                QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("user_id", sysUser.getUserId());
+                SysUser findUserById = sysUserMapper.selectOne(queryWrapper);
+                if (ObjectUtils.isNotEmpty(findUserById)) {
+                  int result = this.updateUser(findUserById);
+                  if (result == 0) {
+                    LOG.error("user info update to mysql failed! sysUser {}" + sysUser.getUserId());
+                  }
                 }
-                if (result == 0) {
-                  LOG.error("user info save to mysql failed !");
-                }
+
               } catch (Exception e) {
-                LOG.error("user info save to mysql failed! fail info：{}", e.getMessage());
+                LOG.error("update info update to mysql failed!failed info {}", e.getMessage());
               }
             });
   }
+
   /**
    * 用户数据更新
    *
@@ -74,13 +76,7 @@ public class KafkaCustomerUserConsumer {
             message -> {
               try {
                 SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
-                int result = sysUserMapper.updateById(sysUser);
-
-                // 刷新缓存
-                if (result == 1) {
-                  // 刷新Redis中的用户列表
-                  this.updateRedis();
-                }
+                int result = this.updateUser(sysUser);
 
                 if (result == 0) {
                   LOG.error("user info update to mysql failed!");
@@ -92,41 +88,25 @@ public class KafkaCustomerUserConsumer {
   }
 
   /**
-   * 刷新系统用户缓存信息
+   * 修改用户
    *
-   * @param record
+   * @param sysUser
    */
-  @KafkaListener(topics = {KafKaTopics.UPDATE_USER_LIST})
-  public void userUpdateList(ConsumerRecord<?, ?> record) {
+  private int updateUser(SysUser sysUser) {
 
-    Optional.ofNullable(record.value())
-        .ifPresent(
-            message -> {
-              try {
-                this.updateRedis();
-
-              } catch (Exception e) {
-                LOG.error("update info update to mysql failed!failed info {}", e.getMessage());
-              }
-            });
-  }
-
-  /** 刷新Redis缓存 */
-  private void updateRedis() throws InterruptedException {
-
-    boolean flag = redissonService.tryLock(RedisKey.SYS_USER_SYNC_STATUS);
-    if (!flag) {
-      Thread.sleep(50);
-      this.updateRedis();
-    } else {
-      // 删除用户列表信息
-      redisService.deleteObject(RedisKey.SYS_USER_LIST);
-      // 查询用户列表信息
-      List<SysUser> sysUserList;
-      QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-      sysUserList = sysUserMapper.selectList(queryWrapper);
-      // 更新用户列表信息
-      redisService.setCacheList(RedisKey.SYS_USER_LIST, sysUserList);
+    QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("version", sysUser.getVersion());
+    queryWrapper.eq("account", sysUser.getAccount());
+    sysUser.setVersion(sysUser.getVersion() + 1);
+    int result = sysUserMapper.update(sysUser, queryWrapper);
+    if (result == 0) {
+      // 查询最新的版本号然后更新,防止之前修改后的数据被覆盖
+      QueryWrapper<SysUser> queryWrapper2 = new QueryWrapper<>();
+      queryWrapper2.eq("account", sysUser.getAccount());
+      sysUser = sysUserMapper.selectOne(queryWrapper2);
+      return this.updateUser(sysUser);
     }
+    redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
+    return result;
   }
 }

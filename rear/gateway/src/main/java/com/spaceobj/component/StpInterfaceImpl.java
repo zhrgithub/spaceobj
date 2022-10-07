@@ -5,19 +5,18 @@ package com.spaceobj.component;
  * @date 2022/9/11 17:27
  */
 import cn.dev33.satoken.stp.StpInterface;
-import com.alibaba.fastjson.JSONObject;
+import cn.dev33.satoken.stp.StpUtil;
 import com.redis.common.service.RedisService;
-import com.spaceobj.constant.KafKaTopics;
 import com.spaceobj.constant.RedisKey;
 import com.spaceobj.pojo.SysUser;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 自定义权限验证接口扩展
@@ -27,9 +26,7 @@ import java.util.stream.Collectors;
 @Component
 public class StpInterfaceImpl implements StpInterface {
 
-  @Autowired private KafkaSender kafkaSender;
   @Autowired private RedisService redisService;
-
 
   /** 返回一个账号所拥有的权限码集合 */
   @SneakyThrows
@@ -37,11 +34,18 @@ public class StpInterfaceImpl implements StpInterface {
   public List<String> getPermissionList(Object loginId, String loginType) {
 
     // 本list仅做模拟，实际项目中要根据具体业务逻辑来查询权限
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
+    ;
     try {
-      SysUser sysUser = this.getSysUser(loginId.toString());
+      SysUser sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, loginId.toString());
+      if (ObjectUtils.isEmpty(sysUser)) {
+        StpUtil.logout(sysUser.getUserId());
+        return list;
+      }
+
       String[] userRights = sysUser.getUserRights().split(",");
       if (userRights.length > 0) {
+
         Arrays.stream(userRights)
             .forEach(
                 ur -> {
@@ -61,43 +65,5 @@ public class StpInterfaceImpl implements StpInterface {
     // 本list仅做模拟，实际项目中要根据具体业务逻辑来查询角色
     List<String> list = new ArrayList<>();
     return list;
-  }
-
-  /**
-   * 根据账户获取用户信息
-   *
-   * @param account
-   * @return
-   * @throws InterruptedException
-   */
-  public SysUser getSysUser(String account) {
-    SysUser sysUser = null;
-    try {
-      boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
-      List<SysUser> sysUserList = null;
-      if (!flag) {
-        // 刷新用户缓存信息
-        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-        Thread.sleep(50);
-        // 返回递归后的结果
-        return this.getSysUser(account);
-      } else {
-        Object object = redisService.getCacheList(RedisKey.SYS_USER_LIST);
-        sysUserList = JSONObject.parseArray(object.toString(),SysUser.class);
-        sysUser =
-            sysUserList.stream()
-                .filter(
-                    user -> {
-                      return user.getAccount().equals(account);
-                    })
-                .collect(Collectors.toList())
-                .get(0);
-        return sysUser;
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
-
   }
 }

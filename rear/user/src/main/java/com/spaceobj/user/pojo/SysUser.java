@@ -110,4 +110,7 @@ public class SysUser implements Serializable {
 
   @TableField(value = "email")
   private String email;
+
+  @TableField(value = "version")
+  private Long version;
 }

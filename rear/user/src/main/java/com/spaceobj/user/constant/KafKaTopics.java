@@ -20,4 +20,7 @@ public class KafKaTopics {
 
   /** 刷新系统用户缓存信息 */
   public static final String UPDATE_USER_LIST = "update_user_list";
+
+  /** 邀请人邀请值加一 */
+  public static final String INVITER_VALUE_ADD = "inviter_value_add";
 }

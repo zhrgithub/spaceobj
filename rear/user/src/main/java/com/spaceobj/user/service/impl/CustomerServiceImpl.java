@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.redis.common.service.RedisService;
-import com.redis.common.service.RedissonService;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
@@ -32,10 +31,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author zhr_java@163.com
@@ -45,8 +42,6 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     implements CustomerUserService {
   private static final Logger LOG = LoggerFactory.getLogger(CustomerServiceImpl.class);
-
-  @Autowired private RedissonService redissonService;
 
   @Autowired private RedisService redisService;
 
@@ -58,6 +53,24 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Value("${privateKey}")
   private String privateKey;
+
+  private int updateUser(SysUser sysUser) {
+    int result = 0;
+    QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("version", sysUser.getVersion());
+    queryWrapper.eq("account", sysUser.getAccount());
+    sysUser.setVersion(sysUser.getVersion() + 1);
+    result = sysUserMapper.update(sysUser, queryWrapper);
+    if (result == 0) {
+      // 查询最新的版本号然后更新,防止之前修改后的数据被覆盖
+      QueryWrapper<SysUser> queryWrapper2 = new QueryWrapper<>();
+      queryWrapper2.eq("account", sysUser.getAccount());
+      sysUser = sysUserMapper.selectOne(queryWrapper2);
+      return this.updateUser(sysUser);
+    }
+    redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
+    return result;
+  }
 
   @Override
   public SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo) {
@@ -73,14 +86,13 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     try {
       // 获取md5格式的密码
       String md5Password = PassWordUtils.passwordToMD5(privateKey, loginOrRegisterBo.getPassword());
-      // 获取用户列表数据
-      List<SysUser> sysUserList = this.getUserList();
-
-      SysUser getUser = getUser(sysUserList, loginOrRegisterBo.getAccount());
+      SysUser getUser = getUser(loginOrRegisterBo.getAccount());
       // 判断操作类型
       if (loginOrRegisterBo.getOperateType().equals(OperationType.LOGIN)) {
         // 判断缓存中是否有次账号
-        if (ObjectUtils.isNotEmpty(getUser)) {
+        if (ObjectUtils.isEmpty(getUser)) {
+          return SaResult.error("用户不存在");
+        } else {
           SysUser sysUser = getUser;
           // 校验密码
           if (sysUser.getPassword().equals(md5Password)) {
@@ -90,7 +102,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             loginOrRegisterBo.setPassword(null);
             BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
             // 更新用户登录位置
-            int updateResult = sysUserMapper.updateById(sysUser);
+            int updateResult = this.updateUser(sysUser);
             if (updateResult == 0) {
               LOG.error("用户登录信息更新失败");
             }
@@ -98,8 +110,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           } else {
             return SaResult.error("密码不正确");
           }
-        } else {
-          return SaResult.error("用户不存在");
         }
       } else if (loginOrRegisterBo.getOperateType().equals(OperationType.ADD)) {
         // 用户注册校验，是否已经创建过
@@ -121,10 +131,16 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (result == 0) {
           return SaResult.error("注册失败");
         }
-        // 删除缓存
-        redisService.deleteObject(RedisKey.SYS_USER_LIST);
+        // 如果邀请人信息不为空，那么给邀请人的邀请值加一
+        if (!StringUtils.isEmpty(sysUser.getInviteUserId())) {
+          SysUser inviteUser = new SysUser();
+          inviteUser.setUserId(sysUser.getInviteUserId());
+          kafkaSender.send(inviteUser, KafKaTopics.INVITER_VALUE_ADD);
+        }
+        // 同步到缓存
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
         StpUtil.login(loginOrRegisterBo.getAccount());
-        return SaResult.ok("注册成功，正在跳转").setData(sysUser);
+        return SaResult.ok("注册成功").setData(sysUser);
       }
       return SaResult.error("请求参数错误");
     } catch (SaTokenException e) {
@@ -133,9 +149,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     } catch (RuntimeException e) {
       e.printStackTrace();
       LOG.error("loginOrRegister failed", e.getMessage());
-      return SaResult.error("服务器异常");
-    } catch (InterruptedException e) {
-      e.printStackTrace();
       return SaResult.error("服务器异常");
     }
   }
@@ -166,65 +179,34 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     sysUser.setCreateProjectHelpTimes(10);
     sysUser.setDisableStatus(0);
     sysUser.setPassword(md5Password);
+    sysUser.setVersion(0L);
     return sysUser;
   }
 
   /**
    * 根据账户获取账户信息，不存在则返回null
    *
-   * @param sysUserList
    * @param account
    * @return
    */
-  public SysUser getUser(List<SysUser> sysUserList, String account) {
-    List<SysUser> getResultList =
-        sysUserList.stream()
-            .filter(
-                s -> {
-                  return s.getAccount().equals(account);
-                })
-            .collect(Collectors.toList());
-    if (getResultList.size() > 0) {
-      return getResultList.get(0);
-    }
-    return null;
-  }
-
-  /**
-   * 获取用户列表信息，如果缓存中不存在，同步到Redis缓存中
-   *
-   * @return
-   */
-  public List<SysUser> getUserList() throws InterruptedException {
-    List<SysUser> sysUserList = null;
-    try {
-      // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，在缓存中校验用户是否存在，存在则递归，不存在返回不存在
-      boolean hasKey = redisService.hasKey(RedisKey.SYS_USER_LIST);
-      if (hasKey) {
-        return redisService.getCacheList(RedisKey.SYS_USER_LIST);
+  public SysUser getUser(String account) {
+    SysUser sysUser = null;
+    boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+    // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
+    if (!hasKey) {
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+      queryWrapper.eq("account", account);
+      sysUser = sysUserMapper.selectOne(queryWrapper);
+      if (ObjectUtils.isEmpty(sysUser)) {
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
       } else {
-        boolean flag = redissonService.tryLock(RedisKey.SYS_USER_SYNC_STATUS);
-        if (!flag) {
-          return null;
-        } else {
-          // 再次校验是否已经获取key
-          hasKey = redisService.hasKey(RedisKey.SYS_USER_LIST);
-          if (hasKey) {
-            return redisService.getCacheList(RedisKey.SYS_USER_LIST);
-          }
-          // 数据同步
-          // 查询用户列表信息
-          QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-          sysUserList = sysUserMapper.selectList(queryWrapper);
-          // 更新用户列表信息
-          redisService.setCacheList(RedisKey.SYS_USER_LIST, sysUserList);
-          return sysUserList;
-        }
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
       }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
+      return sysUser;
     }
+    // 缓存中存在这个hashKey,则返回对应的Value
+    sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
+    return sysUser;
   }
 
   @Override
@@ -232,15 +214,16 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     try {
       String loginId = StpUtil.getLoginId().toString();
       // 获取用户列表数据
-      List<SysUser> sysUserList = this.getUserList();
-      SysUser sysUser = getUser(sysUserList, loginId);
+      SysUser sysUser = getUser(loginId);
+      if (ObjectUtils.isEmpty(sysUser)) {
+        return SaResult.error("用户不存在");
+      }
       StpUtil.logout(loginId);
       sysUser.setOnlineStatus(0);
-      int updateResult = sysUserMapper.updateById(sysUser);
+      int updateResult = updateUser(sysUser);
       if (updateResult == 0) {
-        LOG.error("用户基本信息更新失败");
+        LOG.error("用户登出时，基本信息更新失败");
       }
-      redisService.deleteObject(RedisKey.SYS_USER_LIST);
       return SaResult.ok("登出成功");
     } catch (Exception e) {
       LOG.error("login out error", e.getMessage());
@@ -254,13 +237,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     try {
       String loginId = StpUtil.getLoginId().toString();
       // 获取用户列表数据
-      List<SysUser> sysUserList = this.getUserList();
-      sysUser = getUser(sysUserList, loginId);
-      if (ObjectUtils.isNull(sysUser)) {
-        return SaResult.error("账号不存在");
+      sysUser = getUser(loginId);
+      if (ObjectUtils.isEmpty(sysUser)) {
+        return SaResult.error("用户不存在");
       }
       return SaResult.ok().setData(sysUser);
-    } catch (RuntimeException | InterruptedException e) {
+    } catch (RuntimeException e) {
       LOG.error("getUserInfo failed", e.getMessage());
       return SaResult.error("服务器异常");
     }
@@ -273,8 +255,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 校验当前登录用户是否是和修改用户一样
       String account = StpUtil.getLoginId().toString();
       // 如果当前账号已经被封禁
-      List<SysUser> sysUserList = this.getUserList();
-      SysUser sysUser = getUser(sysUserList, account);
+      SysUser sysUser = getUser(account);
+      if (ObjectUtils.isEmpty(sysUser)) {
+        return SaResult.error("用户不存在");
+      }
       if (sysUser.getDisableStatus() == 1) {
         return SaResult.error("账号已被封禁，禁止操作！");
       }
@@ -316,11 +300,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 设置修改次数减一
       sysUser.setEditInfoTimes(sysUser.getEditInfoTimes() - 1);
       // 修改用户信息，删除缓存
-      int result = sysUserMapper.updateById(sysUser);
+      int result = updateUser(sysUser);
       if (result == 0) {
         return SaResult.error("修改失败");
       }
-      redisService.deleteObject(RedisKey.SYS_USER_LIST);
       return SaResult.ok("修改成功").setData(sysUser);
     } catch (Exception e) {
       e.printStackTrace();
@@ -334,8 +317,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     try {
       SysUser sysUser = null;
       // 校验缓存中是否存在用户基本信息
-      List<SysUser> sysUserList = this.getUserList();
-      sysUser = getUser(sysUserList, account);
+      sysUser = getUser(account);
       if (ObjectUtils.isEmpty(sysUser)) {
         return SaResult.error("用户不存在");
       }
@@ -358,9 +340,11 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       sysUser.setSendCodeTimes(sysUser.getSendCodeTimes() - 1);
       // 消息队列通知邮箱服务器发送邮件
       kafkaSender.send(receiveEmail, KafKaTopics.EMAIL_VERIFICATION_CODE);
-      // 更新用户发送邮件次数,删除Redis缓存
-      sysUserMapper.updateById(sysUser);
-      redisService.deleteObject(RedisKey.SYS_USER_LIST);
+      // 更新用户发送邮件次数
+      int updateResult = updateUser(sysUser);
+      if (updateResult == 0) {
+        LOG.error("更新用户发送邮件次数失败");
+      }
       return SaResult.ok("发送成功");
     } catch (Exception e) {
       LOG.error("Error send failed", e.getMessage());
@@ -373,8 +357,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     try {
 
       SysUser sysUser = null;
-      List<SysUser> sysUserList = this.getUserList();
-      sysUser = getUser(sysUserList, sysUserBo.getAccount());
+      sysUser = getUser(sysUserBo.getAccount());
+      if (ObjectUtils.isEmpty(sysUser)) {
+        return SaResult.error("用户不存在");
+      }
       // 验证邮箱验证码是否和服务器保存的一致
       String emailCodeFromRedis = sysUser.getEmailCode();
       if (emailCodeFromRedis.equals(sysUserBo.getEmailCode())) {
@@ -388,11 +374,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         sysUser.setPassword(md5Password);
         sysUser.setEmailCode(null);
         // 修改用户数据，并删除缓存
-        int result = sysUserMapper.updateById(sysUser);
+        int result = updateUser(sysUser);
         if (result == 0) {
           return SaResult.error("修改失败");
         }
-        redisService.deleteObject(RedisKey.SYS_USER_LIST);
         return SaResult.ok("密码修改成功");
       }
       return SaResult.error("验证码错误，密码修改失败");
@@ -401,9 +386,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     } catch (RuntimeException e) {
       LOG.error("resetPassword failed", e.getMessage());
       return SaResult.error("密码重置失败，服务器异常");
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      return SaResult.error("线程异常");
     }
   }
 
@@ -429,11 +411,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       sysUser.setIdCardNum(user.getIdCardNum());
       sysUser.setIdCardPic(user.getIdCardPic());
       // 修改用户实名状态
-      int result = sysUserMapper.updateById(sysUser);
+      int result = updateUser(sysUser);
       if (result == 0) {
         return SaResult.error("提交失败");
       }
-      redisService.deleteObject(RedisKey.SYS_USER_LIST);
       return SaResult.ok("提交成功,大概需要一到两个工作日审核").setData(sysUser);
     } catch (RuntimeException e) {
       LOG.error("realName failed", e.getMessage());

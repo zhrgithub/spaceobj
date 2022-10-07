@@ -12,17 +12,21 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-/** spring redis 工具类
- * @author zhr*/
+/**
+ * spring redis 工具类
+ *
+ * @author zhr
+ */
 public class RedisService {
   @Autowired public RedisTemplate redisTemplate;
 
   /**
    * 根据key对key的Value进行递增
+   *
    * @param key
    * @param <T>
    */
-  public <T> void increment(String key){
+  public <T> void increment(String key) {
     redisTemplate.opsForValue().increment(key);
   }
   /**
@@ -189,6 +193,19 @@ public class RedisService {
    */
   public <T> Map<String, T> getCacheMap(final String key) {
     return redisTemplate.opsForHash().entries(key);
+  }
+
+  /**
+   * 判断是否存在hashKey
+   *
+   * @param key
+   * @param hashKey
+   * @return
+   */
+  public Boolean HExists(String key, String hashKey) {
+    boolean flag = false;
+    flag = redisTemplate.opsForHash().hasKey(key, hashKey);
+    return flag;
   }
 
   /**

@@ -87,10 +87,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       int result = sysUserMapper.updateById(sysUser);
       if (result == 0) {
         return SaResult.error("修改失败");
-      } else {
-        // 删除用户列表信息
-        redisService.deleteObject(RedisKey.SYS_USER_LIST);
       }
+      // 更新缓存
+      redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
     } catch (Exception e) {
       e.printStackTrace();
       LOG.error("update sysUser failed", e.getMessage());
@@ -109,8 +108,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (result == 0) {
         LOG.error("logic update all system user failed");
       } else {
-        // 删除用户列表信息
-        redisService.deleteObject(RedisKey.SYS_USER_LIST);
+        QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+        List<SysUser> sysUserList = sysUserMapper.selectList(queryWrapper);
+        for (SysUser obj : sysUserList) {
+          // 更新缓存
+          redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, obj.getAccount(), obj);
+        }
       }
 
     } catch (Exception e) {

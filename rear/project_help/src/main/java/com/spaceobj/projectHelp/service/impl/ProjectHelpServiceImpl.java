@@ -177,7 +177,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = getSysUser(loginId);
       if (!Pattern.matches(RegexPool.EMAIL, sysUser.getEmail())) {
-        return SaResult.error("请设置正确邮箱");
+        return SaResult.error("请设置您的邮箱");
       }
 
       // 如果用户的创建剩余次数小于10次，提醒明天再来
