@@ -1,5 +1,6 @@
 package com.spaceobj.projectHelp.component;
 
+import com.redis.common.service.RedisService;
 import com.spaceobj.projectHelp.constant.KafKaTopics;
 import com.spaceobj.projectHelp.constant.RedisKey;
 import com.spaceobj.projectHelp.mapper.ProjectHelpMapper;
@@ -10,7 +11,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +28,7 @@ public class KafkaProjectHelpConsumer {
 
   @Autowired private ProjectHelpMapper projectHelpMapper;
 
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedisService redisService;
 
   /**
    * 监听项目助力新增
@@ -50,7 +50,7 @@ public class KafkaProjectHelpConsumer {
                 }
                 // 新增成功，删除缓存
                 if (result == 1) {
-                  redisTemplate.delete(RedisKey.PROJECT_HELP_LIST);
+                  redisService.deleteObject(RedisKey.PROJECT_HELP_LIST);
                 }
               } catch (Exception e) {
                 LOG.error("project help info save to mysql failed !fail info {}", e.getMessage());
@@ -78,7 +78,7 @@ public class KafkaProjectHelpConsumer {
                 }
                 // 更新成功，那么刷新缓存
                 if (result == 1) {
-                  redisTemplate.delete(RedisKey.PROJECT_HELP_LIST);
+                  redisService.deleteObject(RedisKey.PROJECT_HELP_LIST);
                 }
               } catch (Exception e) {
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
@@ -98,7 +98,7 @@ public class KafkaProjectHelpConsumer {
         .ifPresent(
             message -> {
               try {
-                redisTemplate.delete(RedisKey.PROJECT_HELP_LIST);
+                redisService.deleteObject(RedisKey.PROJECT_HELP_LIST);
               } catch (Exception e) {
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
               }

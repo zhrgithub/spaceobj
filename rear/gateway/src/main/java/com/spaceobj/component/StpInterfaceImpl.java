@@ -7,13 +7,11 @@ package com.spaceobj.component;
 import cn.dev33.satoken.stp.StpInterface;
 import com.alibaba.fastjson.JSONObject;
 import com.redis.common.service.RedisService;
-import com.redis.common.service.RedissonService;
 import com.spaceobj.constant.KafKaTopics;
 import com.spaceobj.constant.RedisKey;
 import com.spaceobj.pojo.SysUser;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

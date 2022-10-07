@@ -1,6 +1,7 @@
 package com.spaceobj.project.component;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.redis.common.service.RedisService;
 import com.spaceobj.project.constant.KafKaTopics;
 import com.spaceobj.project.constant.RedisKey;
 import com.spaceobj.project.mapper.SysProjectMapper;
@@ -11,7 +12,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +28,7 @@ public class KafkaProjectConsumer {
 
   @Autowired private SysProjectMapper sysProjectMapper;
 
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedisService redisService;
 
   private static final Logger LOG = LoggerFactory.getLogger(KafkaProjectConsumer.class);
 
@@ -94,11 +94,11 @@ public class KafkaProjectConsumer {
   /** 刷新Redis缓存 */
   private void updateRedis() {
 
-    redisTemplate.delete(RedisKey.PROJECT_LIST);
+    redisService.deleteObject(RedisKey.PROJECT_LIST);
     List<SysProject> sysProjectList;
     QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
     queryWrapper.orderByDesc("create_time");
     sysProjectList = sysProjectMapper.selectList(queryWrapper);
-    redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_LIST, sysProjectList.toArray());
+    redisService.setCacheList(RedisKey.PROJECT_LIST, sysProjectList);
   }
 }

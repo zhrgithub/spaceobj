@@ -1,6 +1,8 @@
 package com.spaceobj.user.component;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.redis.common.service.RedisService;
+import com.redis.common.service.RedissonService;
 import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.constant.RedisKey;
 import com.spaceobj.user.mapper.SysUserMapper;
@@ -11,7 +13,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +29,9 @@ public class KafkaCustomerUserConsumer {
 
   @Autowired private SysUserMapper sysUserMapper;
 
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedisService redisService;
+
+  @Autowired private RedissonService redissonService;
 
   private static final Logger LOG = LoggerFactory.getLogger(KafkaCustomerUserConsumer.class);
 
@@ -110,35 +113,20 @@ public class KafkaCustomerUserConsumer {
 
   /** 刷新Redis缓存 */
   private void updateRedis() throws InterruptedException {
-    if (getRedisSysUserListSyncStatus()) {
+
+    boolean flag = redissonService.tryLock(RedisKey.SYS_USER_SYNC_STATUS);
+    if (!flag) {
       Thread.sleep(50);
       this.updateRedis();
     } else {
-      redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
       // 删除用户列表信息
-      redisTemplate.delete(RedisKey.SYS_USER_LIST);
+      redisService.deleteObject(RedisKey.SYS_USER_LIST);
       // 查询用户列表信息
       List<SysUser> sysUserList;
       QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
       sysUserList = sysUserMapper.selectList(queryWrapper);
       // 更新用户列表信息
-      redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
-      redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
-    }
-  }
-
-  /**
-   * 获取用户同步的状态
-   *
-   * @return
-   */
-  public boolean getRedisSysUserListSyncStatus() {
-    boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_SYNC_STATUS);
-    if (!hasKey) {
-      redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
-      return false;
-    } else {
-      return (boolean) redisTemplate.opsForValue().get(RedisKey.SYS_USER_SYNC_STATUS);
+      redisService.setCacheList(RedisKey.SYS_USER_LIST, sysUserList);
     }
   }
 }

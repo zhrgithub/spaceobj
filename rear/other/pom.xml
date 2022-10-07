@@ -19,6 +19,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com</groupId>
+            <artifactId>redis-common-starter</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
@@ -45,11 +50,7 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>com</groupId>
-            <artifactId>redis-common-starter</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
+
 
 
         <!-- Sa-Token 权限认证 -->
