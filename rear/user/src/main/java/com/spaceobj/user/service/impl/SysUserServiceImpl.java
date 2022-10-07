@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.redis.common.service.RedisService;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.component.KafkaSender;
@@ -20,7 +21,6 @@ import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,7 +35,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Autowired private SysUserMapper sysUserMapper;
 
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedisService redisService;
 
   @Autowired private KafkaSender kafkaSender;
 
@@ -89,7 +89,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("修改失败");
       } else {
         // 删除用户列表信息
-        redisTemplate.delete(RedisKey.SYS_USER_LIST);
+        redisService.deleteObject(RedisKey.SYS_USER_LIST);
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -110,7 +110,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         LOG.error("logic update all system user failed");
       } else {
         // 删除用户列表信息
-        redisTemplate.delete(RedisKey.SYS_USER_LIST);
+        redisService.deleteObject(RedisKey.SYS_USER_LIST);
       }
 
     } catch (Exception e) {

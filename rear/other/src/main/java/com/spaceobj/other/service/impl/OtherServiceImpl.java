@@ -2,11 +2,11 @@ package com.spaceobj.other.service.impl;
 
 import cn.dev33.satoken.util.SaResult;
 import com.alibaba.nacos.common.utils.StringUtils;
+import com.redis.common.service.RedisService;
 import com.spaceobj.other.constant.RestData;
 import com.spaceobj.other.pojo.Other;
 import com.spaceobj.other.service.OtherService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -19,13 +19,13 @@ public class OtherServiceImpl implements OtherService {
     private final static String OTHER_INFO = "other_info";
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisService redisService;
 
     @Override
     public SaResult updateOther(Other other) {
 
         try {
-            redisTemplate.boundValueOps(OTHER_INFO).set(other);
+            redisService.setCacheObject(OTHER_INFO, other);
         } catch (Exception e) {
             e.printStackTrace();
             return SaResult.error("修改失败");
@@ -39,8 +39,8 @@ public class OtherServiceImpl implements OtherService {
 
         Other other = null;
 
-        if (redisTemplate.hasKey(OTHER_INFO)) {
-            other = (Other) redisTemplate.boundValueOps(OTHER_INFO).get();
+        if (redisService.hasKey(OTHER_INFO)) {
+            other = (Other) redisService.getCacheObject(OTHER_INFO);
 
             if (StringUtils.isBlank(other.getWechat())) {
                 other.setWechat(RestData.WECHAT);

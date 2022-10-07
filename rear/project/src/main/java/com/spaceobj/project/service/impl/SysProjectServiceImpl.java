@@ -9,20 +9,21 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.redis.common.service.RedisService;
+import com.redis.common.service.RedissonService;
+import com.spaceobj.project.bo.GetPhoneNumberBo;
+import com.spaceobj.project.bo.ProjectSearchBo;
+import com.spaceobj.project.component.KafkaSender;
+import com.spaceobj.project.constant.KafKaTopics;
+import com.spaceobj.project.constant.RedisKey;
+import com.spaceobj.project.mapper.SysProjectMapper;
 import com.spaceobj.project.pojo.ProjectHelp;
 import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.pojo.SysUser;
-import com.spaceobj.project.bo.GetPhoneNumberBo;
-import com.spaceobj.project.bo.ProjectSearchBo;
-import com.spaceobj.project.constant.KafKaTopics;
-import com.spaceobj.project.component.KafkaSender;
-import com.spaceobj.project.constant.RedisKey;
-import com.spaceobj.project.mapper.SysProjectMapper;
 import com.spaceobj.project.service.SysProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,23 +39,14 @@ import java.util.stream.Collectors;
 public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProject>
     implements SysProjectService {
 
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedisService redisService;
+  @Autowired private RedissonService redissonService;
 
   @Autowired private KafkaSender kafkaSender;
 
   @Autowired private SysProjectMapper sysProjectMapper;
 
   Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
-
-  public boolean getRedisProjectSyncStatus() {
-    boolean hasKey = redisTemplate.hasKey(RedisKey.REDIS_PROJECT_SYNC_STATUS);
-    if (!hasKey) {
-      redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, false);
-      return false;
-    } else {
-      return (boolean) redisTemplate.opsForValue().get(RedisKey.REDIS_PROJECT_SYNC_STATUS);
-    }
-  }
 
   @Override
   public SaResult addProject(SysProject sysProject) {
@@ -94,7 +86,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         return SaResult.error("新增失败");
       }
       // 删除缓存
-      redisTemplate.delete(RedisKey.PROJECT_LIST);
+      redisService.deleteObject(RedisKey.PROJECT_LIST);
       return SaResult.ok();
     } catch (Exception e) {
       e.printStackTrace();
@@ -240,27 +232,27 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   private List<SysProject> getSysProjectList() throws InterruptedException {
     List<SysProject> list = null;
     try {
-      boolean flag = redisTemplate.hasKey(RedisKey.PROJECT_LIST);
-      if (!flag) {
-        if (this.getRedisProjectSyncStatus()) {
-          Thread.sleep(50);
-          return this.getSysProjectList();
+      boolean hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
+      if (hasKey) {
+        list = redisService.getCacheList(RedisKey.PROJECT_LIST);
+        return list;
+
+      } else {
+
+        boolean flag = redissonService.tryLock(RedisKey.REDIS_PROJECT_SYNC_STATUS);
+        if (!flag) {
+          return null;
         } else {
-          redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, true);
-          redisTemplate.delete(RedisKey.PROJECT_LIST);
+          redisService.deleteObject(RedisKey.PROJECT_LIST);
           QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
           queryWrapper.orderByDesc("create_time");
           list = sysProjectMapper.selectList(queryWrapper);
-          redisTemplate.opsForList().rightPushAll(RedisKey.PROJECT_LIST, list.toArray());
+          redisService.setCacheList(RedisKey.PROJECT_LIST, list);
           // 设置过期时间
-          redisTemplate.expire(
+          redisService.expire(
               RedisKey.PROJECT_LIST, RedisKey.PROJECT_LIST_EXPIRE_TIME, TimeUnit.MINUTES);
-          redisTemplate.opsForValue().set(RedisKey.REDIS_PROJECT_SYNC_STATUS, false);
           return list;
         }
-      } else {
-        list = redisTemplate.opsForList().range(RedisKey.PROJECT_LIST, 0, -1);
-        return list;
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -364,7 +356,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 判断该用户的助力列表中是否有该项目数据
       // 判断是否已经获取到该项目联系人
       List<ProjectHelp> projectHelpList =
-          redisTemplate.opsForList().range(RedisKey.PROJECT_HELP_LIST, 0, -1);
+          redisService.getCacheList(RedisKey.PROJECT_HELP_LIST);
       List<ProjectHelp> resultProjectHelp =
           projectHelpList.stream()
               .filter(
@@ -440,14 +432,14 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     List<SysUser> sysUserList = null;
     SysUser sysUser = null;
     try {
-      boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+      boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
       if (!flag) {
         // 刷新用户缓存信息
         kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
         Thread.sleep(200);
         return this.getSysUser(account);
       } else {
-        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+        sysUserList = redisService.getCacheList(RedisKey.SYS_USER_LIST);
         sysUser =
             sysUserList.stream()
                 .filter(

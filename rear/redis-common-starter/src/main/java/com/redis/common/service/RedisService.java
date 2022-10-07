@@ -16,6 +16,15 @@ import org.springframework.data.redis.core.ValueOperations;
  * @author zhr*/
 public class RedisService {
   @Autowired public RedisTemplate redisTemplate;
+
+  /**
+   * 根据key对key的Value进行递增
+   * @param key
+   * @param <T>
+   */
+  public <T> void increment(String key){
+    redisTemplate.opsForValue().increment(key);
+  }
   /**
    * 缓存基本的对象，Integer、String、实体类等
    *

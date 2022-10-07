@@ -1,13 +1,13 @@
 package com.spaceobj.component;
 
 import cn.dev33.satoken.util.SaResult;
+import com.redis.common.service.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -27,7 +27,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class BlackListFilter implements GlobalFilter, Ordered {
 
-  @Autowired private RedisTemplate redisTemplate;
+
+  @Autowired
+  private RedisService redisService;
+  
 
   /** 最大请求次数 */
   private static final int MAX_REQUEST_TIME = 2;
@@ -56,26 +59,25 @@ public class BlackListFilter implements GlobalFilter, Ordered {
     }
 
     // 校验ip是否在黑名单中,如果是请求ip超过最大请求次数，直接返回错误请求
-    if (redisTemplate.hasKey(clientIp)
-        && (int) redisTemplate.boundValueOps(clientIp).get() >= MALICIOUS_REQUESTS) {
+    if (redisService.hasKey(clientIp)
+        && (int) redisService.getCacheObject(clientIp) >= MALICIOUS_REQUESTS) {
       return responseWrap(response);
     }
 
     // 可以将用户的ip和每秒请求的次数放入Redis中，如果当前用户每秒请求次数超过最大请求次数，返回错误请求
-    if (redisTemplate.hasKey(clientIp)) {
+    if (redisService.hasKey(clientIp)) {
 
-      redisTemplate.opsForValue().increment(clientIp);
+      redisService.increment(clientIp);
       // 如果请求次数大于等于攻击次数，1天后解封
-      if ((int) redisTemplate.boundValueOps(clientIp).get() >= MALICIOUS_REQUESTS) {
-        redisTemplate
-            .opsForValue()
-            .set(clientIp, (int) redisTemplate.boundValueOps(clientIp).get(), 1, TimeUnit.DAYS);
+      if ((int) redisService.getCacheObject(clientIp) >= MALICIOUS_REQUESTS) {
+        redisService.expire(clientIp, 1, TimeUnit.DAYS);
         return responseWrap(response);
       }
     } else {
-      redisTemplate.opsForValue().set(clientIp, 1, 1, TimeUnit.SECONDS);
+      redisService.setCacheObject(clientIp,1);
+      redisService.expire(clientIp,  1, TimeUnit.SECONDS);
     }
-    if ((int) redisTemplate.boundValueOps(clientIp).get() > MAX_REQUEST_TIME) {
+    if ((int) redisService.getCacheObject(clientIp) > MAX_REQUEST_TIME) {
       return responseWrap(response);
     }
 

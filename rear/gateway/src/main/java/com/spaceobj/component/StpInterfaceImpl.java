@@ -6,6 +6,8 @@ package com.spaceobj.component;
  */
 import cn.dev33.satoken.stp.StpInterface;
 import com.alibaba.fastjson.JSONObject;
+import com.redis.common.service.RedisService;
+import com.redis.common.service.RedissonService;
 import com.spaceobj.constant.KafKaTopics;
 import com.spaceobj.constant.RedisKey;
 import com.spaceobj.pojo.SysUser;
@@ -28,8 +30,7 @@ import java.util.stream.Collectors;
 public class StpInterfaceImpl implements StpInterface {
 
   @Autowired private KafkaSender kafkaSender;
-
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedisService redisService;
 
 
   /** 返回一个账号所拥有的权限码集合 */
@@ -60,7 +61,7 @@ public class StpInterfaceImpl implements StpInterface {
   @Override
   public List<String> getRoleList(Object loginId, String loginType) {
     // 本list仅做模拟，实际项目中要根据具体业务逻辑来查询角色
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
     return list;
   }
 
@@ -74,7 +75,7 @@ public class StpInterfaceImpl implements StpInterface {
   public SysUser getSysUser(String account) {
     SysUser sysUser = null;
     try {
-      boolean flag = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
+      boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
       List<SysUser> sysUserList = null;
       if (!flag) {
         // 刷新用户缓存信息
@@ -83,7 +84,7 @@ public class StpInterfaceImpl implements StpInterface {
         // 返回递归后的结果
         return this.getSysUser(account);
       } else {
-        Object object = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
+        Object object = redisService.getCacheList(RedisKey.SYS_USER_LIST);
         sysUserList = JSONObject.parseArray(object.toString(),SysUser.class);
         sysUser =
             sysUserList.stream()

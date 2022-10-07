@@ -3,6 +3,8 @@ package com.spaceobj.user.service.impl;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.redis.common.service.RedisService;
+import com.redis.common.service.RedissonService;
 import com.spaceobj.user.bo.SysPhotoBo;
 import com.spaceobj.user.constant.OperationType;
 import com.spaceobj.user.constant.RedisKey;
@@ -13,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +28,9 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
     implements PhotoService {
   private static final Logger LOG = LoggerFactory.getLogger(PhotoServiceImpl.class);
 
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedisService redisService;
+
+  @Autowired private RedissonService redissonService;
 
   @Autowired private SysPhotoMapper sysPhotoMapper;
 
@@ -44,7 +47,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
         result = sysPhotoMapper.insert(photo);
 
         if (result == 1) {
-          redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+          redisService.deleteObject(RedisKey.SYS_PHOTO_LIST);
           return SaResult.ok("新增成功");
         } else {
           return SaResult.error("数据新增失败");
@@ -58,7 +61,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
         }
         result = sysPhotoMapper.updateById(photo);
         if (result == 1) {
-          redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+          redisService.deleteObject(RedisKey.SYS_PHOTO_LIST);
         } else {
           return SaResult.error("数据更新失败");
         }
@@ -83,7 +86,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
       }
       result = sysPhotoMapper.deleteById(sysPhotoBo.getPhotoId());
       if (result == 1) {
-        redisTemplate.delete(RedisKey.SYS_PHOTO_LIST);
+        redisService.deleteObject(RedisKey.SYS_PHOTO_LIST);
       } else {
         return SaResult.error("删除失败");
       }
@@ -99,40 +102,33 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
 
     List<SysPhoto> list = null;
     try {
-      boolean size = redisTemplate.hasKey(RedisKey.SYS_PHOTO_LIST);
-      if (!size) {
-        // 如果是否在同步中，那么等待50ms后重新调用
-        if (getRedisPhotoListSyncStatus()) {
-          Thread.sleep(200);
-          return this.photoList();
+      boolean hasKey = redisService.hasKey(RedisKey.SYS_PHOTO_LIST);
+      if (hasKey) {
+        list = redisService.getCacheList(RedisKey.SYS_PHOTO_LIST);
+        return SaResult.ok().setData(list);
+      } else {
+
+        // 通过分布式锁来判断缓存是否在同步中
+        boolean flag = redissonService.tryLock(RedisKey.PHOTO_LIST_SYNC_STATUS);
+        if (!flag) {
+          return null;
         } else {
-          redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, true);
+          // 再次尝试获取key
+          hasKey = redisService.hasKey(RedisKey.SYS_PHOTO_LIST);
+          if (hasKey) {
+            list = redisService.getCacheList(RedisKey.SYS_PHOTO_LIST);
+            return SaResult.ok().setData(list);
+          }
 
           QueryWrapper<SysPhoto> queryWrapper = new QueryWrapper<>();
           list = sysPhotoMapper.selectList(queryWrapper);
-          redisTemplate.opsForList().leftPushAll(RedisKey.SYS_PHOTO_LIST, list.toArray());
-
-          redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, false);
+          redisService.setCacheList(RedisKey.SYS_PHOTO_LIST, list);
           return SaResult.ok().setData(list);
         }
-
-      } else {
-        list = redisTemplate.opsForList().range(RedisKey.SYS_PHOTO_LIST, 0, -1);
-        return SaResult.ok().setData(list);
       }
-    } catch (RuntimeException | InterruptedException e) {
+    } catch (RuntimeException e) {
       LOG.error("Photo list failed", e.getMessage());
       return SaResult.error(e.getMessage()).setData(list);
-    }
-  }
-
-  public boolean getRedisPhotoListSyncStatus() {
-    boolean hasKey = redisTemplate.hasKey(RedisKey.PHOTO_LIST_SYNC_STATUS);
-    if (!hasKey) {
-      redisTemplate.opsForValue().set(RedisKey.PHOTO_LIST_SYNC_STATUS, false);
-      return false;
-    } else {
-      return (boolean) redisTemplate.opsForValue().get(RedisKey.PHOTO_LIST_SYNC_STATUS);
     }
   }
 }

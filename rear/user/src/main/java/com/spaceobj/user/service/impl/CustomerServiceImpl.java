@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.redis.common.service.RedisService;
+import com.redis.common.service.RedissonService;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
@@ -27,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,7 +46,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     implements CustomerUserService {
   private static final Logger LOG = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedissonService redissonService;
+
+  @Autowired private RedisService redisService;
 
   @Autowired private KafkaSender kafkaSender;
 
@@ -119,7 +122,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           return SaResult.error("注册失败");
         }
         // 删除缓存
-        redisTemplate.delete(RedisKey.SYS_USER_LIST);
+        redisService.deleteObject(RedisKey.SYS_USER_LIST);
         StpUtil.login(loginOrRegisterBo.getAccount());
         return SaResult.ok("注册成功，正在跳转").setData(sysUser);
       }
@@ -188,21 +191,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   /**
-   * 获取用户同步的状态
-   *
-   * @return
-   */
-  public boolean getRedisSysUserListSyncStatus() {
-    boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_SYNC_STATUS);
-    if (!hasKey) {
-      redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
-      return false;
-    } else {
-      return (boolean) redisTemplate.opsForValue().get(RedisKey.SYS_USER_SYNC_STATUS);
-    }
-  }
-
-  /**
    * 获取用户列表信息，如果缓存中不存在，同步到Redis缓存中
    *
    * @return
@@ -211,25 +199,27 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     List<SysUser> sysUserList = null;
     try {
       // 判断用户缓存列表是否存在，如果不存在那么同步数据，如果存在，在缓存中校验用户是否存在，存在则递归，不存在返回不存在
-      boolean hasKey = redisTemplate.hasKey(RedisKey.SYS_USER_LIST);
-      if (!hasKey) {
-        if (getRedisSysUserListSyncStatus()) {
-          Thread.sleep(50);
-          return this.getUserList();
+      boolean hasKey = redisService.hasKey(RedisKey.SYS_USER_LIST);
+      if (hasKey) {
+        return redisService.getCacheList(RedisKey.SYS_USER_LIST);
+      } else {
+        boolean flag = redissonService.tryLock(RedisKey.SYS_USER_SYNC_STATUS);
+        if (!flag) {
+          return null;
         } else {
-          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, true);
+          // 再次校验是否已经获取key
+          hasKey = redisService.hasKey(RedisKey.SYS_USER_LIST);
+          if (hasKey) {
+            return redisService.getCacheList(RedisKey.SYS_USER_LIST);
+          }
           // 数据同步
           // 查询用户列表信息
           QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
           sysUserList = sysUserMapper.selectList(queryWrapper);
           // 更新用户列表信息
-          redisTemplate.opsForList().rightPushAll(RedisKey.SYS_USER_LIST, sysUserList);
-          redisTemplate.opsForValue().set(RedisKey.SYS_USER_SYNC_STATUS, false);
+          redisService.setCacheList(RedisKey.SYS_USER_LIST, sysUserList);
           return sysUserList;
         }
-      } else {
-        sysUserList = redisTemplate.opsForList().range(RedisKey.SYS_USER_LIST, 0, -1);
-        return sysUserList;
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -250,7 +240,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (updateResult == 0) {
         LOG.error("用户基本信息更新失败");
       }
-      redisTemplate.delete(RedisKey.SYS_USER_LIST);
+      redisService.deleteObject(RedisKey.SYS_USER_LIST);
       return SaResult.ok("登出成功");
     } catch (Exception e) {
       LOG.error("login out error", e.getMessage());
@@ -320,7 +310,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 设置为正在修改状态
       sysUser.setUserInfoEditStatus(1);
       // 修改缓存中的用户信息为修改中
-      redisTemplate.opsForValue().set(account, sysUser);
+      redisService.setCacheObject(account, sysUser);
       // 设置为修改完毕状态，等MySQL持久化完毕自动变成修改完毕的状态
       sysUser.setUserInfoEditStatus(0);
       // 设置修改次数减一
@@ -330,7 +320,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (result == 0) {
         return SaResult.error("修改失败");
       }
-      redisTemplate.delete(RedisKey.SYS_USER_LIST);
+      redisService.deleteObject(RedisKey.SYS_USER_LIST);
       return SaResult.ok("修改成功").setData(sysUser);
     } catch (Exception e) {
       e.printStackTrace();
@@ -370,7 +360,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       kafkaSender.send(receiveEmail, KafKaTopics.EMAIL_VERIFICATION_CODE);
       // 更新用户发送邮件次数,删除Redis缓存
       sysUserMapper.updateById(sysUser);
-      redisTemplate.delete(RedisKey.SYS_USER_LIST);
+      redisService.deleteObject(RedisKey.SYS_USER_LIST);
       return SaResult.ok("发送成功");
     } catch (Exception e) {
       LOG.error("Error send failed", e.getMessage());
@@ -402,7 +392,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (result == 0) {
           return SaResult.error("修改失败");
         }
-        redisTemplate.delete(RedisKey.SYS_USER_LIST);
+        redisService.deleteObject(RedisKey.SYS_USER_LIST);
         return SaResult.ok("密码修改成功");
       }
       return SaResult.error("验证码错误，密码修改失败");
@@ -426,7 +416,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("身份证号不正确");
       }
       // 从缓存中获取当前登录用户的基本信息
-      SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(user.getLoginId());
+      SysUser sysUser = redisService.getCacheObject(user.getLoginId());
 
       // 校验当前账户是否是在审核中
       if (sysUser.getRealNameStatus() == USER_AUDIT_STATUS) {
@@ -443,7 +433,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (result == 0) {
         return SaResult.error("提交失败");
       }
-      redisTemplate.delete(RedisKey.SYS_USER_LIST);
+      redisService.deleteObject(RedisKey.SYS_USER_LIST);
       return SaResult.ok("提交成功,大概需要一到两个工作日审核").setData(sysUser);
     } catch (RuntimeException e) {
       LOG.error("realName failed", e.getMessage());
