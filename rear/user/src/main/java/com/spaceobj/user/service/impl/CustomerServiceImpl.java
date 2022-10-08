@@ -189,7 +189,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
    * @param account
    * @return
    */
-  public SysUser getUser(String account) {
+  private SysUser getUser(String account) {
     SysUser sysUser = null;
     boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
     // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null

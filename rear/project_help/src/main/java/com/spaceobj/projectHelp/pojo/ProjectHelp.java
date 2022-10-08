@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.NotBlank;
-
 import java.math.BigDecimal;
 
 /**
@@ -44,4 +42,7 @@ public class ProjectHelp {
 
   @TableField(value = "hp_status")
   private Integer hpStatus;
+
+  @TableField(value = "version")
+  private Long version;
 }

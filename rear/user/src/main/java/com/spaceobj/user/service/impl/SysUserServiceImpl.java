@@ -1,10 +1,12 @@
 package com.spaceobj.user.service.impl;
 
+import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -21,6 +23,7 @@ import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,6 +41,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Autowired private RedisService redisService;
 
   @Autowired private KafkaSender kafkaSender;
+
+  @Value("${publicKey}")
+  private String publicKey;
 
   private static final Logger LOG = LoggerFactory.getLogger(SysUserServiceImpl.class);
 
@@ -135,5 +141,29 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
               .build();
       kafkaSender.send(receiveEmail, KafKaTopics.AUDIT_NOTICE);
     }
+  }
+
+  @Override
+  public SaResult getUserInfoByAccount(String account) {
+    String rsaEncryptSysUser = null;
+    SysUser sysUser = null;
+    boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+    // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
+    if (!hasKey) {
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+      queryWrapper.eq("account", account);
+      sysUser = sysUserMapper.selectOne(queryWrapper);
+      if (ObjectUtils.isEmpty(sysUser)) {
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
+      } else {
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
+      }
+      rsaEncryptSysUser = SaSecureUtil.rsaEncryptByPublic(publicKey, sysUser.toString());
+      return SaResult.ok().setData(rsaEncryptSysUser);
+    }
+    // 缓存中存在这个hashKey,则返回对应的Value
+    sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
+    rsaEncryptSysUser = SaSecureUtil.rsaEncryptByPublic(publicKey, sysUser.toString());
+    return SaResult.ok().setData(rsaEncryptSysUser);
   }
 }

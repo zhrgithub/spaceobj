@@ -39,4 +39,12 @@ public interface SysUserService extends IService<SysUser> {
 
   /** 通知管理员审核用户实名信息 */
   void noticeAuditUserRealNameInfo();
+
+  /**
+   * 根据账户获取用户基本信息
+   *
+   * @param account
+   * @return
+   */
+  SaResult getUserInfoByAccount(String account);
 }

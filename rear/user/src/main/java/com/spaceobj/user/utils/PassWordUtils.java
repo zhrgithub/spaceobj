@@ -22,7 +22,7 @@ public class PassWordUtils {
 
       // 秘钥解密
       String rsaDecryptPassword =
-          SaSecureUtil.rsaDecryptByPrivate(privateKey, Base64.decode(password));
+          SaSecureUtil.rsaDecryptByPrivate(privateKey, Base64Util.decode(password));
       md5Password = SaSecureUtil.md5(rsaDecryptPassword);
     } catch (Exception e) {
       e.printStackTrace();

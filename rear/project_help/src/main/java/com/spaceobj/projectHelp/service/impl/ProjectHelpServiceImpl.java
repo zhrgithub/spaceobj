@@ -55,6 +55,8 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
    * @throws InterruptedException
    */
   public SysUser getSysUser(String account) {
+
+
     List<SysUser> sysUserList = null;
     SysUser sysUser = null;
     try {
