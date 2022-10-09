@@ -1,5 +1,6 @@
 package com.spaceobj.test;
 
+import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.utils.RsaUtils;
 
@@ -35,20 +36,16 @@ public class DecryPassword {
     sysUser.setPassword("2121212");
     sysUser.setVersion(666L);
 
-    // System.out.println(sysUser.toString());
-    String testData = "cajsnakjcnsknsdjdcjac";
+    byte[] encodeBytes = RsaUtils.encryptByPublicKey(sysUser, publicKey);
+    SaResult saResult = new SaResult();
+    saResult.setData(encodeBytes);
 
-    byte[] encodeBytes =
-        RsaUtils.encryptByPublicKey(sysUser.toString().getBytes("UTF-8"), publicKey);
-    byte[] decodeBytes = RsaUtils.decryptByPrivateKey(encodeBytes, privateKey);
+    SysUser stu = RsaUtils.decryptByPrivateKey(saResult.getData(), sysUser, privateKey);
 
-    byte[] srtbyte = null;
+    // String res = new String(decodeBytes, "UTF-8");
+    // SysUser stu = new Gson().fromJson(res, SysUser.class);
 
-    srtbyte = testData.getBytes("UTF-8");
-
-    String res = new String(decodeBytes, "UTF-8");
-
-    System.out.println("解码后的数据" + res);
+    System.out.println("解码后的数据" + stu.getUsername());
   }
 
   public static byte[] toByteArray(String hexString) {

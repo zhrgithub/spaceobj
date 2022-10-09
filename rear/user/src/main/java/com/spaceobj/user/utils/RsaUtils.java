@@ -1,7 +1,10 @@
 package com.spaceobj.user.utils;
 
+import com.google.gson.Gson;
+
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Type;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -178,6 +181,46 @@ public class RsaUtils {
     byte[] decryptedData = out.toByteArray();
     out.close();
     return decryptedData;
+  }
+
+  /**
+   * 公钥加密，直接对类对象加密 先把对象转化成JSON类型，然后转化成字符数组，然后再进行加密，最后返回加密后的字节数组
+   *
+   * @param obj
+   * @param publicKey
+   * @return
+   */
+  public static byte[] encryptByPublicKey(Object obj, String publicKey) {
+    byte[] result = null;
+    try {
+      Gson gson = new Gson();
+      byte[] objByte = gson.toJson(obj, obj.getClass()).getBytes("UTF-8");
+      result = encryptByPublicKey(objByte, publicKey);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return result;
+  }
+
+  /**
+   * 根据源对象、私钥解密后转化成目标对象,失败则返回null
+   *
+   * @param source 源对象
+   * @param target 转化成目标对象
+   * @param privateKey 解密的私钥
+   * @param <T> 泛型对象
+   * @return 异常则返回null
+   */
+  public static <T> T decryptByPrivateKey(Object source, Object target, String privateKey) {
+    try {
+      byte[] objByte = (byte[]) source;
+      byte[] decodeBytes = decryptByPrivateKey(objByte, privateKey);
+      String res = new String(decodeBytes, "UTF-8");
+      return new Gson().fromJson(res, (Type) target.getClass());
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   /** */

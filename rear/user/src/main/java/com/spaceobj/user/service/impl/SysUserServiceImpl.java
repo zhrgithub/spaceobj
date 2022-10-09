@@ -1,6 +1,5 @@
 package com.spaceobj.user.service.impl;
 
-import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -20,6 +19,7 @@ import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.SysUserService;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
+import com.spaceobj.user.utils.RsaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,7 +145,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Override
   public SaResult getUserInfoByAccount(String account) {
-    String rsaEncryptSysUser = null;
+    byte[] rsaEncryptSysUser = null;
     SysUser sysUser = null;
     boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
     // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
@@ -158,12 +158,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       } else {
         redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
       }
-      rsaEncryptSysUser = SaSecureUtil.rsaEncryptByPublic(publicKey, sysUser.toString());
+      rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
       return SaResult.ok().setData(rsaEncryptSysUser);
     }
-    // 缓存中存在这个hashKey,则返回对应的Value
+    // 缓存中存在这个hashKey,则返回对应的Value,并加密成字节数组返回
     sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
-    rsaEncryptSysUser = SaSecureUtil.rsaEncryptByPublic(publicKey, sysUser.toString());
+    rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
     return SaResult.ok().setData(rsaEncryptSysUser);
   }
 }
