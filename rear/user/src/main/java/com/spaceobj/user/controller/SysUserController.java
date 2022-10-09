@@ -9,10 +9,7 @@ import com.spaceobj.user.service.SysUserService;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author zhr_java@163.com
@@ -37,5 +34,10 @@ public class SysUserController {
     SysUserBo sysUserBo = SysUserBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
     return sysUserService.updateSysUser(sysUserBo);
+  }
+
+  @PostMapping(value = "getUserInfoByAccount")
+  public SaResult getUserInfoByAccount(@PathVariable("account") String account) {
+    return sysUserService.getUserInfoByAccount(account);
   }
 }
