@@ -1,5 +1,6 @@
 package com.spaceobj.user.utils;
 
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.google.gson.Gson;
 
 import javax.crypto.Cipher;
@@ -186,11 +187,14 @@ public class RsaUtils {
   /**
    * 公钥加密，直接对类对象加密 先把对象转化成JSON类型，然后转化成字符数组，然后再进行加密，最后返回加密后的字节数组
    *
-   * @param obj
-   * @param publicKey
-   * @return
+   * @param obj 被加密的目标对象
+   * @param publicKey 公钥
+   * @return 被加密对象为空，返回null，异常也返回null
    */
   public static byte[] encryptByPublicKey(Object obj, String publicKey) {
+    if (ObjectUtils.isEmpty(obj)) {
+      return null;
+    }
     byte[] result = null;
     try {
       Gson gson = new Gson();
@@ -198,20 +202,24 @@ public class RsaUtils {
       result = encryptByPublicKey(objByte, publicKey);
     } catch (Exception e) {
       e.printStackTrace();
+      return null;
     }
     return result;
   }
 
   /**
-   * 根据源对象、私钥解密后转化成目标对象,失败则返回null
+   * 根据源对象、私钥解密后转化成目标对象,失败则返回null,源对象为空也返回null
    *
    * @param source 源对象
    * @param target 转化成目标对象
    * @param privateKey 解密的私钥
    * @param <T> 泛型对象
-   * @return 异常则返回null
+   * @return 异常则返回null，源对象为空也返回null
    */
   public static <T> T decryptByPrivateKey(Object source, Object target, String privateKey) {
+    if (ObjectUtils.isEmpty(source)) {
+      return null;
+    }
     try {
       byte[] objByte = (byte[]) source;
       byte[] decodeBytes = decryptByPrivateKey(objByte, privateKey);

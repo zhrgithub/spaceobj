@@ -198,7 +198,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       queryWrapper.eq("account", account);
       sysUser = sysUserMapper.selectOne(queryWrapper);
       if (ObjectUtils.isEmpty(sysUser)) {
-        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, new SysUser());
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
       } else {
         redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
       }
