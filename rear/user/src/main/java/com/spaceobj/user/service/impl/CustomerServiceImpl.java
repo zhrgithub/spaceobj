@@ -57,7 +57,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Value("${privateKey}")
   private String privateKey;
 
-  private int updateUser(SysUser sysUser) {
+  @Override
+  public int updateUser(SysUser sysUser) {
     int result = 0;
     QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
     queryWrapper.eq("version", sysUser.getVersion());
@@ -71,7 +72,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       sysUser = sysUserMapper.selectOne(queryWrapper2);
       queryWrapper.eq("version", sysUser.getVersion());
       sysUser.setVersion(sysUser.getVersion() + 1);
-      return sysUserMapper.update(sysUser, queryWrapper);
+      result = sysUserMapper.update(sysUser, queryWrapper);
     }
     redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
     return result;

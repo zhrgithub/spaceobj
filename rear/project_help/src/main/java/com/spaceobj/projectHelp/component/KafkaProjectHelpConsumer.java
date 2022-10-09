@@ -1,10 +1,8 @@
 package com.spaceobj.projectHelp.component;
 
-import com.redis.common.service.RedisService;
 import com.spaceobj.projectHelp.constant.KafKaTopics;
-import com.spaceobj.projectHelp.constant.RedisKey;
-import com.spaceobj.projectHelp.mapper.ProjectHelpMapper;
 import com.spaceobj.projectHelp.pojo.ProjectHelp;
+import com.spaceobj.projectHelp.service.ProjectHelpService;
 import com.spaceobj.projectHelp.util.KafkaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -26,40 +24,10 @@ public class KafkaProjectHelpConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(KafkaProjectHelpConsumer.class);
 
-  @Autowired private ProjectHelpMapper projectHelpMapper;
-
-  @Autowired private RedisService redisService;
+  @Autowired private ProjectHelpService projectHelpService;
 
   /**
-   * 监听项目助力新增
-   *
-   * @param record
-   */
-  @KafkaListener(topics = {KafKaTopics.ADD_HELP_PROJECT})
-  public void addHelpProject(ConsumerRecord<?, ?> record) {
-
-    Optional.ofNullable(record.value())
-        .ifPresent(
-            message -> {
-              try {
-
-                ProjectHelp projectHelp = KafkaSourceToTarget.getObject(message, ProjectHelp.class);
-                int result = projectHelpMapper.insert(projectHelp);
-                if (result == 0) {
-                  LOG.error("project help info save to mysql failed !");
-                }
-                // 新增成功，删除缓存
-                if (result == 1) {
-                  redisService.deleteObject(RedisKey.PROJECT_HELP_LIST);
-                }
-              } catch (Exception e) {
-                LOG.error("project help info save to mysql failed !fail info {}", e.getMessage());
-              }
-            });
-  }
-
-  /**
-   * 监听项目助力更新
+   * 监听项目助力更新,一般来自项目表中的通知
    *
    * @param record
    */
@@ -72,33 +40,13 @@ public class KafkaProjectHelpConsumer {
               try {
 
                 ProjectHelp projectHelp = KafkaSourceToTarget.getObject(message, ProjectHelp.class);
-                int result = projectHelpMapper.updateById(projectHelp);
+
+                int result = projectHelpService.updateProjectHelp(projectHelp);
+
                 if (result == 0) {
                   LOG.error("project help info update to mysql failed !");
                 }
-                // 更新成功，那么刷新缓存
-                if (result == 1) {
-                  redisService.deleteObject(RedisKey.PROJECT_HELP_LIST);
-                }
-              } catch (Exception e) {
-                LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
-              }
-            });
-  }
 
-  /**
-   * 项目助力列表缓存更新
-   *
-   * @param record
-   */
-  @KafkaListener(topics = {KafKaTopics.UPDATE_HELP_PROJECT_LIST})
-  public void updateProjectHelpList(ConsumerRecord<?, ?> record) {
-
-    Optional.ofNullable(record.value())
-        .ifPresent(
-            message -> {
-              try {
-                redisService.deleteObject(RedisKey.PROJECT_HELP_LIST);
               } catch (Exception e) {
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
               }

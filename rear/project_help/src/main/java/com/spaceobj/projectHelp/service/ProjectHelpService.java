@@ -45,4 +45,6 @@ public interface ProjectHelpService extends IService<ProjectHelp> {
    * @return
    */
   ProjectHelp getProjectHelpByHpId(String hpId);
+
+  int updateProjectHelp(ProjectHelp projectHelp);
 }

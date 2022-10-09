@@ -6,17 +6,9 @@ package com.spaceobj.project.constant;
  */
 public class KafKaTopics {
 
-  /** 新增项目 */
-  public static final String ADD_PROJECT = "add_project";
-
-  /** 修改项目 */
-  public static final String UPDATE_PROJECT = "update_project";
 
   /** 修改用户信息 */
   public static final String UPDATE_USER = "update_user";
-
-  /** 刷新系统用户缓存信息 */
-  public static final String UPDATE_USER_LIST = "update_user_list";
 
   /** 项目助力列表更新信息 */
   public static final String UPDATE_HELP_PROJECT = "update_help_project";
@@ -24,15 +16,6 @@ public class KafKaTopics {
   /** 项目助力列表新增信息 */
   public static final String ADD_HELP_PROJECT = "add_help_project";
 
-  /** 刷新项目缓存信息 */
-  public static final String UPDATE_PROJECT_LIST = "update_project_list";
-
   /** 待审核项目通知 */
   public static final String PENDING_REVIEW_PROJECT = "pending_review_project";
-
-  /** 更新项目浏览次数 */
-  public static final String UPDATE_PROJECT_VIEWS = "update_project_views";
-
-  /** 添加项目浏览次数信息 */
-  public static final String ADD_PROJECT_VIEWS = "add_project_views";
 }

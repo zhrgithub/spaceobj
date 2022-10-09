@@ -307,7 +307,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       sysProject = sysProjectMapper.selectById(wrapper);
       queryWrapper.eq("version", sysProject.getVersion());
       sysProject.setVersion(sysProject.getVersion() + 1);
-      return sysProjectMapper.update(sysProject, queryWrapper);
+      result= sysProjectMapper.update(sysProject, queryWrapper);
     }
     // 修改成功，刷新缓存信息
     redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), sysProject);

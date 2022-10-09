@@ -87,4 +87,12 @@ public interface CustomerUserService extends IService<SysUser> {
    * @return
    */
   SaResult uploadFile(MultipartFile multipartFile);
+
+  /**
+   * 更新用户基本信息
+   *
+   * @param sysUser
+   * @return
+   */
+  int updateUser(SysUser sysUser);
 }

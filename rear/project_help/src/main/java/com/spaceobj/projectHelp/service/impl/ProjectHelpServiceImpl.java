@@ -26,9 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-
 import javax.annotation.Resource;
-import java.security.PublicKey;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -53,9 +51,6 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
   @Value("${privateKey}")
   private String privateKey;
-
-  @Value("${publicKey}")
-  private String publicKey;
 
   @Resource private UserClient userClient;
 
@@ -199,8 +194,13 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
               .pReleaseUserId(sysProject.getReleaseUserId())
               .hpStatus(0)
               .build();
-      // 消息队列通知去创建
-      kafkaSender.send(projectHelp, KafKaTopics.ADD_HELP_PROJECT);
+      // 创建项目助力信息，并同步到缓存
+      int insertResult = projectHelpMapper.insert(projectHelp);
+      if(insertResult==0){
+        return SaResult.error("创建失败");
+      }else {
+        redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST,projectHelp.getHpId(),projectHelp);
+      }
       // 消息队列通知用户服务对该用户的创建次数减一
       sysUser.setCreateProjectHelpTimes(sysUser.getCreateProjectHelpTimes() - 1);
       kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
@@ -261,7 +261,8 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     }
   }
 
-  private int updateProjectHelp(ProjectHelp projectHelp) {
+  @Override
+  public int updateProjectHelp(ProjectHelp projectHelp) {
     QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper<>();
     queryWrapper.eq("hp_id", projectHelp.getHpId());
     queryWrapper.eq("version", projectHelp.getVersion());
@@ -274,7 +275,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       projectHelp = projectHelpMapper.selectById(wrapper);
       queryWrapper.eq("version", projectHelp.getVersion());
       projectHelp.setVersion(projectHelp.getVersion() + 1);
-      return this.projectHelpMapper.update(projectHelp, queryWrapper);
+      result = this.projectHelpMapper.update(projectHelp, queryWrapper);
     }
     // 修改成功，刷新缓存信息
     redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
