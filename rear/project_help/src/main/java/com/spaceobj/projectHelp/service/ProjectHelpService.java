@@ -11,8 +11,7 @@ import com.spaceobj.projectHelp.pojo.ProjectHelp;
  */
 public interface ProjectHelpService extends IService<ProjectHelp> {
   /**
-   * 判断创建项目的次数是否大于0
-   * 判断其本人是否已经创建过，如果已经创建过，直接返回之前创建的,
+   * 判断创建项目的次数是否大于0 判断其本人是否已经创建过，如果已经创建过，直接返回之前创建的,
    * 否则根据项目id查询项目库（p_Id、create_user_id、p_content、p_price、p_release_user_id）
    * 校验当前id是否在项目库中存在，如果存在则创建，不存在就不要创建，返回请求参数错误
    *
@@ -20,7 +19,6 @@ public interface ProjectHelpService extends IService<ProjectHelp> {
    * @return
    */
   SaResult createProjectHelpLink(ProjectHelpBo projectHelpBo);
-
 
   /**
    * 判断是否是其本人创建的如果是他本人创建的，那么本次助力失败，判断用户当天助力次数是否小于等于0，超过返回今天助力次数已经用完，
@@ -33,11 +31,18 @@ public interface ProjectHelpService extends IService<ProjectHelp> {
   SaResult updateProjectHelpNumber(ProjectHelpBo projectHelpBo);
 
   /**
-   * 查询发布的项目助力列表；
-   * 设置缓存分页查询；
+   * 查询发布的项目助力列表； 设置缓存分页查询；
    *
    * @param projectHelpBo
    * @return
    */
   SaResult projectHelpList(ProjectHelpBo projectHelpBo);
+
+  /**
+   * 根据项目助力id获取项目助力主体信息
+   *
+   * @param hpId
+   * @return
+   */
+  ProjectHelp getProjectHelpByHpId(String hpId);
 }

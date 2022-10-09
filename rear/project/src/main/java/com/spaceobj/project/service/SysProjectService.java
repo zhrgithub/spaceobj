@@ -60,12 +60,12 @@ public interface SysProjectService extends IService<SysProject> {
   /**
    * 项目浏览量：根据项目的ID通过消息队列对持久层的浏览量数据修改，然后存储到缓存
    *
-   * <p>校验项目中是否存在这个id
+   * <p>校验项目中是否存在这个uuid
    *
-   * @param projectId
+   * @param uuid
    * @return
    */
-  void addPageViews(long projectId);
+  void addPageViews(String uuid);
 
   /**
    * 判断是否为其本人发布的, 判断项目状态是否为审核通过，判断用户是否实名，判断助力表是否有该数据，判断用户助力表中是否已经获取到，
@@ -78,5 +78,25 @@ public interface SysProjectService extends IService<SysProject> {
    */
   SaResult getPhoneNumberByProjectId(GetPhoneNumberBo getPhoneNumberBo);
 
+  /**
+   * 获取当前待审核项目的数量
+   * @return
+   */
   SaResult getPendingReview();
+
+  /**
+   * 根据项目的UUID获取项目信息
+   * @param uuid
+   * @return
+   */
+  SysProject getProjectByUUID(String uuid);
+
+
+  /**
+   * 根据项目的UUID获取项目信息
+   * @param uuid
+   * @return
+   */
+  SaResult getEncryptProjectByUUID(String uuid);
+
 }

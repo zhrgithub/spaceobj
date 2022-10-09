@@ -23,8 +23,8 @@ public class ProjectHelpBo {
   /** 创建助力链接的用户id,也是当前登录者id */
   private String createUserId;
 
-  /** 项目id */
-  private long pId;
+  /** 项目uuid */
+  private String pUUID;
 
   /** 项目内容 */
   private String pContent;

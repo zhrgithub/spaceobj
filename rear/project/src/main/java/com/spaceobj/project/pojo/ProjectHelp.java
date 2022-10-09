@@ -18,7 +18,7 @@ public class ProjectHelp {
 
   private String hpId;
 
-  private long pId;
+  private String pUUID;
 
   private String createUserId;
 

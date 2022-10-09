@@ -22,8 +22,8 @@ public class ProjectHelp {
   @TableId(value = "hp_id")
   private String hpId;
 
-  @TableField(value = "p_Id")
-  private long pId;
+  @TableField(value = "p_uuid")
+  private String pUUID;
 
   @TableField(value = "create_user_id")
   private String createUserId;
@@ -44,5 +44,5 @@ public class ProjectHelp {
   private Integer hpStatus;
 
   @TableField(value = "version")
-  private Long version;
+  private long version;
 }

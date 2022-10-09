@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.redis.common.service.RedisService;
+import com.redis.common.service.RedissonService;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.component.KafkaSender;
@@ -39,6 +40,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Autowired private SysUserMapper sysUserMapper;
 
   @Autowired private RedisService redisService;
+
+  @Autowired private RedissonService redissonService;
 
   @Autowired private KafkaSender kafkaSender;
 
@@ -165,5 +168,40 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
     rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
     return SaResult.ok().setData(rsaEncryptSysUser);
+  }
+
+  @Override
+  public SaResult getSysUserByUserId(String userId) {
+    SysUser sysUser = null;
+    byte[] rsaEncryptSysUser = null;
+    boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, userId);
+    if (hasKey) {
+      sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, userId);
+      rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
+      return SaResult.ok().setData(rsaEncryptSysUser);
+    } else {
+      // 设置分布式锁
+      boolean flag = redissonService.tryLock(userId);
+      if (!flag) {
+        return SaResult.error().setData(null);
+      } else {
+        //  获取锁成功，但是要再次从缓存中查询，存在则直接返回，不存在，则到MySQL中查询
+        hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, userId);
+        if (hasKey) {
+          sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, userId);
+        }
+        QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId);
+        sysUser = sysUserMapper.selectOne(queryWrapper);
+        if (ObjectUtils.isEmpty(sysUser)) {
+          redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, userId, null);
+          rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
+          return SaResult.ok().setData(rsaEncryptSysUser);
+        }
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, userId, sysUser);
+        rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
+        return SaResult.ok().setData(rsaEncryptSysUser);
+      }
+    }
   }
 }

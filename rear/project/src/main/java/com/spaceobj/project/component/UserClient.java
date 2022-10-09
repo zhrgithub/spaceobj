@@ -1,8 +1,9 @@
-package com.spaceobj.projectHelp.component;
+package com.spaceobj.project.component;
 
 import cn.dev33.satoken.util.SaResult;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 /**
@@ -13,20 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Component
 public interface UserClient {
 
-  /**
-   * 根据账户返回用户实体信息
-   * @param account
-   * @return
-   */
   @PostMapping(value = "/sysUser/getUserInfoByAccount")
-  public SaResult getUserInfoByAccount(String account);
-
-  /**
-   * 根据用户id返回实体信息
-   * @param userId
-   * @return
-   */
-  @PostMapping(value = "/sysUser/getSysUserByUserId")
-  public SaResult getSysUserByUserId(String userId);
-
+  public SaResult getUserInfoByAccount(@PathVariable("account") String account);
 }

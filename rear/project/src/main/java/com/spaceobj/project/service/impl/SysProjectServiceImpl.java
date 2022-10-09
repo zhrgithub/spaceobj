@@ -14,6 +14,7 @@ import com.redis.common.service.RedissonService;
 import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.component.KafkaSender;
+import com.spaceobj.project.component.UserClient;
 import com.spaceobj.project.constant.KafKaTopics;
 import com.spaceobj.project.constant.RedisKey;
 import com.spaceobj.project.mapper.SysProjectMapper;
@@ -21,14 +22,16 @@ import com.spaceobj.project.pojo.ProjectHelp;
 import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.pojo.SysUser;
 import com.spaceobj.project.service.SysProjectService;
+import com.spaceobj.project.util.RsaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +48,14 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   @Autowired private KafkaSender kafkaSender;
 
   @Autowired private SysProjectMapper sysProjectMapper;
+
+  @Resource private UserClient userClient;
+
+  @Value("${privateKey}")
+  private String privateKey;
+
+  @Value("${publicKey}")
+  private String publicKey;
 
   Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
 
@@ -71,7 +82,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (sysUser.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线");
       }
-      // 修改用户信息
+      // 将用户的的发布次数减少一，修改用户信息
       sysUser.setReleaseProjectTimes(sysUser.getReleaseProjectTimes() - 1);
       kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
 
@@ -85,8 +96,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (result == 0) {
         return SaResult.error("新增失败");
       }
-      // 删除缓存
-      redisService.deleteObject(RedisKey.PROJECT_LIST);
+      // 刷新缓存
+      redisService.setCacheMapValue(RedisKey.PROJECT_LIST, uuid, sysProject);
       return SaResult.ok();
     } catch (Exception e) {
       e.printStackTrace();
@@ -100,37 +111,17 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       if (ObjectUtils.isNotNull(sysProject.getUuid())) {
         // 校验是否存在该项目，如果存在该项目，给checkCacheProject赋值
-        SysProject checkProject = null;
-        // 从缓存中获取数据
-        List<SysProject> cacheProject = getSysProjectList();
+        SysProject project = this.getProjectByUUID(sysProject.getUuid());
         // 如果当前项目是在审核中那么返回不可重复修改
-        List<SysProject> checkCacheProjectList =
-            cacheProject.stream()
-                .filter(
-                    p -> {
-                      return p.getUuid().equals(sysProject.getUuid());
-                    })
-                .collect(Collectors.toList());
-        if (checkCacheProjectList.size() == 0) {
-          // 缓存中不存在，查询MySQL中的数据，根据UUID查询项目
-          List<SysProject> sysProjectList = null;
-          QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-          queryWrapper.eq("p_uuid", sysProject.getUuid());
-          sysProjectList = sysProjectMapper.selectList(queryWrapper);
-          if (sysProjectList.size() == 0) {
-            return SaResult.error("项目不存在");
-          } else {
-            checkProject = sysProjectList.get(0);
-          }
-        } else {
-          checkProject = checkCacheProjectList.get(0);
+        if (ObjectUtils.isEmpty(project)) {
+          return SaResult.error("项目不存在");
         }
-        if (checkProject.getStatus() == 0) {
+        if (project.getStatus() == 0) {
           return SaResult.error("审核中");
         }
         String loginId = StpUtil.getLoginId().toString();
         SysUser sysUser = getSysUser(loginId);
-        if (!sysUser.getUserId().equals(checkProject.getReleaseUserId())) {
+        if (!sysUser.getUserId().equals(project.getReleaseUserId())) {
           return SaResult.error("违规操作");
         }
         // 修改的项目设置成待审核
@@ -138,6 +129,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         // 根据项目id和version修改数据,每次修改都让版本号+1,用于处理并发修改业务
         int result = this.updateResult(sysProject);
         if (result == 0) {
+          LOG.error("项目更新失败{}" + sysProject.getUuid());
           //  如果修改失败，那么根据id查询最新的版本号再次修改
           return SaResult.error("修改失败");
         }
@@ -156,12 +148,13 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       int result = this.updateResult(project);
       if (result == 0) {
+        LOG.error("项目审核失败{}" + project.getUuid());
         return SaResult.error("审核失败");
       }
       return SaResult.ok("审核成功");
     } catch (Exception e) {
       e.printStackTrace();
-      return SaResult.error("审核失败");
+      return SaResult.error("审核失败,服务器异常");
     }
   }
 
@@ -220,7 +213,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   /**
-   * 同步数据到Redis缓存，并返回查询到的数据
+   * 查询项目列表数据，先判断是否存在该key,不存在那么设置分布式锁，然后从MySQL中查询，然后同步到Redis中，返回数据
    *
    * @return
    */
@@ -229,23 +222,25 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
       if (hasKey) {
-        list = redisService.getCacheList(RedisKey.PROJECT_LIST);
+        list = redisService.getHashMapValues(RedisKey.PROJECT_LIST);
         return list;
-
       } else {
-
         boolean flag = redissonService.tryLock(RedisKey.REDIS_PROJECT_SYNC_STATUS);
         if (!flag) {
           return null;
         } else {
-          redisService.deleteObject(RedisKey.PROJECT_LIST);
+          // 再次判断是否存在该key
+          hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
+          if (hasKey) {
+            list = redisService.getHashMapValues(RedisKey.PROJECT_LIST);
+            return list;
+          }
           QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
           queryWrapper.orderByDesc("create_time");
           list = sysProjectMapper.selectList(queryWrapper);
-          redisService.setCacheList(RedisKey.PROJECT_LIST, list);
-          // 设置过期时间
-          redisService.expire(
-              RedisKey.PROJECT_LIST, RedisKey.PROJECT_LIST_EXPIRE_TIME, TimeUnit.MINUTES);
+          for (SysProject sysProject : list) {
+            redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), sysProject);
+          }
           return list;
         }
       }
@@ -277,21 +272,15 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   @Override
-  public void addPageViews(long projectId) {
+  public void addPageViews(String uuid) {
     try {
 
       // 只有发布成功，并且同步到缓存中的项目才可以追加浏览次数，从Redis中先判断是否存在，不存在的话，停止执行
-      List<SysProject> sysProjectList = getSysProjectList();
-      List<SysProject> resultSysProject =
-          sysProjectList.stream().filter(p -> p.getPId() == projectId).collect(Collectors.toList());
-      if (resultSysProject.size() == 0) {
-        return;
-      }
       // 根据id查询项目
-      SysProject sysProject = sysProjectMapper.selectById(projectId);
+      SysProject sysProject = this.getProjectByUUID(uuid);
       int result = this.updateResult(sysProject);
       if (result == 0) {
-        this.addPageViews(projectId);
+        LOG.error("项目UUID：{}" + sysProject.getUuid() + "浏览次数添加失败");
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -312,8 +301,16 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     sysProject.setVersion(sysProject.getVersion() + 1);
     int result = sysProjectMapper.update(sysProject, queryWrapper);
     if (result == 0) {
-      return this.updateResult(sysProject);
+      // 查询最新的数据，然后再次修改
+      QueryWrapper<SysProject> wrapper = new QueryWrapper<>();
+      wrapper.eq("p_id", sysProject.getPId());
+      sysProject = sysProjectMapper.selectById(wrapper);
+      queryWrapper.eq("version", sysProject.getVersion());
+      sysProject.setVersion(sysProject.getVersion() + 1);
+      return sysProjectMapper.update(sysProject, queryWrapper);
     }
+    // 修改成功，刷新缓存信息
+    redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), sysProject);
     return result;
   }
 
@@ -327,10 +324,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       List<SysProject> sysProjectList = null;
       sysProjectList =
           list.stream()
-              .filter(
-                  p -> {
-                    return getPhoneNumberBo.getProjectId() == p.getPId();
-                  })
+              .filter(p -> getPhoneNumberBo.getPUUID().equals(p.getUuid()))
               .collect(Collectors.toList());
       if (sysProjectList.size() == 0) {
         return SaResult.error("项目不存在");
@@ -346,19 +340,17 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
       //  判断项目是否审核通过
       if (sysProject.getStatus() != 1) {
-        return SaResult.error("项目未通过审核，无法获取");
+        return SaResult.error("项目未通过审核");
       }
       // 判断该用户的助力列表中是否有该项目数据
       // 判断是否已经获取到该项目联系人
-      List<ProjectHelp> projectHelpList =
-          redisService.getCacheList(RedisKey.PROJECT_HELP_LIST);
+      List<ProjectHelp> projectHelpList = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST);
       List<ProjectHelp> resultProjectHelp =
           projectHelpList.stream()
               .filter(
-                  hp -> {
-                    return hp.getCreateUserId().equals(getPhoneNumberBo.getUserId())
-                        && getPhoneNumberBo.getProjectId() == hp.getPId();
-                  })
+                  hp ->
+                      hp.getCreateUserId().equals(getPhoneNumberBo.getUserId())
+                          && getPhoneNumberBo.getPUUID().equals(hp.getPUUID()))
               .collect(Collectors.toList());
       if (resultProjectHelp.size() > 0) {
         ProjectHelp helpBo = resultProjectHelp.get(0);
@@ -381,7 +373,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           helpBo =
               ProjectHelp.builder()
                   .hpId(UUID.randomUUID().toString())
-                  .pId(sysProject.getPId())
+                  .pUUID(sysProject.getUuid())
                   .createUserId(getPhoneNumberBo.getUserId())
                   .hpNumber(10)
                   .pContent(sysProject.getContent())
@@ -396,15 +388,15 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         return SaResult.ok().setData(sysUser.getPhoneNumber());
       }
-      return SaResult.error("请分享项目助力链接获取");
+      return SaResult.error("分享项目助力链接");
     } catch (Exception e) {
       e.printStackTrace();
-      return SaResult.error("获取联系方式失败，服务器异常");
+      return SaResult.error("服务器异常");
     }
   }
 
   /**
-   * 获取待审核项目的列表
+   * 获取待审核项目的数量
    *
    * @return
    */
@@ -416,8 +408,46 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     return SaResult.ok().setData(sysProjectList.size());
   }
 
+  @Override
+  public SysProject getProjectByUUID(String uuid) {
+    boolean hExists = redisService.HExists(RedisKey.PROJECT_LIST, uuid);
+    if (hExists) {
+      return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid);
+    } else {
+      // 设置分布式锁
+      boolean flag = redissonService.tryLock(uuid);
+      if (!flag) {
+        // 返回服务器繁忙
+        return null;
+      } else {
+        //  成功获取到锁，那么再次判断是否已经存在这个hashKey，存在就返回，不存在就查询MySQL，然后同步到缓存中
+        hExists = redisService.HExists(RedisKey.PROJECT_LIST, uuid);
+        if (hExists) {
+          return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid);
+        }
+        QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("p_uuid", uuid);
+        SysProject sysProject = sysProjectMapper.selectOne(queryWrapper);
+        // 如果MySQL中也没有查到那么设置成null
+        if (ObjectUtils.isEmpty(sysProject)) {
+          redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), null);
+        }
+        // 同步到缓存中,并返回结果
+        redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), sysProject);
+        return sysProject;
+      }
+    }
+  }
+
+  @Override
+  public SaResult getEncryptProjectByUUID(String uuid) {
+    SysProject sysProject = this.getProjectByUUID(uuid);
+    byte[] res = RsaUtils.encryptByPublicKey(sysProject, publicKey);
+    return SaResult.ok().setData(res);
+  }
+
   /**
-   * 根据账户获取用户信息
+   * 根据账户获取用户信息，异常则返回null
    *
    * @param account
    * @return
@@ -425,7 +455,13 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
    */
   public SysUser getSysUser(String account) {
     SysUser sysUser = null;
-    sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST,account);
+    try {
+      Object res = userClient.getUserInfoByAccount(account).getData();
+      sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
     return sysUser;
   }
 }

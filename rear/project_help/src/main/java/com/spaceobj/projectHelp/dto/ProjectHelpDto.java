@@ -26,11 +26,10 @@ public class ProjectHelpDto {
       groups = {UpdateProjectHelpGroup.class})
   private String hpId;
 
-  @NotNull(
-      message = "项目ID是必填项",
+  @NotBlank(
+      message = "项目UUID是必填项",
       groups = {InsertProjectHelpGroup.class})
-  @Min(1)
-  private Long pId;
+  private String pUUID;
 
   private Long hpNumber;
 

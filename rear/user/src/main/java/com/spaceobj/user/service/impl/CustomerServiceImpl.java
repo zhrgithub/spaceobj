@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.redis.common.service.RedisService;
+import com.redis.common.service.RedissonService;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
@@ -45,6 +46,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Autowired private RedisService redisService;
 
+  @Autowired private RedissonService redissonService;
+
   @Autowired private KafkaSender kafkaSender;
 
   @Autowired private SysUserMapper sysUserMapper;
@@ -66,7 +69,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       QueryWrapper<SysUser> queryWrapper2 = new QueryWrapper<>();
       queryWrapper2.eq("account", sysUser.getAccount());
       sysUser = sysUserMapper.selectOne(queryWrapper2);
-      return this.updateUser(sysUser);
+      queryWrapper.eq("version", sysUser.getVersion());
+      sysUser.setVersion(sysUser.getVersion() + 1);
+      return sysUserMapper.update(sysUser, queryWrapper);
     }
     redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
     return result;
@@ -105,6 +110,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             int updateResult = this.updateUser(sysUser);
             if (updateResult == 0) {
               LOG.error("用户登录信息更新失败");
+              return SaResult.error("服务器繁忙");
             }
             return SaResult.ok("登录成功").setData(sysUser);
           } else {
@@ -193,20 +199,35 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     SysUser sysUser = null;
     boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
     // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
-    if (!hasKey) {
-      QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-      queryWrapper.eq("account", account);
-      sysUser = sysUserMapper.selectOne(queryWrapper);
-      if (ObjectUtils.isEmpty(sysUser)) {
-        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
-      } else {
-        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
-      }
+    if (hasKey) {
+      // 缓存中存在这个hashKey,则返回对应的Value
+      sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
       return sysUser;
+    } else {
+      // 添加分布式锁
+      boolean flag = redissonService.tryLock(account);
+      if (!flag) {
+        return null;
+      } else {
+        //  成功获取到锁，再次从缓存中查询一遍
+        hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+        // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
+        if (hasKey) {
+          // 缓存中存在这个hashKey,则返回对应的Value
+          sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
+          return sysUser;
+        }
+        QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("account", account);
+        sysUser = sysUserMapper.selectOne(queryWrapper);
+        if (ObjectUtils.isEmpty(sysUser)) {
+          redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
+        } else {
+          redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
+        }
+        return sysUser;
+      }
     }
-    // 缓存中存在这个hashKey,则返回对应的Value
-    sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
-    return sysUser;
   }
 
   @Override
@@ -223,6 +244,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       int updateResult = updateUser(sysUser);
       if (updateResult == 0) {
         LOG.error("用户登出时，基本信息更新失败");
+        return SaResult.error("服务器繁忙");
       }
       return SaResult.ok("登出成功");
     } catch (Exception e) {
@@ -302,7 +324,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 修改用户信息，删除缓存
       int result = updateUser(sysUser);
       if (result == 0) {
-        return SaResult.error("修改失败");
+        LOG.error("用户基本信息修改失败");
+        return SaResult.error("服务器繁忙");
       }
       return SaResult.ok("修改成功").setData(sysUser);
     } catch (Exception e) {
@@ -344,6 +367,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       int updateResult = updateUser(sysUser);
       if (updateResult == 0) {
         LOG.error("更新用户发送邮件次数失败");
+        return SaResult.error("服务器繁忙");
       }
       return SaResult.ok("发送成功");
     } catch (Exception e) {
@@ -376,7 +400,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 修改用户数据，并删除缓存
         int result = updateUser(sysUser);
         if (result == 0) {
-          return SaResult.error("修改失败");
+          LOG.error("密码修改失败{}", sysUser.getUserId());
+          return SaResult.error("服务器繁忙");
         }
         return SaResult.ok("密码修改成功");
       }
@@ -413,7 +438,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 修改用户实名状态
       int result = updateUser(sysUser);
       if (result == 0) {
-        return SaResult.error("提交失败");
+        LOG.error("实名认证提交失败{}" + sysUser.getUserId());
+        return SaResult.error("服务器繁忙");
       }
       return SaResult.ok("提交成功,大概需要一到两个工作日审核").setData(sysUser);
     } catch (RuntimeException e) {

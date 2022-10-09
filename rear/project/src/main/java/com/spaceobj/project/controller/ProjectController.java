@@ -1,13 +1,13 @@
 package com.spaceobj.project.controller;
 
 import cn.dev33.satoken.util.SaResult;
-import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.dto.GetPhoneNumberDto;
 import com.spaceobj.project.dto.ProjectSearchDto;
 import com.spaceobj.project.dto.SysProjectDto;
 import com.spaceobj.project.group.*;
+import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.service.SysProjectService;
 import com.spaceobj.project.util.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +65,7 @@ public class ProjectController {
 
   @PostMapping(value = "addPageViews")
   public void addPageViews(@Validated(AddPageViewsGroup.class) SysProjectDto sysProjectDto) {
-    sysProjectService.addPageViews(sysProjectDto.getPId());
+    sysProjectService.addPageViews(sysProjectDto.getUuid());
   }
 
   @PostMapping("getPhoneNumberByProjectId")
@@ -81,5 +81,11 @@ public class ProjectController {
     ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
     return sysProjectService.queryListAdmin(projectSearchBo);
+  }
+
+
+  @PostMapping(value = "getEncryptProjectByUUID")
+  public SaResult getEncryptProjectByUUID(String uuid){
+    return sysProjectService.getEncryptProjectByUUID(uuid);
   }
 }

@@ -26,23 +26,27 @@ public class ProjectHelpController {
   @Autowired private ProjectHelpService projectHelpService;
 
   @PostMapping("createProjectHelpLink")
-  public SaResult createProjectHelpLink(@Validated(InsertProjectHelpGroup.class) ProjectHelpDto projectHelpDto) {
+  public SaResult createProjectHelpLink(
+      @Validated(InsertProjectHelpGroup.class) ProjectHelpDto projectHelpDto) {
     ProjectHelpBo projectHelpBo = ProjectHelpBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectHelpDto, projectHelpBo);
     return projectHelpService.createProjectHelpLink(projectHelpBo);
   }
 
   @PostMapping("updateProjectHelpNumber")
-  public SaResult updateProjectHelpNumber(@Validated(UpdateProjectHelpGroup.class) ProjectHelpDto projectHelpDto) {
+  public SaResult updateProjectHelpNumber(
+      @Validated(UpdateProjectHelpGroup.class) ProjectHelpDto projectHelpDto) {
     ProjectHelpBo projectHelpBo = ProjectHelpBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectHelpDto, projectHelpBo);
     return projectHelpService.updateProjectHelpNumber(projectHelpBo);
   }
 
   @PostMapping("projectHelpList")
-  public SaResult projectHelpList(@Validated(QueryProjectHelpListGroup.class) ProjectHelpDto projectHelpDto) {
+  public SaResult projectHelpList(
+      @Validated(QueryProjectHelpListGroup.class) ProjectHelpDto projectHelpDto) {
     ProjectHelpBo projectHelpBo = ProjectHelpBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectHelpDto, projectHelpBo);
     return projectHelpService.projectHelpList(projectHelpBo);
   }
+
 }

@@ -6,14 +6,14 @@ package com.spaceobj.component;
  */
 import cn.dev33.satoken.stp.StpInterface;
 import cn.dev33.satoken.stp.StpUtil;
-import com.redis.common.service.RedisService;
-import com.spaceobj.constant.RedisKey;
 import com.spaceobj.pojo.SysUser;
+import com.spaceobj.utils.RsaUtils;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +26,12 @@ import java.util.List;
 @Component
 public class StpInterfaceImpl implements StpInterface {
 
-  @Autowired private RedisService redisService;
+  @Resource
+  private UserClient userClient;
+
+  @Value("${privateKey}")
+  private String privateKey;
+
 
   /** 返回一个账号所拥有的权限码集合 */
   @SneakyThrows
@@ -37,7 +42,7 @@ public class StpInterfaceImpl implements StpInterface {
     List<String> list = new ArrayList<>();
     ;
     try {
-      SysUser sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, loginId.toString());
+      SysUser sysUser = getSysUser((String) loginId);
       if (ObjectUtils.isEmpty(sysUser)) {
         StpUtil.logout(sysUser.getUserId());
         return list;
@@ -65,5 +70,24 @@ public class StpInterfaceImpl implements StpInterface {
     // 本list仅做模拟，实际项目中要根据具体业务逻辑来查询角色
     List<String> list = new ArrayList<>();
     return list;
+  }
+
+  /**
+   * 根据账户获取用户信息，异常则返回null
+   *
+   * @param account
+   * @return
+   * @throws InterruptedException
+   */
+  public SysUser getSysUser(String account) {
+    SysUser sysUser = null;
+    try {
+      Object res = userClient.getUserInfoByAccount(account).getData();
+      sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+    return sysUser;
   }
 }

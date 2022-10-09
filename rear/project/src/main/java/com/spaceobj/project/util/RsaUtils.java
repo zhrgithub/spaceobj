@@ -1,7 +1,7 @@
-package com.spaceobj.user.utils;
+package com.spaceobj.project.util;
 
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.google.gson.Gson;
-import org.springframework.util.ObjectUtils;
 
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
@@ -184,7 +184,7 @@ public class RsaUtils {
     return decryptedData;
   }
 
-  /**
+    /**
    * 公钥加密，直接对类对象加密 先把对象转化成JSON类型，然后转化成字符数组，然后再进行加密，最后返回加密后的字节数组
    *
    * @param obj 被加密的目标对象

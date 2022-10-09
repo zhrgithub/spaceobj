@@ -9,6 +9,8 @@ import com.redis.common.service.RedisService;
 import com.redis.common.service.RedissonService;
 import com.spaceobj.projectHelp.bo.ProjectHelpBo;
 import com.spaceobj.projectHelp.bo.ReceiveEmailBo;
+import com.spaceobj.projectHelp.component.ProjectClient;
+import com.spaceobj.projectHelp.component.UserClient;
 import com.spaceobj.projectHelp.pojo.SysProject;
 import com.spaceobj.projectHelp.pojo.SysUser;
 import com.spaceobj.projectHelp.constant.KafKaTopics;
@@ -17,11 +19,16 @@ import com.spaceobj.projectHelp.mapper.ProjectHelpMapper;
 import com.spaceobj.projectHelp.pojo.ProjectHelp;
 import com.spaceobj.projectHelp.service.ProjectHelpService;
 import com.spaceobj.projectHelp.component.KafkaSender;
+import com.spaceobj.projectHelp.util.RsaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
+import javax.annotation.Resource;
+import java.security.PublicKey;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -36,109 +43,70 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     implements ProjectHelpService {
   Logger logger = LoggerFactory.getLogger(ProjectHelpServiceImpl.class);
 
+  @Autowired private RedisService redisService;
 
-  @Autowired
-  private RedisService redisService;
-  
-  @Autowired
-  private RedissonService redissonService;
+  @Autowired private RedissonService redissonService;
 
   @Autowired private ProjectHelpMapper projectHelpMapper;
 
   @Autowired private KafkaSender kafkaSender;
 
+  @Value("${privateKey}")
+  private String privateKey;
+
+  @Value("${publicKey}")
+  private String publicKey;
+
+  @Resource private UserClient userClient;
+
+  @Resource private ProjectClient projectClient;
+
   /**
-   * 根据账户获取用户信息
+   * 根据账户获取用户信息，异常则返回null
    *
    * @param account
    * @return
    * @throws InterruptedException
    */
   public SysUser getSysUser(String account) {
-
-
-    List<SysUser> sysUserList = null;
     SysUser sysUser = null;
     try {
-      boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
-      if (!flag) {
-        // 刷新用户缓存信息
-        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-        Thread.sleep(200);
-        return this.getSysUser(account);
-      } else {
-        sysUserList = redisService.getCacheList(RedisKey.SYS_USER_LIST);
-        sysUser =
-            sysUserList.stream()
-                .filter(
-                    user -> {
-                      return user.getAccount().equals(account);
-                    })
-                .collect(Collectors.toList())
-                .get(0);
-        return sysUser;
-      }
+      Object res = userClient.getUserInfoByAccount(account).getData();
+      sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
       return null;
     }
+    return sysUser;
   }
 
-  /**
-   * 根据用户id获取用户基本信息
-   *
-   * @param userId
-   * @return
-   */
   public SysUser getSysUserByUserId(String userId) {
-    List<SysUser> sysUserList = null;
     SysUser sysUser = null;
     try {
-      boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
-      if (!flag) {
-        // 刷新用户缓存信息
-        kafkaSender.send(new Object(), KafKaTopics.UPDATE_USER_LIST);
-        Thread.sleep(200);
-        return this.getSysUserByUserId(userId);
-      } else {
-        sysUserList = redisService.getCacheList(RedisKey.SYS_USER_LIST);
-        sysUser =
-            sysUserList.stream()
-                .filter(
-                    user -> {
-                      return user.getUserId().equals(userId);
-                    })
-                .collect(Collectors.toList())
-                .get(0);
-        return sysUser;
-      }
+      Object res = userClient.getSysUserByUserId(userId).getData();
+      sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
       return null;
     }
+    return sysUser;
   }
 
   /**
-   * 获取项目列表信息
+   * 根据UUID获取项目列表信息
    *
    * @return
    */
-  public List<SysProject> getSysProjects() {
-    List<SysProject> sysProjectList = null;
-
+  public SysProject getSysProject(String uuid) {
+    SysProject sysProject = null;
     try {
-      boolean hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
-      if (!hasKey) {
-        kafkaSender.send(new Object(), KafKaTopics.UPDATE_PROJECT_LIST);
-        Thread.sleep(200);
-        return this.getSysProjects();
-      } else {
-        sysProjectList = redisService.getCacheList(RedisKey.PROJECT_LIST);
-        return sysProjectList;
-      }
+      Object obj = projectClient.getEncryptProjectByUUID(uuid);
+      sysProject = RsaUtils.decryptByPrivateKey(obj, SysProject.class, privateKey);
     } catch (Exception e) {
+      e.printStackTrace();
       return null;
     }
+    return sysProject;
   }
 
   /**
@@ -152,17 +120,26 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_HELP_LIST);
       if (hasKey) {
-        list = redisService.getCacheList(RedisKey.PROJECT_HELP_LIST);
+        list = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST);
         return list;
       } else {
-         boolean flag = redissonService.tryLock(RedisKey.PROJECT_HELP_LIST_SYNC_STATUS);
+        boolean flag = redissonService.tryLock(RedisKey.PROJECT_HELP_LIST_SYNC_STATUS);
         if (!flag) {
           return null;
         } else {
+          // 再次查询缓存，存在则返回
+          hasKey = redisService.hasKey(RedisKey.PROJECT_HELP_LIST);
+          if (hasKey) {
+            list = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST);
+            return list;
+          }
           QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
           queryWrapper.orderByDesc("create_time");
           list = projectHelpMapper.selectList(queryWrapper);
-          redisService.setCacheList(RedisKey.PROJECT_HELP_LIST, list);
+          // 缓存同步
+          for (ProjectHelp p : list) {
+            redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, p.getHpId(), p);
+          }
           return list;
         }
       }
@@ -187,19 +164,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
         return SaResult.error("今日分享链接创建已上限，明天再来吧！");
       }
       // 判断项目中是否有该项目的id
-      List<SysProject> sysProjectList = getSysProjects();
       // 根据前端传递过来的项目id，判断项目列表中是否有该项目
-      List<SysProject> resultSysProjectList =
-          sysProjectList.stream()
-              .filter(
-                  p -> {
-                    return p.getPId() == projectHelpBo.getPId();
-                  })
-              .collect(Collectors.toList());
-      if (resultSysProjectList.size() == 0) {
-        return SaResult.error("id错误");
+      SysProject sysProject = getSysProject(projectHelpBo.getPUUID());
+      if (ObjectUtils.isEmpty(sysProject)) {
+        return SaResult.error("项目不存在");
       }
-      SysProject sysProject = resultSysProjectList.get(0);
       if (sysProject.getStatus() != 1) {
         return SaResult.error("违规操作");
       }
@@ -210,21 +179,19 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       resultList =
           list.stream()
               .filter(
-                  ph -> {
-                    return ph.getCreateUserId().equals(sysUser.getUserId())
-                        && ph.getPId() == projectHelpBo.getPId();
-                  })
+                  ph ->
+                      ph.getCreateUserId().equals(sysUser.getUserId())
+                          && ph.getPUUID().equals(projectHelpBo.getPUUID()))
               .collect(Collectors.toList());
       // 如果之前创建过那么直接返回之前创建过的
       if (resultList.size() > 0) {
         return SaResult.ok().setData(resultList.get(0));
       }
-
       //  没有创建过，则创建
       ProjectHelp projectHelp =
           ProjectHelp.builder()
               .hpId(UUID.randomUUID().toString())
-              .pId(sysProject.getPId())
+              .pUUID(sysProject.getUuid())
               .createUserId(sysUser.getUserId())
               .hpNumber(0)
               .pContent(sysProject.getContent())
@@ -241,7 +208,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     } catch (Exception e) {
       e.printStackTrace();
       logger.error("create project help link failed", e.getMessage());
-      return SaResult.error("创建助力链接失败，服务器异常");
+      return SaResult.error("服务器异常");
     }
   }
 
@@ -251,44 +218,38 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = getSysUser(loginId);
-      List<ProjectHelp> list = getProjectHelpList();
-      // 获取当前项目信息
-      List<ProjectHelp> resultList;
-      resultList =
-          list.stream()
-              .filter(
-                  ph -> {
-                    return ph.getHpId().equals(projectHelpBo.getHpId());
-                  })
-              .collect(Collectors.toList());
-      if (resultList.size() == 0) {
-        return SaResult.error("项目助力链接不存在或已失效");
+      ProjectHelp projectHelp = getProjectHelpByHpId(projectHelpBo.getHpId());
+      if (ObjectUtils.isEmpty(projectHelp)) {
+        return SaResult.error("助力链接不存在");
       }
-      ProjectHelp projectHelp = resultList.get(0);
       // 如果项目已经助力成功，那么直接返回好友已经成功
       if (projectHelp.getHpNumber() >= 10 || projectHelp.getHpStatus() == 1) {
-        return SaResult.error("助力成功，快通知好友联系吧！");
+        return SaResult.ok("助力成功");
       }
       if (projectHelp.getCreateUserId().equals(sysUser.getUserId())) {
-        return SaResult.error("助力失败，请分享给好友助力！");
+        return SaResult.error("请分享给好友助力");
       }
       if (sysUser.getProjectHelpTimes() <= 0) {
-        return SaResult.error("您今日的助力次数已经用尽，请改天再来吧");
+        return SaResult.error("今日助力次数上限");
       }
       //  用户的助力次数减少一，返回助力成功
       sysUser.setProjectHelpTimes(sysUser.getProjectHelpTimes() - 1);
       kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-      // 修改项目助力信息
+      // 修改项目助力次数,并同步到缓存中
       projectHelp.setHpNumber(projectHelp.getHpNumber() + 1);
-      kafkaSender.send(projectHelp, KafKaTopics.UPDATE_HELP_PROJECT);
+      int updateResult = this.updateProjectHelp(projectHelp);
+      if (updateResult == 0) {
+        log.error("项目助力失败,hpId:{}" + projectHelpBo.getHpId());
+        return SaResult.error("服务器繁忙");
+      }
       // 如果项目助力值大于等于10，邮件通知
       if (projectHelp.getHpNumber() >= 10) {
-        SysUser createSysUser = getSysUserByUserId(projectHelp.getCreateUserId());
+        SysUser createSysUser = this.getSysUserByUserId(projectHelp.getCreateUserId());
         ReceiveEmailBo receiveEmailBo =
             ReceiveEmailBo.builder()
                 .receiverEmail(createSysUser.getEmail())
-                .title("项目助力成功")
-                .content("项目编号：" + projectHelp.getPId() + "助力成功！快去联系吧！")
+                .title("spaceObj")
+                .content("项目：" + projectHelp.getPContent().substring(0, 10) + "... 助力成功！快去联系吧！")
                 .build();
         kafkaSender.send(receiveEmailBo, KafKaTopics.HELP_PROJECT_SUCCESSFUL);
       }
@@ -296,8 +257,28 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     } catch (Exception e) {
       e.printStackTrace();
       logger.error("project help failed", e.getMessage());
-      return SaResult.error("项目助力失败，服务器异常！");
+      return SaResult.error("服务器异常");
     }
+  }
+
+  private int updateProjectHelp(ProjectHelp projectHelp) {
+    QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("hp_id", projectHelp.getHpId());
+    queryWrapper.eq("version", projectHelp.getVersion());
+    projectHelp.setVersion(projectHelp.getVersion() + 1);
+    int result = projectHelpMapper.update(projectHelp, queryWrapper);
+    if (result == 0) {
+      // 查询最新的数据，然后再次修改
+      QueryWrapper<ProjectHelp> wrapper = new QueryWrapper<>();
+      wrapper.eq("hp_id", projectHelp.getHpId());
+      projectHelp = projectHelpMapper.selectById(wrapper);
+      queryWrapper.eq("version", projectHelp.getVersion());
+      projectHelp.setVersion(projectHelp.getVersion() + 1);
+      return this.projectHelpMapper.update(projectHelp, queryWrapper);
+    }
+    // 修改成功，刷新缓存信息
+    redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
+    return result;
   }
 
   @Override
@@ -314,11 +295,40 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
                     return hp.getCreateUserId().equals(sysUser.getUserId());
                   })
               .collect(Collectors.toList());
+      // 实现分页查询
+      // TODO
       return SaResult.ok().setData(resultList);
-
     } catch (Exception e) {
       logger.error("get project help list failed", e.getMessage());
-      return SaResult.error("助力列表获取失败，服务器异常！");
+      return SaResult.error("服务器异常");
+    }
+  }
+
+  @Override
+  public ProjectHelp getProjectHelpByHpId(String hpId) {
+    boolean hasKey = redisService.HExists(RedisKey.PROJECT_HELP_LIST, hpId);
+    if (hasKey) {
+      return redisService.getCacheMapValue(RedisKey.PROJECT_HELP_LIST, hpId);
+    } else {
+      //  获取同步锁
+      boolean flag = redissonService.tryLock(hpId);
+      if (!flag) {
+        return null;
+      } else {
+        // 获取成功，再次判断是否存在key
+        hasKey = redisService.HExists(RedisKey.PROJECT_HELP_LIST, hpId);
+        if (hasKey) {
+          return redisService.getCacheMapValue(RedisKey.PROJECT_HELP_LIST, hpId);
+        }
+        QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("hp_id", hpId);
+        ProjectHelp projectHelp = projectHelpMapper.selectOne(queryWrapper);
+        if (ObjectUtils.isEmpty(projectHelp)) {
+          redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, hpId, null);
+        }
+        redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, hpId, projectHelp);
+        return projectHelp;
+      }
     }
   }
 }

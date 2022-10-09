@@ -262,4 +262,15 @@ public class RedisService {
   public Collection<String> keys(final String pattern) {
     return redisTemplate.keys(pattern);
   }
+
+  /**
+   * 根据key获取hash的values
+   *
+   * @param key
+   * @param <T>
+   * @return
+   */
+  public <T> List<T> getHashMapValues(String key) {
+    return redisTemplate.opsForHash().values(key);
+  }
 }
