@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
  * @author zhr_java@163.com
  * @date 2022/10/8 14:27
  */
-@FeignClient(value = "spaceobj-user")
 @Component
+@FeignClient(value = "spaceobj-user")
 public interface UserClient {
 
   @PostMapping(value = "/sysUser/getUserInfoByAccount")
