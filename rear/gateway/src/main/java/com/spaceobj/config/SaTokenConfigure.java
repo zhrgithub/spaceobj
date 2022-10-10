@@ -31,6 +31,7 @@ public class SaTokenConfigure {
         .addExclude("/spaceobj-user/customerUser/sendMailCode")
         .addExclude("/spaceobj-user/customerUser/resetPassword")
         .addExclude("/spaceobj-user/sysUser/getUserInfoByAccount")
+        .addExclude("/spaceobj-user/sysUser/getSysUserByUserId")
         .addExclude("/spaceobj-advertise/jd/list")
         .addExclude("/spaceobj-project/project/findList")
         .addExclude("/spaceobj-project/project/addPageViews")

@@ -10,10 +10,12 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.redis.common.service.RedisService;
 import com.redis.common.service.RedissonService;
+import com.spaceobj.user.bo.LoginByWechatBo;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.component.KafkaSender;
+import com.spaceobj.user.component.WeChatService;
 import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.constant.OperationType;
 import com.spaceobj.user.constant.RedisKey;
@@ -52,6 +54,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Autowired private SysUserMapper sysUserMapper;
 
+  @Autowired private WeChatService weChatService;
+
   public static final int USER_AUDIT_STATUS = 2;
 
   @Value("${privateKey}")
@@ -79,6 +83,76 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
+  public SaResult loginByWeChat(LoginByWechatBo loginByWeChatBo) {
+
+    System.out.println(
+        "微信登录凭证：" + loginByWeChatBo.getCode() + " ip属地：" + loginByWeChatBo.getIpTerritory());
+    try {
+      String openId = weChatService.getOpenIdByCode(loginByWeChatBo.getCode());
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+      queryWrapper.eq("open_id", openId);
+      SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
+
+      if (ObjectUtils.isEmpty(sysUser)) {
+        //  注册
+        // 如果邀请用户id不为空，那么给邀请人的邀请值加一
+        if (!StringUtils.isEmpty(loginByWeChatBo.getInviteUserId())) {
+          SysUser inviteUser = new SysUser();
+          inviteUser.setUserId(sysUser.getInviteUserId());
+          kafkaSender.send(inviteUser, KafKaTopics.INVITER_VALUE_ADD);
+        }
+        // 创建新用户
+        sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
+        sysUser.setAccount(openId);
+        sysUser.setOpenId(openId);
+        sysUser.setIp(loginByWeChatBo.getIp());
+        sysUser.setIpTerritory(loginByWeChatBo.getIpTerritory());
+        int result = sysUserMapper.insert(sysUser);
+
+        if (result == 0) {
+          return SaResult.error("服务器繁忙");
+        }
+        // 同步到缓存
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
+        StpUtil.login(openId);
+        return SaResult.ok().setData(sysUser);
+      } else {
+        // 账号登录
+        //  判断用户是否被封禁
+        boolean isDisable = StpUtil.isDisable(sysUser.getAccount());
+        if (isDisable) {
+          return SaResult.error("账号已被封禁！");
+        }
+        sysUser.setIpTerritory(loginByWeChatBo.getIpTerritory());
+        sysUser.setIp(loginByWeChatBo.getIp());
+
+        // 更新用户登录位置
+        int updateResult = this.updateUser(sysUser);
+        if (updateResult == 0) {
+          LOG.error("用户登录信息更新失败");
+          return SaResult.error("服务器繁忙");
+        }
+        StpUtil.login(sysUser.getAccount());
+        return SaResult.ok("登录成功").setData(sysUser);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return SaResult.error("服务器繁忙");
+    }
+  }
+
+  @Override
+  public SaResult getOpenId(String code) {
+    try {
+      String openid = weChatService.getOpenIdByCode(code);
+      return SaResult.ok().setData(openid);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return SaResult.error("服务器繁忙");
+    }
+  }
+
+  @Override
   public SaResult loginOrRegister(LoginOrRegisterBo loginOrRegisterBo) {
     // 判断用户是否被封禁
     boolean isDisable = StpUtil.isDisable(loginOrRegisterBo.getAccount());
@@ -102,7 +176,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           SysUser sysUser = getUser;
           // 校验密码
           if (sysUser.getPassword().equals(md5Password)) {
-            StpUtil.login(loginOrRegisterBo.getAccount());
             sysUser.setOnlineStatus(1);
             sysUser.setToken(StpUtil.getTokenValue());
             loginOrRegisterBo.setPassword(null);
@@ -113,6 +186,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
               LOG.error("用户登录信息更新失败");
               return SaResult.error("服务器繁忙");
             }
+            StpUtil.login(loginOrRegisterBo.getAccount());
             return SaResult.ok("登录成功").setData(sysUser);
           } else {
             return SaResult.error("密码不正确");

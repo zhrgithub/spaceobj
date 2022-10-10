@@ -2,6 +2,7 @@ package com.spaceobj.user.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.spaceobj.user.bo.LoginByWechatBo;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.pojo.SysUser;
@@ -95,4 +96,20 @@ public interface CustomerUserService extends IService<SysUser> {
    * @return
    */
   int updateUser(SysUser sysUser);
+
+  /**
+   * 微信授权登录 根据openid判断用户是否已经注册,判断用户是否被封禁，邀请人id是否为空，用户登录的位置信息
+   *
+   * @param loginByWeChatBo 用户微信登录实体类
+   * @return
+   */
+  SaResult loginByWeChat(LoginByWechatBo loginByWeChatBo);
+
+  /**
+   * 获取openID
+   *
+   * @param code 用户登录凭证。开发者需要在开发者服务器后台，使用 code 换取 openid 和 session_key 等信息
+   * @return
+   */
+  SaResult getOpenId(String code);
 }
