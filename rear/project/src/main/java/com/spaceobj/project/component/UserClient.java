@@ -16,4 +16,13 @@ public interface UserClient {
 
   @PostMapping(value = "/sysUser/getUserInfoByAccount")
   public SaResult getUserInfoByAccount(@PathVariable("account") String account);
+
+  /**
+   * 根据用户id返回实体信息
+   *
+   * @param userId
+   * @return
+   */
+  @PostMapping(value = "/sysUser/getSysUserByUserId")
+  public SaResult getSysUserByUserId(String userId);
 }

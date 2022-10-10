@@ -1,6 +1,10 @@
 package com.spaceobj.projectHelp.component;
 
+import cn.dev33.satoken.util.SaResult;
+import com.redis.common.service.RedisService;
 import com.spaceobj.projectHelp.constant.KafKaTopics;
+import com.spaceobj.projectHelp.constant.RedisKey;
+import com.spaceobj.projectHelp.mapper.ProjectHelpMapper;
 import com.spaceobj.projectHelp.pojo.ProjectHelp;
 import com.spaceobj.projectHelp.service.ProjectHelpService;
 import com.spaceobj.projectHelp.util.KafkaSourceToTarget;
@@ -26,6 +30,37 @@ public class KafkaProjectHelpConsumer {
 
   @Autowired private ProjectHelpService projectHelpService;
 
+  @Autowired private ProjectHelpMapper projectHelpMapper;
+
+  @Autowired private RedisService redisService;
+
+  /**
+   * 监听项目助力更新,一般来自项目表中的通知
+   *
+   * @param record
+   */
+  @KafkaListener(topics = {KafKaTopics.ADD_HELP_PROJECT})
+  public void addHelpProject(ConsumerRecord<?, ?> record) {
+
+    Optional.ofNullable(record.value())
+        .ifPresent(
+            message -> {
+              try {
+                ProjectHelp projectHelp = KafkaSourceToTarget.getObject(message, ProjectHelp.class);
+                // 创建项目助力信息，并同步到缓存
+                int insertResult = projectHelpMapper.insert(projectHelp);
+                if (insertResult == 0) {
+                  LOG.error("project help info update to mysql failed !");
+                } else {
+                  redisService.setCacheMapValue(
+                      RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
+                }
+              } catch (Exception e) {
+                LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
+              }
+            });
+  }
+
   /**
    * 监听项目助力更新,一般来自项目表中的通知
    *
@@ -33,20 +68,15 @@ public class KafkaProjectHelpConsumer {
    */
   @KafkaListener(topics = {KafKaTopics.UPDATE_HELP_PROJECT})
   public void updateProjectHelp(ConsumerRecord<?, ?> record) {
-
     Optional.ofNullable(record.value())
         .ifPresent(
             message -> {
               try {
-
                 ProjectHelp projectHelp = KafkaSourceToTarget.getObject(message, ProjectHelp.class);
-
                 int result = projectHelpService.updateProjectHelp(projectHelp);
-
                 if (result == 0) {
                   LOG.error("project help info update to mysql failed !");
                 }
-
               } catch (Exception e) {
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
               }

@@ -14,4 +14,7 @@ public class KafKaTopics {
 
   /** 项目助力成功邮箱通知 */
   public static final String HELP_PROJECT_SUCCESSFUL = "help_project_successful";
+
+  /** 项目助力列表新增信息 */
+  public static final String ADD_HELP_PROJECT = "add_help_project";
 }

@@ -307,7 +307,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       sysProject = sysProjectMapper.selectById(wrapper);
       queryWrapper.eq("version", sysProject.getVersion());
       sysProject.setVersion(sysProject.getVersion() + 1);
-      result= sysProjectMapper.update(sysProject, queryWrapper);
+      result = sysProjectMapper.update(sysProject, queryWrapper);
     }
     // 修改成功，刷新缓存信息
     redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), sysProject);
@@ -320,16 +320,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       String loginId = (String) StpUtil.getLoginId();
       SysUser sysUser = getSysUser(loginId);
       getPhoneNumberBo.setUserId(sysUser.getUserId());
-      List<SysProject> list = getSysProjectList();
-      List<SysProject> sysProjectList = null;
-      sysProjectList =
-          list.stream()
-              .filter(p -> getPhoneNumberBo.getPUUID().equals(p.getUuid()))
-              .collect(Collectors.toList());
-      if (sysProjectList.size() == 0) {
+      SysProject sysProject = this.getProjectByUUID(getPhoneNumberBo.getPUUID());
+      if (ObjectUtils.isEmpty(sysProject)) {
         return SaResult.error("项目不存在");
       }
-      SysProject sysProject = sysProjectList.get(0);
       // 如果项目发布人id和userId相同，直接返回用户联系方式
       if (sysProject.getReleaseUserId().equals(getPhoneNumberBo.getUserId())) {
         return SaResult.ok().setData(sysUser.getPhoneNumber());
@@ -342,10 +336,14 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (sysProject.getStatus() != 1) {
         return SaResult.error("项目未通过审核");
       }
-      // 判断该用户的助力列表中是否有该项目数据
+      // 判断该用户的助力列表中是否有该项目数据，当前方案要保证项目助力hash表的RedisKey永不失效
       // 判断是否已经获取到该项目联系人
       List<ProjectHelp> projectHelpList = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST);
-      List<ProjectHelp> resultProjectHelp =
+      List<ProjectHelp> resultProjectHelp = null;
+      if (ObjectUtils.isEmpty(projectHelpList)) {
+        return SaResult.error("服务器繁忙");
+      }
+      resultProjectHelp =
           projectHelpList.stream()
               .filter(
                   hp ->
@@ -355,15 +353,19 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (resultProjectHelp.size() > 0) {
         ProjectHelp helpBo = resultProjectHelp.get(0);
         if (helpBo.getHpStatus() == 1 || helpBo.getHpNumber() >= 10) {
-          return SaResult.ok().setData(sysUser.getPhoneNumber());
+          // 获取项目发布者id的联系方式,后期此处修改成根据账户获取用户信息，项目中的userId设置成email,数据进行脱敏
+          String releaseId = sysProject.getReleaseUserId();
+          SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
+          return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
         }
       }
+
       // 判断用户的邀请值大于0
       if (sysUser.getInvitationValue() > 0) {
         //  邀请值减一，如果项目助力列表中没有该项目，那么设置成已经获取到，如果没有，那么新增到项目助力列表并设置成已经获取到的状态
         sysUser.setInvitationValue(sysUser.getInvitationValue() - 1);
         ProjectHelp helpBo;
-        if (resultProjectHelp.size() > 0) {
+        if (!ObjectUtils.isEmpty(resultProjectHelp) && resultProjectHelp.size() > 0) {
           helpBo = resultProjectHelp.get(0);
           helpBo.setHpNumber(10);
           helpBo.setHpStatus(1);
@@ -386,7 +388,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         }
         // 消息队列发送用户信息
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-        return SaResult.ok().setData(sysUser.getPhoneNumber());
+        String releaseId = sysProject.getReleaseUserId();
+        SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
+        return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
       }
       return SaResult.error("分享项目助力链接");
     } catch (Exception e) {
@@ -457,6 +461,18 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     SysUser sysUser = null;
     try {
       Object res = userClient.getUserInfoByAccount(account).getData();
+      sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+    return sysUser;
+  }
+
+  public SysUser getSysUserByUserId(String userId) {
+    SysUser sysUser = null;
+    try {
+      Object res = userClient.getSysUserByUserId(userId).getData();
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
       e.printStackTrace();

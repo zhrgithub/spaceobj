@@ -80,23 +80,24 @@ public interface SysProjectService extends IService<SysProject> {
 
   /**
    * 获取当前待审核项目的数量
+   *
    * @return
    */
   SaResult getPendingReview();
 
   /**
    * 根据项目的UUID获取项目信息
+   *
    * @param uuid
    * @return
    */
   SysProject getProjectByUUID(String uuid);
 
-
   /**
    * 根据项目的UUID获取项目信息
+   *
    * @param uuid
    * @return
    */
   SaResult getEncryptProjectByUUID(String uuid);
-
 }
