@@ -107,6 +107,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         sysUser.setOpenId(openId);
         sysUser.setIp(loginByWeChatBo.getIp());
         sysUser.setIpTerritory(loginByWeChatBo.getIpTerritory());
+        StpUtil.login(openId);
+        sysUser.setToken(StpUtil.getTokenValue());
         int result = sysUserMapper.insert(sysUser);
 
         if (result == 0) {
@@ -114,7 +116,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         // 同步到缓存
         redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
-        StpUtil.login(openId);
+
         return SaResult.ok().setData(sysUser);
       } else {
         // 账号登录
@@ -180,13 +182,14 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             sysUser.setToken(StpUtil.getTokenValue());
             loginOrRegisterBo.setPassword(null);
             BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
+            StpUtil.login(loginOrRegisterBo.getAccount());
+            sysUser.setToken(StpUtil.getTokenValue());
             // 更新用户登录位置
             int updateResult = this.updateUser(sysUser);
             if (updateResult == 0) {
               LOG.error("用户登录信息更新失败");
               return SaResult.error("服务器繁忙");
             }
-            StpUtil.login(loginOrRegisterBo.getAccount());
             return SaResult.ok("登录成功").setData(sysUser);
           } else {
             return SaResult.error("密码不正确");
@@ -207,6 +210,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         // 创建一个新的用户对象信息
         sysUser = registerUserObj(loginOrRegisterBo, sysUser, md5Password);
+        StpUtil.login(loginOrRegisterBo.getAccount());
+        sysUser.setToken(StpUtil.getTokenValue());
         // 新增到MySQL
         int result = sysUserMapper.insert(sysUser);
         if (result == 0) {
@@ -220,7 +225,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         // 同步到缓存
         redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
-        StpUtil.login(loginOrRegisterBo.getAccount());
+
         return SaResult.ok("注册成功").setData(sysUser);
       }
       return SaResult.error("请求参数错误");
@@ -275,8 +280,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
     // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
     if (hasKey) {
-      // 缓存中存在这个hashKey,则返回对应的Value
-      sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
+      sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
       return sysUser;
     } else {
       // 添加分布式锁
@@ -289,7 +293,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
         if (hasKey) {
           // 缓存中存在这个hashKey,则返回对应的Value
-          sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
+          sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
           return sysUser;
         }
         QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
@@ -498,7 +502,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("身份证号不正确");
       }
       // 从缓存中获取当前登录用户的基本信息
-      SysUser sysUser = redisService.getCacheObject(user.getLoginId());
+      SysUser sysUser = redisService.getCacheObject(user.getLoginId(), SysUser.class);
 
       // 校验当前账户是否是在审核中
       if (sysUser.getRealNameStatus() == USER_AUDIT_STATUS) {

@@ -46,7 +46,7 @@ public interface SysUserService extends IService<SysUser> {
    * @param account
    * @return
    */
-  SaResult getUserInfoByAccount(String account);
+  byte[] getUserInfoByAccount(String account);
 
   /**
    * 根据用户id获取用户信息

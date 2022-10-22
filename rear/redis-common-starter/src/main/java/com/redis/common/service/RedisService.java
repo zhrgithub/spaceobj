@@ -1,11 +1,14 @@
 package com.redis.common.service;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import com.alibaba.fastjson2.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.HashOperations;
@@ -19,6 +22,10 @@ import org.springframework.data.redis.core.ValueOperations;
  */
 public class RedisService {
   @Autowired public RedisTemplate redisTemplate;
+
+  private <T> T getTargetObject(Object obj, Class<T> clazz) {
+    return JSON.parseObject(obj.toString(), clazz);
+  }
 
   /**
    * 根据key对key的Value进行递增
@@ -101,9 +108,10 @@ public class RedisService {
    * @param key 缓存键值
    * @return 缓存键值对应的数据
    */
-  public <T> T getCacheObject(final String key) {
+  public <T> T getCacheObject(final String key,Class<T> clazz) {
     ValueOperations<String, T> operation = redisTemplate.opsForValue();
-    return operation.get(key);
+    Object obj =  operation.get(key);
+    return getTargetObject(obj,clazz);
   }
 
   /**
@@ -226,9 +234,10 @@ public class RedisService {
    * @param hKey Hash键
    * @return Hash中的对象
    */
-  public <T> T getCacheMapValue(final String key, final String hKey) {
+  public <T> T getCacheMapValue(final String key, final String hKey,Class<T> clazz) {
     HashOperations<String, String, T> opsForHash = redisTemplate.opsForHash();
-    return opsForHash.get(key, hKey);
+    Object obj = opsForHash.get(key, hKey);
+    return getTargetObject(obj,clazz);
   }
 
   /**

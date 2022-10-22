@@ -11,7 +11,7 @@
 			</view>
 		</view>
 
-		<view class="click-release-style" @click="showMoreUser('bottom')">发布</view>
+		<view class="click-release-style" @click="showMoreUser('bottom')">发需求</view>
 
 		<uni-popup ref="popup" background-color="#fff">
 			<view class="need-description-budget-style">
@@ -389,7 +389,7 @@
 		right: 40px;
 		background-color: #49A8E7;
 		color: white;
-		font-size: 15px;
+		font-size: 14px;
 		border-radius: 100%;
 		display: flex;
 		align-items: center;

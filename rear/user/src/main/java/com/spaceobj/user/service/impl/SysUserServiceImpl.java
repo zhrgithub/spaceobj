@@ -144,9 +144,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult getUserInfoByAccount(String account) {
+  public byte[] getUserInfoByAccount(String account) {
     byte[] rsaEncryptSysUser = null;
     SysUser sysUser = null;
+    System.out.println("account:" + account);
     boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
     // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
     if (!hasKey) {
@@ -159,12 +160,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
       }
       rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
-      return SaResult.ok().setData(rsaEncryptSysUser);
+      return rsaEncryptSysUser;
     }
     // 缓存中存在这个hashKey,则返回对应的Value,并加密成字节数组返回
-    sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account);
+    sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
     rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
-    return SaResult.ok().setData(rsaEncryptSysUser);
+    return rsaEncryptSysUser;
   }
 
   @Override

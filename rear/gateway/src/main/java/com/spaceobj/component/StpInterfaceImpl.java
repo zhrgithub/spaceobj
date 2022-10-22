@@ -82,8 +82,9 @@ public class StpInterfaceImpl implements StpInterface {
   public SysUser getSysUser(String account) {
     SysUser sysUser = null;
     try {
-      Object res = userClient.getUserInfoByAccount(account).getData();
+      Object res = userClient.getUserInfoByAccount(account);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
+      System.out.println(sysUser.toString());
     } catch (Exception e) {
       e.printStackTrace();
       return null;

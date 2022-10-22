@@ -21,7 +21,7 @@
             "path" : "pages/my/my",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "我的",
+                "navigationBarTitleText": "spaceObj",
                 "enablePullDownRefresh": false
             }
             
@@ -30,7 +30,7 @@
             "path" : "pages/release/release",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "我的发布",
+                "navigationBarTitleText": "spaceObj",
                 "enablePullDownRefresh": false
             }
             
@@ -39,7 +39,7 @@
             "path" : "pages/help/help",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "好友助力",
+                "navigationBarTitleText": "spaceObj",
                 "enablePullDownRefresh": false
             }
             
@@ -199,20 +199,21 @@
 	           "pagePath": "pages/project/project",
 	           "iconPath": "static/project.png",
 	           "selectedIconPath": "static/selectProject.png",
-	           "text": "项目大厅"
+	           "text": "接活儿"
 	            }, 
 				{
-				    "pagePath": "pages/release/release",
-				    "iconPath": "static/release.png",
-				    "selectedIconPath": "static/selectRelease.png",
-				    "text": "我的发布"
-				},
-				 {
 				     "pagePath": "pages/help/help",
 				     "iconPath": "static/help.png",
 				     "selectedIconPath": "static/selectHelp.png",
 				     "text": "好友助力"
 				}, 
+				{
+				    "pagePath": "pages/release/release",
+				    "iconPath": "static/release.png",
+				    "selectedIconPath": "static/selectRelease.png",
+				    "text": "我的需求"
+				},
+				
 				{
 	           "pagePath": "pages/my/my",
 	           "iconPath": "static/my.png",

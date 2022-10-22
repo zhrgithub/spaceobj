@@ -24,7 +24,7 @@
 			</view>
 		</view>
 
-		<!-- 终端面板 -->
+		<!-- 终端面板 --> 
 		<view class="terminal-background-style">
 			<view class="header-style">
 				<view class="header-image-style">

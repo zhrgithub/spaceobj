@@ -40,7 +40,7 @@ public class SysUserController {
   }
 
   @PostMapping(value = "getUserInfoByAccount")
-  public SaResult getUserInfoByAccount(String account) {
+  public byte[] getUserInfoByAccount(String account) {
     return sysUserService.getUserInfoByAccount(account);
   }
 
