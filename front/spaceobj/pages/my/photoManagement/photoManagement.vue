@@ -69,12 +69,20 @@
 					editable: true,
 					success(e) {
 						console.log(e.content)
-						if (e.confirm) {
-							that.addOrUpdatePhoto(photoId, e.content, 2)
+						if(e.content==''){
+							uni.showToast({
+								title:'请设置URL',
+								icon:'none'
+							})
+						}else{
+							if (e.confirm) {
+								that.addOrUpdatePhoto(photoId, e.content, 2)
+							}
+							if (e.cancel) {
+								that.delete(photoId);
+							}
 						}
-						if (e.cancel) {
-							that.delete(photoId);
-						}
+						
 					}
 				})
 			},

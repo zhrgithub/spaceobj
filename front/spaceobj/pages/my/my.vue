@@ -55,7 +55,7 @@
 				{{invitationValue}}
 			</view>
 			<view class="invite-btn-stye">
-				邀请好友
+				<button data-name="shareBtn" open-type="share">邀请好友</button>
 			</view>
 		</view>
 		<view class="invite-hint-background" v-if="loginStatus">
@@ -129,7 +129,7 @@
 <script>
 	var that;
 	import app from '@/App.vue'
-	import api from '@/common/api.js' 
+	import api from '@/common/api.js'
 	import sk from '@/common/StoryKeys.js'
 	import strigUtils from '@/utils/StringUtils.js'
 	export default {
@@ -149,11 +149,20 @@
 		created() {
 			that = this;
 		},
+		onShareAppMessage(res) {
+			if (res.from === 'button') { // 来自页面内分享按钮
+				console.log(res.target)
+			}
+			return {
+				title: '欢迎体验spaceObj',
+				path: 'pages/project/project'
+			}
+		},
 		onShow() {
 			this.timer = setTimeout(() => {
 				// 第一步：加载用户基本信息
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
-				if(that.loginStatus){
+				if (that.loginStatus) {
 					that.getUserInfo();
 				}
 				// 第二步加载其它信息
@@ -164,21 +173,21 @@
 		},
 		methods: {
 			// 根据用户登录账户刷新用户基本信息
-			getUserInfo(){
-				api.post({
-				}, api.getUserInfo).then(res => {
+			getUserInfo() {
+				api.post({}, api.getUserInfo).then(res => {
 					console.log("res:", res);
-					var userInfo =res.data;
+					var userInfo = res.data;
 					if (userInfo != '') {
 						that.userType = userInfo.userType;
 						that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 						that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
-						that.invitationValue = strigUtils.isBlank(userInfo.invitationValue) ? that.invitationValue :
+						that.invitationValue = strigUtils.isBlank(userInfo.invitationValue) ? that
+							.invitationValue :
 							userInfo.invitationValue;
 						that.realNameStatus = userInfo.realNameStatus;
 						that.ipTerritory = userInfo.ipTerritory;
 					}
-					
+
 				});
 			},
 			toLogin() {
@@ -377,7 +386,7 @@
 	}
 
 	.link-us-style {
-		width: 80%;
+		width: 70%;
 		margin-left: 20rpx;
 		margin-right: 20rpx;
 	}
@@ -387,7 +396,7 @@
 	}
 
 	.invite-btn-stye {
-		width: 20%;
+		width: 30%;
 		height: 60%;
 		display: flex;
 		justify-content: center;
@@ -399,6 +408,16 @@
 		font-size: 14px;
 		background-color: #49A8E7;
 		color: #fff;
+	}
+	.invite-btn-stye button{
+		width: 100%;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: #49A8E7;
+		color: #fff;
+		font-size: 14px;
 	}
 
 	.real-name-finish {
