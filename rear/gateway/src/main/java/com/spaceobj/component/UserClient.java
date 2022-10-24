@@ -1,7 +1,6 @@
 package com.spaceobj.component;
 
-import cn.dev33.satoken.util.SaResult;
-import com.spaceobj.pojo.SysUser;
+import com.spaceobj.fallback.UserClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,9 +11,15 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @date 2022/10/8 14:27
  */
 @Component
-@FeignClient(contextId = "spaceobj-user",name = "spaceobjGateway")
+@FeignClient(contextId = "spaceobj-user", name = "spaceobjGateway",fallback = UserClientFallback.class)
 public interface UserClient {
 
-  @PostMapping(value = "/spaceobj-user/sysUser/getUserInfoByAccount")
-  public byte[] getUserInfoByAccount(@RequestParam("account") String account);
+  /**
+   * 根据账户获取用户权限
+   *
+   * @param account
+   * @return
+   */
+  @PostMapping(value = "/spaceobj-user/sysUser/getUserPermissionByAccount")
+  public byte[] getUserPermissionByAccount(@RequestParam("account") String account);
 }

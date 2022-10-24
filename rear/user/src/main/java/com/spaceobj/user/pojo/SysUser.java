@@ -113,4 +113,7 @@ public class SysUser implements Serializable {
 
   @TableField(value = "version")
   private long version;
+
+  @TableField(value = "audit_msg")
+  private String auditMsg;
 }

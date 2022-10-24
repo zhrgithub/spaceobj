@@ -1,7 +1,7 @@
 //主要用来存储缓存中的key
 export default {
 	// 退出登录需要清除缓存的列表
-	clearKey:["userInfo","token","loginStatus"],
+	clearKey:["userInfo","token"],
 	//用户基础信息
 	userInfo: "userInfo",
 	//token

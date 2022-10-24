@@ -1,6 +1,8 @@
 package com.spaceobj.handler;
 
 import cn.dev33.satoken.util.SaResult;
+import feign.FeignException;
+import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.cloud.gateway.support.NotFoundException;
@@ -9,6 +11,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -64,4 +68,15 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
     DataBuffer wrap = response.bufferFactory().wrap(saResult.toString().getBytes());
     return response.writeWith(Mono.just(wrap));
   }
+
+  @ExceptionHandler(RetryableException.class)
+  public SaResult handlerException(RetryableException e) {
+    e.printStackTrace();
+    return SaResult.error("feign重试错误");
+  }
+
+
+
+
+
 }

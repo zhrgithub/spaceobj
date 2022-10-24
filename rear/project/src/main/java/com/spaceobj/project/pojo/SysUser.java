@@ -91,4 +91,6 @@ public class SysUser implements Serializable {
   private Integer pageSize;
 
   private String email;
+
+  private String auditMsg;
 }

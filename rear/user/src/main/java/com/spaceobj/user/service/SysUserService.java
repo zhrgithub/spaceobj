@@ -49,6 +49,14 @@ public interface SysUserService extends IService<SysUser> {
   byte[] getUserInfoByAccount(String account);
 
   /**
+   * 根据账户获取用户权限
+   *
+   * @param account
+   * @return
+   */
+  byte[] getUserPermissionByAccount(String account);
+
+  /**
    * 根据用户id获取用户信息
    *
    * @param userId

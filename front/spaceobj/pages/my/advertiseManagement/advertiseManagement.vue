@@ -42,44 +42,44 @@
 					<view class="title-context-style">
 						商品超链接：
 					</view>
-					<input :placeholder="jdAdHyperlink" @input="setAdHyperlink">
+					<input :value="jdAdHyperlink" @input="setAdHyperlink">
 				</view>
 				<view class="doller-num-style">
 					<view class="title-context-style">
 						图片超链接：
 					</view>
-					<input :placeholder="jdAdImageLink" @input="setAdImageLink">
+					<input :value="jdAdImageLink" @input="setAdImageLink">
 				</view>
 				<view class="doller-num-style">
 					<view class="title-context-style">
 						商品名称：
 					</view>
-					<input :placeholder="jdAdName" @input="setAdName">
+					<input :value="jdAdName" @input="setAdName">
 				</view>
 				<view class="doller-num-style">
 					<view class="title-context-style">
 						商店名称：
 					</view>
-					<input :placeholder="jdAdStoreName" @input="setAdStoreName">
+					<input :value="jdAdStoreName" @input="setAdStoreName">
 				</view>
 				<view class="doller-num-style">
 					<view class="title-context-style">
 						优惠券描述：
 					</view>
-					<input :placeholder="jdAdCoupon" @input="setAdCoupon">
+					<input :value="jdAdCoupon" @input="setAdCoupon">
 				</view>
 
 				<view class="doller-num-style">
 					<view class="title-context-style">
 						价格：
 					</view>
-					<input :placeholder="jdAdPrice" @input="setAdPrice">
+					<input :value="jdAdPrice" @input="setAdPrice">
 				</view>
 				<view class="doller-num-style">
 					<view class="title-context-style">
 						好评数量：
 					</view>
-					<input :placeholder="jdAdCommentNum" @input="setAdCommentNum">
+					<input :value="jdAdCommentNum" @input="setAdCommentNum">
 				</view>
 
 				<view class="button-style">

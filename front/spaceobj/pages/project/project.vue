@@ -66,7 +66,7 @@
 			</view>
 			<view class="brief-information-style">
 				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
+					style="color: #7CBF80;font-weight: bold;font-size: 15px;">需求描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
 			</view>
 		</view>
 
@@ -89,25 +89,27 @@
 							<view class="store-description-style">
 								商家：中粮家香味京东自营旗舰店
 							</view>
-					
+
 							<view class="discount-description-style">
 								优惠卷：满11元可用、满169享8.5折
 							</view>
-					
+
 							<view class="price-good-diss-style">
 								<view class="price-num-style">
 									价格：￥300
 								</view>
 								<view class="good-diss-style">
 									好评：99万+
-									
+
 								</view>
 								<view class="go-shopping">
 									<view class="go-shopping-btn">
-										<uni-link href="https://item.jd.com/100010599633.html#crumb-wrap" showUnderLine="false"copyTips="已复制商品链接,可在浏览器打开" text="逛一逛" color="red"fontSize="12">
+										<uni-link href="https://item.jd.com/100010599633.html#crumb-wrap"
+											showUnderLine="false" copyTips="已复制商品链接,可在浏览器打开" text="逛一逛" color="red"
+											fontSize="12">
 										</uni-link>
 									</view>
-									
+
 								</view>
 							</view>
 						</view>
@@ -133,10 +135,6 @@
 					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
 			</view>
 		</view>
-
-
-
-
 	</view>
 </template>
 
@@ -280,7 +278,8 @@
 		justify-content: right;
 		align-items: center;
 	}
-	.go-shopping{
+
+	.go-shopping {
 		width: 30%;
 		font-size: 12px;
 		color: grey;
@@ -288,8 +287,8 @@
 		justify-content: center;
 		align-items: center;
 	}
-	
-	.go-shopping-btn{
+
+	.go-shopping-btn {
 		width: 80%;
 		border-radius: 10rpx;
 		height: 100%;

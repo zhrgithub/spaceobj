@@ -14,7 +14,7 @@
 				昵称
 			</view>
 			<view class="change-input-style">
-				<input type="text" maxlength="5" :placeholder="nickName" @input="setNickName">
+				<input type="text" maxlength="5" :value="nickName" @input="setNickName">
 			</view>
 		</view>
 
@@ -23,7 +23,7 @@
 				手机号
 			</view>
 			<view class="change-input-style">
-				<input type="number" maxlength="11" :placeholder="phoneNumber" @input="setPhoneNumber">
+				<input type="number" maxlength="11" :value="phoneNumber" @input="setPhoneNumber">
 			</view>
 		</view>
 
@@ -32,7 +32,7 @@
 				邮箱
 			</view>
 			<view class="change-input-style">
-				<input type="text" maxlength="20" :placeholder="email" @input="setEmail">
+				<input type="text" maxlength="20" :value="email" @input="setEmail">
 			</view>
 
 		</view>
@@ -147,6 +147,11 @@
 
 				}, api.loginOut).then(res => {
 					uni.hideLoading();
+					// 设置登录状态为退出
+					uni.setStorage({
+						key: "loginStatus",
+						data: false
+					})
 
 					// 移除缓存中的key
 					for (var i = 0; i < sk.clearKey.length; i++) {
@@ -160,10 +165,6 @@
 					uni.showToast({
 						title: res.data,
 						icon: 'none'
-					})
-					uni.showToast({
-						title: res.data,
-						icon: 'error'
 					})
 				});
 

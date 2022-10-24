@@ -5,7 +5,7 @@
 				客服微信
 			</view>
 			<view class="change-input-style">
-				<input type="text" :placeholder="wechat" @input="setWechat">
+				<input type="text" :value="wechat" @input="setWechat">
 			</view>
 		</view>
 
@@ -14,7 +14,7 @@
 				下载链接
 			</view>
 			<view class="change-input-style">
-				<input type="text" :placeholder="downloadUrl" @input="setDownLoad">
+				<input type="text" :value="downloadUrl" @input="setDownLoad">
 			</view>
 		</view>
 		<view class="save-btn-style">
@@ -50,40 +50,40 @@
 			}, 200);
 		},
 		methods: {
-			setWechat(e){
+			setWechat(e) {
 				that.wechat = e.detail.value;
 			},
-			setDownLoad(e){
+			setDownLoad(e) {
 				that.downloadUrl = e.detail.value;
 			},
 			save() {
-				if(that.downloadUrl==''){
+				if (that.downloadUrl == '') {
 					uni.showToast({
-						icon:'none',
-						title:'下载链接不为空'
+						icon: 'none',
+						title: '下载链接不为空'
 					})
 					return;
 				}
-				if(that.wechat==''){
+				if (that.wechat == '') {
 					uni.showToast({
-						icon:'none',
-						title:'客服微信不为空'
+						icon: 'none',
+						title: '客服微信不为空'
 					})
 					return;
 				}
-				console.log(that.wechat,that.downloadUrl)
+				console.log(that.wechat, that.downloadUrl)
 				api.post({
-					wechat:that.wechat,
-					downloadUrl:that.downloadUrl
+					wechat: that.wechat,
+					downloadUrl: that.downloadUrl
 				}, api.updateOther).then(res => {
-					if(res.code==200){
+					if (res.code == 200) {
 						uni.showToast({
-							icon:'none',
-							title:res.msg
+							icon: 'none',
+							title: res.msg
 						})
 						uni.setStorage({
-							key:sk.otherInfo,
-							data:res.data
+							key: sk.otherInfo,
+							data: res.data
 						})
 					}
 				})

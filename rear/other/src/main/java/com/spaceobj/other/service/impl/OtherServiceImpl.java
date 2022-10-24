@@ -40,7 +40,7 @@ public class OtherServiceImpl implements OtherService {
         Other other = null;
 
         if (redisService.hasKey(OTHER_INFO)) {
-            other = (Other) redisService.getCacheObject(OTHER_INFO);
+            other = (Other) redisService.getCacheObject(OTHER_INFO,Other.class);
 
             if (StringUtils.isBlank(other.getWechat())) {
                 other.setWechat(RestData.WECHAT);

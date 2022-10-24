@@ -1,5 +1,6 @@
 package com.spaceobj.user.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -20,8 +21,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class SysPhoto implements Serializable {
 
-  @TableId(value = "photo_id")
-  private Integer photoId;
+  @TableId(value = "photo_id", type = IdType.ASSIGN_UUID)
+  private String photoId;
 
   @TableField(value = "photo_url")
   private String photoUrl;

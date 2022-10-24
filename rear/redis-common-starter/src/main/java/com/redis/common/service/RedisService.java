@@ -23,8 +23,28 @@ import org.springframework.data.redis.core.ValueOperations;
 public class RedisService {
   @Autowired public RedisTemplate redisTemplate;
 
+  /**
+   * 将JSON对象转化成目标对象
+   *
+   * @param obj
+   * @param clazz
+   * @param <T>
+   * @return
+   */
   private <T> T getTargetObject(Object obj, Class<T> clazz) {
     return JSON.parseObject(obj.toString(), clazz);
+  }
+
+  /**
+   * 将JSON对象转化为目标对象列表
+   *
+   * @param obj
+   * @param clazz
+   * @param <T>
+   * @return
+   */
+  private <T> List<T> getTargetListObj(Object obj, Class<T> clazz) {
+    return JSON.parseArray(obj.toString(), clazz);
   }
 
   /**
@@ -108,10 +128,10 @@ public class RedisService {
    * @param key 缓存键值
    * @return 缓存键值对应的数据
    */
-  public <T> T getCacheObject(final String key,Class<T> clazz) {
+  public <T> T getCacheObject(final String key, Class<T> clazz) {
     ValueOperations<String, T> operation = redisTemplate.opsForValue();
-    Object obj =  operation.get(key);
-    return getTargetObject(obj,clazz);
+    Object obj = operation.get(key);
+    return getTargetObject(obj, clazz);
   }
 
   /**
@@ -151,8 +171,9 @@ public class RedisService {
    * @param key 缓存的键值
    * @return 缓存键值对应的数据
    */
-  public <T> List<T> getCacheList(final String key) {
-    return redisTemplate.opsForList().range(key, 0, -1);
+  public <T> List<T> getCacheList(final String key, Class<T> clazz) {
+    Object obj = redisTemplate.opsForList().range(key, 0, -1);
+    return getTargetListObj(obj, clazz);
   }
 
   /**
@@ -234,10 +255,10 @@ public class RedisService {
    * @param hKey Hash键
    * @return Hash中的对象
    */
-  public <T> T getCacheMapValue(final String key, final String hKey,Class<T> clazz) {
+  public <T> T getCacheMapValue(final String key, final String hKey, Class<T> clazz) {
     HashOperations<String, String, T> opsForHash = redisTemplate.opsForHash();
     Object obj = opsForHash.get(key, hKey);
-    return getTargetObject(obj,clazz);
+    return getTargetObject(obj, clazz);
   }
 
   /**
@@ -279,7 +300,8 @@ public class RedisService {
    * @param <T>
    * @return
    */
-  public <T> List<T> getHashMapValues(String key) {
-    return redisTemplate.opsForHash().values(key);
+  public <T> List<T> getHashMapValues(String key, Class<T> clazz) {
+    Object obj = redisTemplate.opsForHash().values(key);
+    return getTargetListObj(obj, clazz);
   }
 }

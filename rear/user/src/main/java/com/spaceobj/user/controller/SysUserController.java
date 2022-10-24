@@ -44,6 +44,11 @@ public class SysUserController {
     return sysUserService.getUserInfoByAccount(account);
   }
 
+  @PostMapping(value = "getUserPermissionByAccount")
+  public byte[] getUserPermissionByAccount(String account) {
+    return sysUserService.getUserPermissionByAccount(account);
+  }
+
   @PostMapping(value = "getSysUserByUserId")
   public SaResult getSysUserByUserId(String userId) {
     return sysUserService.getSysUserByUserId(userId);

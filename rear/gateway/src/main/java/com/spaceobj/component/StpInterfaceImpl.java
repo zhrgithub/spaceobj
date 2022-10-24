@@ -5,8 +5,7 @@ package com.spaceobj.component;
  * @date 2022/9/11 17:27
  */
 import cn.dev33.satoken.stp.StpInterface;
-import cn.dev33.satoken.stp.StpUtil;
-import com.spaceobj.pojo.SysUser;
+import com.spaceobj.pojo.UserPermission;
 import com.spaceobj.utils.RsaUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,12 +25,10 @@ import java.util.List;
 @Component
 public class StpInterfaceImpl implements StpInterface {
 
-  @Resource
-  private UserClient userClient;
+  @Resource private UserClient userClient;
 
   @Value("${privateKey}")
   private String privateKey;
-
 
   /** 返回一个账号所拥有的权限码集合 */
   @SneakyThrows
@@ -40,15 +37,13 @@ public class StpInterfaceImpl implements StpInterface {
 
     // 本list仅做模拟，实际项目中要根据具体业务逻辑来查询权限
     List<String> list = new ArrayList<>();
-    ;
     try {
-      SysUser sysUser = getSysUser((String) loginId);
-      if (ObjectUtils.isEmpty(sysUser)) {
-        StpUtil.logout(sysUser.getUserId());
+      UserPermission userPermission = getUserPermission((String) loginId);
+      if (ObjectUtils.isEmpty(userPermission)) {
         return list;
       }
 
-      String[] userRights = sysUser.getUserRights().split(",");
+      String[] userRights = userPermission.getUserRights().split(",");
       if (userRights.length > 0) {
 
         Arrays.stream(userRights)
@@ -73,22 +68,21 @@ public class StpInterfaceImpl implements StpInterface {
   }
 
   /**
-   * 根据账户获取用户信息，异常则返回null
+   * 根据账户获取用户权限，异常则返回null
    *
    * @param account
    * @return
    * @throws InterruptedException
    */
-  public SysUser getSysUser(String account) {
-    SysUser sysUser = null;
+  public UserPermission getUserPermission(String account) {
+    UserPermission userPermission = null;
     try {
-      Object res = userClient.getUserInfoByAccount(account);
-      sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
-      System.out.println(sysUser.toString());
+      Object res = userClient.getUserPermissionByAccount(account);
+      userPermission = RsaUtils.decryptByPrivateKey(res, UserPermission.class, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
       return null;
     }
-    return sysUser;
+    return userPermission;
   }
 }

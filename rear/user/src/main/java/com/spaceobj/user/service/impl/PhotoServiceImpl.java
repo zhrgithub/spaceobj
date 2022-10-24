@@ -104,7 +104,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
     try {
       boolean hasKey = redisService.hasKey(RedisKey.SYS_PHOTO_LIST);
       if (hasKey) {
-        list = redisService.getCacheList(RedisKey.SYS_PHOTO_LIST);
+        list = redisService.getCacheList(RedisKey.SYS_PHOTO_LIST, SysPhoto.class);
         return SaResult.ok().setData(list);
       } else {
 
@@ -116,7 +116,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
           // 再次尝试获取key
           hasKey = redisService.hasKey(RedisKey.SYS_PHOTO_LIST);
           if (hasKey) {
-            list = redisService.getCacheList(RedisKey.SYS_PHOTO_LIST);
+            list = redisService.getCacheList(RedisKey.SYS_PHOTO_LIST, SysPhoto.class);
             return SaResult.ok().setData(list);
           }
 

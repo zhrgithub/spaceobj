@@ -2,39 +2,67 @@
 	<view class="container">
 		<view class="base-infos">
 			<view class="base-infos-style">
-				<input placeholder="请输入您的真实姓名(必填)" :value="name"></input>
+				<input placeholder="请输入您的真实姓名(必填)" :value="username" maxlength="15"></input>
 			</view>
 			<view class="base-infos-style-two">
-				<input placeholder="请输入您的身份证号码(必填)" value="idCard" maxlength="18" type="number"></input>
+				<input placeholder="请输入您的身份证号码(必填)" :value="idCardNum" maxlength="18" type="number"></input>
 			</view>
 		</view>
 
 		<view class="id-card-style">
-			<view class="image-background-one" v-if="imageUrl==''">
+			<view class="image-background-one" v-if="idCardPic==''">
 				<image src="/static/camera.png"></image>
 				<view class="image-title">本人手举身份证正面(必填)</view>
 			</view>
-			<block class="image-background-two" v-if="imageUrl!=''">
-				<image :src="imageUrl" style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
+			<block class="image-background-two" v-if="idCardPic!=''">
+				<image :src="idCardPic" style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
 			</block>
 		</view>
 
-		<view class="button-background" v-if="auditStatus==0||auditStatus==3">
+		<view class="button-background" v-if="realNameStatus==0||realNameStatus==3">
 			<button>提交</button>
 		</view>
 	</view>
 </template>
 
 <script>
+	var that;
+	import app from '@/App.vue'
+	import sk from '@/common/StoryKeys.js'
+	import strigUtils from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
-				auditStatus: 3,
-				imageUrl: '',
-				name: '',
-				idCard: '',
-				phone: '',
+				realNameStatus: 3,
+				idCardPic: '',
+				username: '',
+				idCardNum: '',
+
 			}
+		},
+		created() {
+			that = this;
+		},
+		onShow() { 
+			this.timer = setTimeout(() => {
+				// 第一步：加载用户基本信息
+				that.loginStatus = uni.getStorageSync(sk.loginStatus);
+				var userInfo = uni.getStorageSync(sk.userInfo);
+				console.log(userInfo);
+				if (userInfo != '') {
+					that.realNameStatus = userInfo.realNameStatus;
+					that.idCardPic = userInfo.idCardPic;
+					that.username = userInfo.username;
+					that.idCardNum = userInfo.idCardNum;
+					if (that.realNameStatus == 3) {
+						uni.showModal({
+							showCancel: false,
+							title: "审核结果",
+							content:userInfo.auditMsg
+						})
+					}
+				}
+			})
 		},
 		methods: {
 
@@ -137,6 +165,7 @@
 		text-align: center;
 		position: absolute;
 		margin-top: 100rpx;
+		bottom: 30rpx;
 	}
 
 	.button-background button {

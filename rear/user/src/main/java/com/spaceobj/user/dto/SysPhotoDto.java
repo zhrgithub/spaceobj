@@ -24,7 +24,7 @@ public class SysPhotoDto implements Serializable {
   @NotNull(
       message = "图片id不为空",
       groups = {DeletePhotoGroup.class})
-  private Integer photoId;
+  private String photoId;
 
   /** 图片URl */
   @NotBlank(

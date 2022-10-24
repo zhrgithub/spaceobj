@@ -110,11 +110,13 @@
 					<view class="change-input-style">
 						<input type="text" placeholder="用户状态" disabled="true"
 							:value="userObj.disableStatus==0?'正常':'冻结'">
+
+						<switch color="#49A8E7" @change="disabledUser" :checked="userObj.disableStatus==0" />
 					</view>
 				</view>
 
-				<view class="button-background" v-if="auditStatus==0||auditStatus==3">
-					<button @click="disabledUser">冻结</button>
+				<view class="button-background">
+					<!-- <button @click="disabledUser">冻结</button> -->
 					<button @click="save">保存</button>
 				</view>
 			</view>
@@ -185,7 +187,7 @@
 					pageSize: that.pageSize
 				}, api.findSysUserList).then(res => {
 					if (res.code == 200) {
-						if(res.data.length>0){
+						if (res.data.length > 0) {
 							that.list = that.list.concat(res.data);
 							that.currentPage++;
 						}
@@ -203,6 +205,14 @@
 				that.userObj = e;
 				this.$refs.popup.open('bottom')
 			},
+			disabledUser() {
+				var userObj = that.userObj;
+				if (userObj.disableStatus == 0) {
+					that.userObj.disableStatus = 1;
+				} else {
+					that.userObj.disableStatus = 0;
+				}
+			},
 			save() {
 				uni.showLoading();
 				var userObj = that.userObj;
@@ -214,10 +224,12 @@
 							icon: 'none',
 							title: res.msg
 						})
+						that.currentPage = 1;
+						that.list = [];
 						that.loadList();
 					}
 				});
-				this.$refs.popup.close()
+				this.$refs.popup.close();
 			},
 			doSearch(e) {
 				console.log(e.detail.value)
@@ -333,7 +345,8 @@
 		height: 20rpx;
 		background-color: green;
 		border-radius: 100%;
-		margin: 0px 10rpx;
+		margin-left: 5rpx;
+		margin-right: 20rpx;
 	}
 
 	.un-online-status {
@@ -430,7 +443,7 @@
 		background-color: #49A8E7;
 		color: white;
 		border-radius: 20rpx;
-		width: 30%;
+		width: 100%;
 	}
 
 	.edit-background-style {

@@ -95,4 +95,7 @@ public class SysUserBo implements Serializable {
   private String content;
 
   private String email;
+
+  /** 审核内容 */
+  private String auditMsg;
 }

@@ -84,9 +84,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Override
   public SaResult loginByWeChat(LoginByWechatBo loginByWeChatBo) {
-
-    System.out.println(
-        "微信登录凭证：" + loginByWeChatBo.getCode() + " ip属地：" + loginByWeChatBo.getIpTerritory());
     try {
       String openId = weChatService.getOpenIdByCode(loginByWeChatBo.getCode());
       QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();

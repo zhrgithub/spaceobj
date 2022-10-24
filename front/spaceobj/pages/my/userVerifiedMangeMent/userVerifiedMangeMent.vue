@@ -1,19 +1,21 @@
 <template>
 	<view class="container">
-		<view class="photo-image-btn-background-style">
+		<view class="photo-image-btn-background-style" v-for="(item,idx) in list" :key="idx">
 			<view class="photo-image-background-style">
-				<image src="/static/photo.jpg" mode=""></image>
+				<image :src="item.photoUrl" mode=""></image>
 				<view class="base-info-panel-style">
 					<view class="phone-background-style">
-						状态：待审核
+						状态：<text v-if="item.realNameStatus==0">未实名</text> <text
+							v-if="item.realNameStatus==1">审核通过</text><text v-if="item.realNameStatus==2">待审核</text><text
+							v-if="item.realNameStatus==3">审核不通过</text>
 					</view>
 					<view class="phone-background-style">
-						邮箱：csajcn11111ksa@163.com
+						邮箱：<text>{{item.email}}</text>
 					</view>
 				</view>
 			</view>
 			<view class="btn-background-style">
-				<button @click="auditUser">审核</button>
+				<button @click="auditUser(item)">审核</button>
 			</view>
 		</view>
 
@@ -27,26 +29,27 @@
 			<view class="description-doller-style">
 				<view class="base-infos">
 					<view class="base-infos-style">
-						<input placeholder="请输入您的真实姓名(必填)" :value="name"></input>
+						<input placeholder="用户姓名" :value="userObj.username" disabled="true"></input>
 					</view>
 					<view class="base-infos-style-two">
-						<input placeholder="请输入您的身份证号码(必填)" value="idCard" maxlength="18" type="number"></input>
+						<input placeholder="身份证号" :value="userObj.idCardNum" maxlength="18" type="number"
+							disabled="true"></input>
 					</view>
 				</view>
 
 				<view class="id-card-style">
-					<view class="image-background-one" v-if="imageUrl==''">
+					<view class="image-background-one" v-if="userObj.idCardPic==''||userObj.idCardPic=='null'">
 						<image src="/static/camera.png"></image>
 						<view class="image-title">本人手举身份证正面(必填)</view>
 					</view>
-					<block class="image-background-two" v-if="imageUrl!=''">
-						<image :src="imageUrl" style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
+					<block class="image-background-two" v-if="imageUrl!=''&&userObj.idCardPic!='null'">
+						<image :src="userObj.idCardPic" style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
 					</block>
 				</view>
 
 				<view class="button-background" v-if="auditStatus==0||auditStatus==3">
-					<button>通过</button>
-					<button @click="unApprove">不通过</button>
+					<button @click="saveBtn(1)">通过</button>
+					<button @click="saveBtn(0)">不通过</button>
 				</view>
 			</view>
 		</uni-popup>
@@ -54,6 +57,10 @@
 </template>
 
 <script>
+	let that;
+	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
+	import strigUtils from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
@@ -62,27 +69,102 @@
 				name: '',
 				idCard: '',
 				phone: '',
+
+				list: [],
+				userObj: null,
+				currentPage: 1,
+				pageSize: 10
 			}
 		},
+		created() {
+			that = this;
+		},
+		onShow() {
+			uni.showLoading({
+				title: '加载中...',
+			})
+			that.loadList();
+		},
+		// 触底加载更多
+		onReachBottom() {
+			that.loadList();
+		},
+		// 下拉刷新
+		onPullDownRefresh() {
+			that.currentPage = 1;
+			that.list = [];
+			that.loadList();
+		},
+
 		methods: {
-			auditUser() {
-				this.$refs.popup.open('bottom')
-			},
-			unApprove(){
-				this.$refs.popup.close()
-				uni.showModal({
-					editable:true,
-					title:'未通过原因',
-					confirmColor:'#000',
-					success(e) {
-						if(e.confirm){
-							uni.showToast({
-								icon:"none",
-								title:'提交成功'
-							})
+			loadList() {
+				uni.showLoading();
+				api.post({
+					currentPage: that.currentPage,
+					pageSize: that.pageSize,
+					realNameStatus: 2,
+				}, api.findSysUserList).then(res => {
+					if (res.code == 200) {
+						if (res.data.length > 0) {
+							that.list = that.list.concat(res.data);
+							that.currentPage++;
 						}
+					} else {
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
 					}
-				})
+					uni.hideLoading();
+				});
+			},
+			auditUser(e) {
+				console.log(e);
+				that.userObj = e;
+				this.$refs.popup.open('bottom');
+			},
+			saveBtn(e) {
+				this.$refs.popup.close();
+				var userObj = that.userObj;
+				// 审核不通过
+				if (e == 0) {
+					uni.showModal({
+						editable: true,
+						title: '未通过原因',
+						confirmColor: '#000',
+						success(e) {
+							if (e.confirm) {
+								console.log(e.content);
+								userObj.auditMsg = e.content;
+								userObj.realNameStatus = 3;
+								that.save(userObj);
+							}
+						}
+					})
+				}
+				// 审核通过
+				if (e == 1) {
+					userObj.realNameStatus = 1;
+					that.save(userObj);
+				}
+			},
+			save(userObj) {
+				api.post(userObj, api.updateSysUser).then(res => {
+					uni.hideLoading();
+					if (res.code == 200) {
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
+						uni.showToast({
+							title: res.msg,
+							icon: 'none'
+						})
+						that.currentPage = 1;
+						that.list = [];
+						that.loadList();
+					}
+				});
 			}
 		}
 	}

@@ -15,6 +15,7 @@ import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.component.KafkaSender;
 import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.constant.RedisKey;
+import com.spaceobj.user.dto.UserPermission;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.SysUserService;
@@ -67,7 +68,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             .or()
             .like("email", sysUserBo.getContent());
       }
-      System.out.println(sysUserBo.toString());
+      if (ObjectUtils.isNotEmpty(sysUserBo.getRealNameStatus())) {
+        queryWrapper.or().eq("real_name_status", sysUserBo.getRealNameStatus());
+      }
+
       Page<SysUser> page = new Page<>(sysUserBo.getCurrentPage(), sysUserBo.getPageSize());
       IPage<SysUser> iPage = sysUserMapper.selectPage(page, queryWrapper);
       list = iPage.getRecords();
@@ -147,7 +151,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public byte[] getUserInfoByAccount(String account) {
     byte[] rsaEncryptSysUser = null;
     SysUser sysUser = null;
-    System.out.println("account:" + account);
     boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
     // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
     if (!hasKey) {
@@ -165,6 +168,37 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     // 缓存中存在这个hashKey,则返回对应的Value,并加密成字节数组返回
     sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
     rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
+    return rsaEncryptSysUser;
+  }
+
+  @Override
+  public byte[] getUserPermissionByAccount(String account) {
+    byte[] rsaEncryptSysUser = null;
+    UserPermission userPermission = null;
+    SysUser sysUser = null;
+    boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+    // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
+    if (!hasKey) {
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+      queryWrapper.eq("account", account);
+      sysUser = sysUserMapper.selectOne(queryWrapper);
+      if (ObjectUtils.isEmpty(sysUser)) {
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
+      } else {
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
+      }
+      userPermission = new UserPermission();
+      userPermission.setUserType(sysUser.getUserType());
+      userPermission.setUserRights(sysUser.getUserRights());
+      rsaEncryptSysUser = RsaUtils.encryptByPublicKey(userPermission, publicKey);
+      return rsaEncryptSysUser;
+    }
+    // 缓存中存在这个hashKey,则返回对应的Value,并加密成字节数组返回
+    sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
+    userPermission = new UserPermission();
+    userPermission.setUserType(sysUser.getUserType());
+    userPermission.setUserRights(sysUser.getUserRights());
+    rsaEncryptSysUser = RsaUtils.encryptByPublicKey(userPermission, publicKey);
     return rsaEncryptSysUser;
   }
 

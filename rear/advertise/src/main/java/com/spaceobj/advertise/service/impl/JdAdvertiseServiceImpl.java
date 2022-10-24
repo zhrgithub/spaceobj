@@ -48,7 +48,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
             boolean hasKey = redisService.hasKey(RedisKey.JD_ADVERTISE_LIST);
             System.out.println(hasKey);
             if (hasKey) {
-                return redisService.getCacheList(RedisKey.JD_ADVERTISE_LIST);
+                return redisService.getCacheList(RedisKey.JD_ADVERTISE_LIST,JdAdvertise.class);
             } else {
                 boolean flag = redissonService.tryLock(RedisKey.JD_ADVERTISE_LIST_SYNC_STATUS);
                 if (!flag) {
@@ -56,7 +56,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
                 } else {
                     hasKey = redisService.hasKey(RedisKey.JD_ADVERTISE_LIST);
                     if (hasKey) {
-                        return redisService.getCacheList(RedisKey.JD_ADVERTISE_LIST);
+                        return redisService.getCacheList(RedisKey.JD_ADVERTISE_LIST,JdAdvertise.class);
                     }
                     redisService.deleteObject(RedisKey.JD_ADVERTISE_LIST);
                     QueryWrapper<JdAdvertise> queryWrapper = new QueryWrapper();

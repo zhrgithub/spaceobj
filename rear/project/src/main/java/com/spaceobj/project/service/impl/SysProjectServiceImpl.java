@@ -222,7 +222,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
       if (hasKey) {
-        list = redisService.getHashMapValues(RedisKey.PROJECT_LIST);
+        list = redisService.getHashMapValues(RedisKey.PROJECT_LIST,SysProject.class);
         return list;
       } else {
         boolean flag = redissonService.tryLock(RedisKey.REDIS_PROJECT_SYNC_STATUS);
@@ -232,7 +232,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           // 再次判断是否存在该key
           hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
           if (hasKey) {
-            list = redisService.getHashMapValues(RedisKey.PROJECT_LIST);
+            list = redisService.getHashMapValues(RedisKey.PROJECT_LIST,SysProject.class);
             return list;
           }
           QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
@@ -338,7 +338,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
       // 判断该用户的助力列表中是否有该项目数据，当前方案要保证项目助力hash表的RedisKey永不失效
       // 判断是否已经获取到该项目联系人
-      List<ProjectHelp> projectHelpList = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST);
+      List<ProjectHelp> projectHelpList = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST,ProjectHelp.class);
       List<ProjectHelp> resultProjectHelp = null;
       if (ObjectUtils.isEmpty(projectHelpList)) {
         return SaResult.error("服务器繁忙");
@@ -416,7 +416,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SysProject getProjectByUUID(String uuid) {
     boolean hExists = redisService.HExists(RedisKey.PROJECT_LIST, uuid);
     if (hExists) {
-      return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid);
+      return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid,SysProject.class);
     } else {
       // 设置分布式锁
       boolean flag = redissonService.tryLock(uuid);
@@ -427,7 +427,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         //  成功获取到锁，那么再次判断是否已经存在这个hashKey，存在就返回，不存在就查询MySQL，然后同步到缓存中
         hExists = redisService.HExists(RedisKey.PROJECT_LIST, uuid);
         if (hExists) {
-          return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid);
+          return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid,SysProject.class);
         }
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("p_uuid", uuid);

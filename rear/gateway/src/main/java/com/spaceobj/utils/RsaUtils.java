@@ -224,7 +224,6 @@ public class RsaUtils {
       byte[] objByte = (byte[]) source;
       byte[] decodeBytes = decryptByPrivateKey(objByte, privateKey);
       String res = new String(decodeBytes, "UTF-8");
-      System.out.println(res);
       return new Gson().fromJson(res, target);
     } catch (Exception e) {
       e.printStackTrace();

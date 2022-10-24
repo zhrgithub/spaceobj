@@ -17,25 +17,37 @@
 				<image :src="photoUrl" mode=""></image>
 			</view>
 			<view class="userinfo-background-style">
-
 				<text class="nick-name-style">{{nickName}}</text>
 				<text class="address-background-style">IP属地：{{ipTerritory}}</text>
+			</view>
+			<view class="to-perso-certer">
+				<image src="/static/toPersonCerter.png" mode=""></image>
 			</view>
 		</view>
 
 		<!-- 实名认证 -->
-		<view class="invite-value-background-style">
+		<view class="invite-value-background-style" v-if="loginStatus">
 			<view class="link-us-style">
-				实名认证：{{realNameStatus}}
+				实名状态：
+				<text v-if="realNameStatus==0">未实名</text>
+
+				<text v-if="realNameStatus==2">审核中</text>
+				<text v-if="realNameStatus==3">审核不通过</text>
 			</view>
 
-			<view class="invite-btn-stye" @click="userVerified">
-				去认证
+
+			<view class="invite-btn-stye" @click="userVerified" v-if="realNameStatus!=1">
+				去实名
 			</view>
+
+			<view class="real-name-finish" v-if="realNameStatus==1">
+				已实名
+			</view>
+
 		</view>
 
 		<!-- 邀请链接 -->
-		<view class="invite-value-background-style">
+		<view class="invite-value-background-style" v-if="loginStatus">
 			<view class="invite-tips-style">
 				邀请值：
 			</view>
@@ -46,7 +58,7 @@
 				邀请好友
 			</view>
 		</view>
-		<view class="invite-hint-background">
+		<view class="invite-hint-background" v-if="loginStatus">
 			提示：邀请值可以用来获取用户联系方式，每获取一次用户联系方式，邀请值会减少 1 ，邀请好友注册一次邀请值会增加 1
 		</view>
 		<!-- 联系客服 -->
@@ -69,12 +81,12 @@
 				下载
 			</view>
 		</view>
-		<view v-if="userType=='root'">
+		<view v-if="userType=='root'&&loginStatus">
 
 
 			<!-- 管理 -->
 			<view class="invite-value-background-style">
-				
+
 				<view class="manage-btn-style" @click="auditProject">
 					项目管理
 				</view>
@@ -91,7 +103,7 @@
 			</view>
 
 			<view class="invite-value-background-style">
-				
+
 				<view class="manage-btn-style" @click="advertiseManagement">
 					广告管理
 				</view>
@@ -117,20 +129,21 @@
 <script>
 	var that;
 	import app from '@/App.vue'
+	import api from '@/common/api.js' 
 	import sk from '@/common/StoryKeys.js'
 	import strigUtils from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
-				loginStatus: true,
+				loginStatus: false,
 				photoUrl: '/static/photo.png',
 				nickName: '昵称未设置',
 				ipTerritory: '广东 深圳',
 				downloadUrl: "www.baidu.com",
 				wechat: "spaceobj",
 				userType: "user",
-				invitationValue:0,
-				realNameStatus:'未实名',
+				invitationValue: 0,
+				realNameStatus: 0,
 			}
 		},
 		created() {
@@ -138,21 +151,36 @@
 		},
 		onShow() {
 			this.timer = setTimeout(() => {
+				// 第一步：加载用户基本信息
+				that.loginStatus = uni.getStorageSync(sk.loginStatus);
+				if(that.loginStatus){
+					that.getUserInfo();
+				}
+				// 第二步加载其它信息
 				var otherInfo = uni.getStorageSync(sk.otherInfo);
 				that.downloadUrl = otherInfo.downloadUrl;
 				that.wechat = otherInfo.wechat;
-				that.loginStatus = uni.getStorageSync(sk.loginStatus);
-				var userInfo = uni.getStorageSync(sk.userInfo);
-				that.userType = userInfo.userType;
-				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
-				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
-				that.invitationValue = strigUtils.isBlank(userInfo.invitationValue) ? that.invitationValue : userInfo.invitationValue;
-				that.realNameStatus = userInfo.realNameStatus!=1? '未实名' : '已实名'
-				
-				that.ipTerritory = userInfo.ipTerritory;
 			}, 200)
 		},
 		methods: {
+			// 根据用户登录账户刷新用户基本信息
+			getUserInfo(){
+				api.post({
+				}, api.getUserInfo).then(res => {
+					console.log("res:", res);
+					var userInfo =res.data;
+					if (userInfo != '') {
+						that.userType = userInfo.userType;
+						that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
+						that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
+						that.invitationValue = strigUtils.isBlank(userInfo.invitationValue) ? that.invitationValue :
+							userInfo.invitationValue;
+						that.realNameStatus = userInfo.realNameStatus;
+						that.ipTerritory = userInfo.ipTerritory;
+					}
+					
+				});
+			},
 			toLogin() {
 				that.loginStatus = true;
 				uni.navigateTo({
@@ -208,11 +236,11 @@
 				console.log(that.wechat)
 				uni.setClipboardData({
 					data: that.wechat,
-					showToast:false,
+					showToast: false,
 					success: function() {
 						uni.showToast({
-							icon:'none',
-							title:'客服微信已复制'
+							icon: 'none',
+							title: '客服微信已复制'
 						})
 					}
 				});
@@ -220,11 +248,11 @@
 			downloadFunction() {
 				uni.setClipboardData({
 					data: that.downloadUrl,
-					showToast:false,
+					showToast: false,
 					success: function() {
 						uni.showToast({
-							icon:'none',
-							title:'下载链接已复制，请到浏览器打开' 
+							icon: 'none',
+							title: '下载链接已复制，请到浏览器打开'
 						});
 					}
 				});
@@ -273,11 +301,24 @@
 	}
 
 	.userinfo-background-style {
-		width: 80%;
+		width: 70%;
 		height: 70%;
 		display: flex;
 		justify-content: left;
 		align-items: center;
+	}
+
+	.to-perso-certer {
+		width: 10%;
+		height: 70%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.to-perso-certer image {
+		width: 60%;
+		height: 50%;
 	}
 
 	.nick-name-style {
@@ -292,7 +333,7 @@
 	}
 
 	.address-background-style {
-		width: 55%;
+		width: 70%;
 		font-size: 14px;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -358,6 +399,18 @@
 		font-size: 14px;
 		background-color: #49A8E7;
 		color: #fff;
+	}
+
+	.real-name-finish {
+		width: 20%;
+		height: 60%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-right: 20rpx;
+		margin-left: 20rpx;
+		font-size: 16px;
+		color: #000;
 	}
 
 	.manage-btn-style {

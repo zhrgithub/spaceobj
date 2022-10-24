@@ -72,4 +72,6 @@ public class SysUser implements Serializable {
 
   private Integer createProjectHelpTimes;
   private String email;
+
+  private String auditMsg;
 }
