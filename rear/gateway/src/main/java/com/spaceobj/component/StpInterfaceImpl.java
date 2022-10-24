@@ -5,9 +5,13 @@ package com.spaceobj.component;
  * @date 2022/9/11 17:27
  */
 import cn.dev33.satoken.stp.StpInterface;
+import com.redis.common.service.RedisService;
+import com.spaceobj.constant.RedisKey;
+import com.spaceobj.pojo.SysUser;
 import com.spaceobj.pojo.UserPermission;
 import com.spaceobj.utils.RsaUtils;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -26,6 +30,8 @@ import java.util.List;
 public class StpInterfaceImpl implements StpInterface {
 
   @Resource private UserClient userClient;
+
+  @Autowired private RedisService redisService;
 
   @Value("${privateKey}")
   private String privateKey;
@@ -77,6 +83,15 @@ public class StpInterfaceImpl implements StpInterface {
   public UserPermission getUserPermission(String account) {
     UserPermission userPermission = null;
     try {
+      // 先到Redis中取一下
+      boolean flag = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+      if (flag) {
+        SysUser sysUser =
+            redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
+        userPermission = new UserPermission(sysUser.getUserType(),sysUser.getUserRights());
+        return userPermission;
+      }
+      // 缓存中没有，那么调用远程服务
       Object res = userClient.getUserPermissionByAccount(account);
       userPermission = RsaUtils.decryptByPrivateKey(res, UserPermission.class, privateKey);
     } catch (Exception e) {
