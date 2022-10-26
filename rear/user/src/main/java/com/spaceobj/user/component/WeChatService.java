@@ -20,7 +20,7 @@ public class WeChatService {
   public String getOpenIdByCode(String code) {
     // 登录凭证不能为空
     if (code == null || code.length() == 0) {
-      return "code 不能为空";
+      return null;
     }
     // 1、向微信服务器 使用登录凭证 code 获取 session_key 和 openid
     String params =
@@ -36,6 +36,7 @@ public class WeChatService {
     String sr = HttpRequest.sendPost(WechatConstant.OPENID_URL, params);
     // 解析相应内容（转换成json对象）
     JSONObject json = new JSONObject(sr);
+    System.out.println(json);
     String openid = (String) json.get("openid");
     return openid;
   }

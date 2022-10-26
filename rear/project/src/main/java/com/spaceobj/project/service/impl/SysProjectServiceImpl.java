@@ -6,7 +6,6 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.redis.common.service.RedisService;
@@ -28,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -79,6 +79,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 校验当前提交次数是否超过最大次数
       String loginId = (String) StpUtil.getLoginId();
       SysUser sysUser = getSysUser(loginId);
+      if (StringUtils.isEmpty(sysUser.getEmail())
+          || StringUtils.isEmpty(sysUser.getPhoneNumber())) {
+        return SaResult.error("请设置邮箱和手机号");
+      }
       if (sysUser.getReleaseProjectTimes() <= 0) {
         return SaResult.error("今天发布次数已上线");
       }
@@ -146,7 +150,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   @Override
   public SaResult auditProject(SysProject project) {
     try {
-      int result = this.updateResult(project);
+      QueryWrapper<SysProject> wrapper = new QueryWrapper<>();
+      wrapper.eq("p_id", project.getPId());
+      SysProject sysProject = sysProjectMapper.selectOne(wrapper);
+      sysProject.setStatus(project.getStatus());
+      sysProject.setMessage(project.getMessage());
+      int result = this.updateResult(sysProject);
       if (result == 0) {
         LOG.error("项目审核失败{}" + project.getUuid());
         return SaResult.error("审核失败");
@@ -189,13 +198,13 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         }
         list =
             list.subList(
-                (projectSearchBo.getPageNumber() - 1) * projectSearchBo.getPageSize(), pageSiz);
+                (projectSearchBo.getCurrentPage() - 1) * projectSearchBo.getPageSize(), pageSiz);
       } else if (projectSearchBo.getProjectType() == 1) {
         // 查询自己发布的信息,根据项目创建人id查询项目
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("p_release_user_id", projectSearchBo.getUserId());
         Page<SysProject> page =
-            new Page<>(projectSearchBo.getPageNumber(), projectSearchBo.getPageSize());
+            new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
         IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
         list = iPage.getRecords();
       } else {
@@ -222,7 +231,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
       if (hasKey) {
-        list = redisService.getHashMapValues(RedisKey.PROJECT_LIST,SysProject.class);
+        list = redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class);
         return list;
       } else {
         boolean flag = redissonService.tryLock(RedisKey.REDIS_PROJECT_SYNC_STATUS);
@@ -232,7 +241,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           // 再次判断是否存在该key
           hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
           if (hasKey) {
-            list = redisService.getHashMapValues(RedisKey.PROJECT_LIST,SysProject.class);
+            list = redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class);
             return list;
           }
           QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
@@ -255,13 +264,13 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       List<SysProject> list;
       QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-      if (StringUtils.isNotBlank(projectSearchBo.getContent())) {
+      if (!StringUtils.isEmpty(projectSearchBo.getContent())) {
         queryWrapper.like("p_content", projectSearchBo.getContent());
+        queryWrapper.or().like("p_id", projectSearchBo.getContent());
       }
-      if (ObjectUtils.isNotEmpty(projectSearchBo.getPId())) {
-        queryWrapper.like("p_id", projectSearchBo.getPId());
-      }
-      Page<SysProject> page = new Page<>();
+      System.out.println(projectSearchBo.getCurrentPage() + ";;;" + projectSearchBo.getPageSize());
+      Page<SysProject> page =
+          new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
       IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
       list = iPage.getRecords();
       return SaResult.ok().setData(list);
@@ -304,10 +313,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 查询最新的数据，然后再次修改
       QueryWrapper<SysProject> wrapper = new QueryWrapper<>();
       wrapper.eq("p_id", sysProject.getPId());
-      sysProject = sysProjectMapper.selectById(wrapper);
-      queryWrapper.eq("version", sysProject.getVersion());
+      System.out.println("sysproject: " + sysProject);
+      sysProject = sysProjectMapper.selectOne(wrapper);
+      wrapper.eq("version", sysProject.getVersion());
       sysProject.setVersion(sysProject.getVersion() + 1);
-      result = sysProjectMapper.update(sysProject, queryWrapper);
+      result = sysProjectMapper.update(sysProject, wrapper);
     }
     // 修改成功，刷新缓存信息
     redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), sysProject);
@@ -338,7 +348,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
       // 判断该用户的助力列表中是否有该项目数据，当前方案要保证项目助力hash表的RedisKey永不失效
       // 判断是否已经获取到该项目联系人
-      List<ProjectHelp> projectHelpList = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST,ProjectHelp.class);
+      List<ProjectHelp> projectHelpList =
+          redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
       List<ProjectHelp> resultProjectHelp = null;
       if (ObjectUtils.isEmpty(projectHelpList)) {
         return SaResult.error("服务器繁忙");
@@ -416,7 +427,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SysProject getProjectByUUID(String uuid) {
     boolean hExists = redisService.HExists(RedisKey.PROJECT_LIST, uuid);
     if (hExists) {
-      return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid,SysProject.class);
+      return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid, SysProject.class);
     } else {
       // 设置分布式锁
       boolean flag = redissonService.tryLock(uuid);
@@ -427,7 +438,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         //  成功获取到锁，那么再次判断是否已经存在这个hashKey，存在就返回，不存在就查询MySQL，然后同步到缓存中
         hExists = redisService.HExists(RedisKey.PROJECT_LIST, uuid);
         if (hExists) {
-          return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid,SysProject.class);
+          return redisService.getCacheMapValue(RedisKey.PROJECT_LIST, uuid, SysProject.class);
         }
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("p_uuid", uuid);

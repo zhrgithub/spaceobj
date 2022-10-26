@@ -71,15 +71,12 @@ public class SysProjectDto implements Serializable {
   private String nickname;
 
   /** 审核内容 */
-  @NotBlank(
-      message = "审核内容是必填项",
-      groups = {AuditProjectGroup.class})
   private String message;
 
   private Date createTime;
 
   @NotBlank(
       message = "版本号不为空",
-      groups = {UpdateProjectGroup.class, AuditProjectGroup.class})
+      groups = {UpdateProjectGroup.class})
   private long version;
 }

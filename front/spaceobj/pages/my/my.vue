@@ -3,7 +3,7 @@
 		<!-- 未登录 -->
 		<view class="login-background-style" @click="toLogin" v-if="!loginStatus">
 			<view class="photo-image-background-style">
-				<image src="/static/my.png" mode=""></image>
+				<image src="/static/photo.png" mode=""></image>
 			</view>
 			<view class="userinfo-background-style">
 				<view class="btn-login-background">
@@ -144,9 +144,10 @@
 				userType: "user",
 				invitationValue: 0,
 				realNameStatus: 0,
+				userId: null,
 			}
 		},
-		created() {
+		created() { 
 			that = this;
 		},
 		onShareAppMessage(res) {
@@ -154,12 +155,19 @@
 				console.log(res.target)
 			}
 			return {
-				title: '欢迎体验spaceObj',
-				path: 'pages/project/project'
+				title: '欢迎体验spaceObj，项目外包入口',
+				path: 'pages/project/project?inviteUserId=' + that.userId
 			}
+			
+			// return {
+			// 	title: '欢迎体验spaceObj',
+			// 	path: 'pages/login/login?inviteUserId=' + "123"
+			// }
 		},
 		onShow() {
 			this.timer = setTimeout(() => {
+				// that.getUserInfo();
+				
 				// 第一步：加载用户基本信息
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
 				if (that.loginStatus) {
@@ -167,6 +175,7 @@
 				}
 				// 第二步加载其它信息
 				var otherInfo = uni.getStorageSync(sk.otherInfo);
+
 				that.downloadUrl = otherInfo.downloadUrl;
 				that.wechat = otherInfo.wechat;
 			}, 200)
@@ -181,11 +190,10 @@
 						that.userType = userInfo.userType;
 						that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 						that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
-						that.invitationValue = strigUtils.isBlank(userInfo.invitationValue) ? that
-							.invitationValue :
-							userInfo.invitationValue;
+						that.invitationValue = userInfo.invitationValue;
 						that.realNameStatus = userInfo.realNameStatus;
 						that.ipTerritory = userInfo.ipTerritory;
+						that.userId = userInfo.userId;
 					}
 
 				});
@@ -409,7 +417,8 @@
 		background-color: #49A8E7;
 		color: #fff;
 	}
-	.invite-btn-stye button{
+
+	.invite-btn-stye button {
 		width: 100%;
 		height: 100%;
 		display: flex;

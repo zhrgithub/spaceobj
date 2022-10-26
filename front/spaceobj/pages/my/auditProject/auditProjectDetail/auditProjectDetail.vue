@@ -4,28 +4,28 @@
 		<view class="base-info-panel-style">
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
-					项目编号：001
+					项目编号：{{projectObj.pid}}
 				</view>
 				<view class="project-status-style">
-					状态：待接包
+					状态：{{getAuditStatus(projectObj.status)}}
 				</view>
 			</view>
 
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
-					预算：2000元
+					预算：{{projectObj.price}}元
 				</view>
 				<view class="project-status-style">
-					浏览：2000次
+					浏览：{{projectObj.pageViews}}次
 				</view>
 			</view>
 
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
-					IP属地：广东深圳
+					IP属地：{{projectObj.ipAddress}}
 				</view>
 				<view class="project-numer-style">
-					用户名：张三
+					用户：{{projectObj.nickname}}
 				</view>
 			</view>
 		</view>
@@ -34,8 +34,7 @@
 
 		<view class="description-requirement-style">
 			<view class="description-content-style">
-				<text
-					style="font-weight: bold;font-size: 14px;color: #7CBF80;">项目描述：</text>测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试
+				<text style="font-weight: bold;font-size: 14px;color: #7CBF80;">项目描述：</text>{{projectObj.content}}
 			</view>
 
 		</view>
@@ -47,7 +46,10 @@
 </template>
 
 <script>
-	var that;
+	let that;
+	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
+	import su from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
@@ -59,12 +61,35 @@
 				//用户已经获取过
 				getStatus: false,
 				dataMessge: "www.spaceobj.com",
+				projectObj: null,
 			}
 		},
 		created() {
 			that = this;
 		},
+		onLoad(e) {
+			var obj = JSON.parse(e.obj);
+			that.projectObj = obj;
+			console.log(that.projectObj);
+		},
 		methods: {
+			getAuditStatus(e) {
+				if (e == 0) {
+					return "待审核";
+				}
+				if (e == 1) {
+					return "审核通过";
+				}
+				if (e == 2) {
+					return "审核不通过";
+				}
+				if (e == 3) {
+					return "已删除";
+				}
+				if (e == 4) {
+					return "已成交";
+				}
+			},
 			refuse() {
 				uni.showModal({
 					title: '拒绝通过',
@@ -72,21 +97,38 @@
 					success(e) {
 						if (e.confirm) {
 							console.log(e.content)
+							uni.showLoading();
+							that.updateProject(2,e.content);
 						}
 					}
 				})
 			},
 			approve() {
-				uni.showModal({
-					content:'确认通过？',
+				uni.showModal({  
+					content: '确认通过',
 					success(e) {
-						if(e.confirm){
-							uni.showToast({
-								icon:"none",
-								title:'提交成功'
-							})
+						if (e.confirm) {
+							uni.showLoading();
+							that.updateProject(1,"");
 						}
 					}
+				})
+			},
+			updateProject(status, message) {
+				var obj = that.projectObj;
+				api.post({
+					pId: obj.pid,
+					status: status,
+					message: message,
+				}, api.auditProject).then(res => {
+					uni.hideLoading();
+					uni.showToast({
+						title: res.msg,
+						icon: 'none',
+						success() {
+							uni.navigateBack();
+						}
+					})
 				})
 			}
 

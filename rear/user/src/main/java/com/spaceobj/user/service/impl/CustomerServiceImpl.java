@@ -4,9 +4,9 @@ import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.RegexPool;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.redis.common.service.RedisService;
 import com.redis.common.service.RedissonService;
@@ -32,8 +32,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -86,6 +88,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   public SaResult loginByWeChat(LoginByWechatBo loginByWeChatBo) {
     try {
       String openId = weChatService.getOpenIdByCode(loginByWeChatBo.getCode());
+      if (StringUtils.isEmpty(openId)) {
+        return SaResult.error("微信登录失败");
+      }
       QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
       queryWrapper.eq("open_id", openId);
       SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
@@ -95,7 +100,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 如果邀请用户id不为空，那么给邀请人的邀请值加一
         if (!StringUtils.isEmpty(loginByWeChatBo.getInviteUserId())) {
           SysUser inviteUser = new SysUser();
-          inviteUser.setUserId(sysUser.getInviteUserId());
+          inviteUser.setUserId(loginByWeChatBo.getInviteUserId());
           kafkaSender.send(inviteUser, KafKaTopics.INVITER_VALUE_ADD);
         }
         // 创建新用户
@@ -107,13 +112,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         StpUtil.login(openId);
         sysUser.setToken(StpUtil.getTokenValue());
         int result = sysUserMapper.insert(sysUser);
-
         if (result == 0) {
           return SaResult.error("服务器繁忙");
         }
-        // 同步到缓存
-        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
-
         return SaResult.ok().setData(sysUser);
       } else {
         // 账号登录
@@ -124,14 +125,14 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         sysUser.setIpTerritory(loginByWeChatBo.getIpTerritory());
         sysUser.setIp(loginByWeChatBo.getIp());
-
+        StpUtil.login(sysUser.getAccount());
+        sysUser.setToken(StpUtil.getTokenValue());
         // 更新用户登录位置
         int updateResult = this.updateUser(sysUser);
         if (updateResult == 0) {
           LOG.error("用户登录信息更新失败");
           return SaResult.error("服务器繁忙");
         }
-        StpUtil.login(sysUser.getAccount());
         return SaResult.ok("登录成功").setData(sysUser);
       }
     } catch (Exception e) {
@@ -141,14 +142,42 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult getOpenId(String code) {
+  public SaResult bindWechat(SysUserBo sysUserBo) {
     try {
-      String openid = weChatService.getOpenIdByCode(code);
-      return SaResult.ok().setData(openid);
+      // 获取openID
+      String openid = weChatService.getOpenIdByCode(sysUserBo.getCode());
+      if (StringUtils.isEmpty(openid)) {
+        return SaResult.error("openID获取失败");
+      }
+      // 校验有没有已经绑定账户
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+      queryWrapper.eq("open_id", openid);
+      List<SysUser> sysUserList = sysUserMapper.selectList(queryWrapper);
+      if (sysUserList.size() > 0) {
+        return SaResult.error("微信已被占用");
+      }
+
+      SysUser sysUser = this.getUserInfoByUserId(sysUserBo.getUserId());
+      if (!ObjectUtil.isNotNull(sysUser)) {
+        return SaResult.error("用户不存在");
+      }
+      sysUser.setOpenId(openid);
+      int result = this.updateUser(sysUser);
+      if (result == 0) {
+        return SaResult.error("绑定失败，服务器异常");
+      }
+      return SaResult.ok("绑定成功").setData(sysUser);
     } catch (Exception e) {
       e.printStackTrace();
       return SaResult.error("服务器繁忙");
     }
+  }
+
+  @Override
+  public SysUser getUserInfoByUserId(String userId) {
+    QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("user_id", userId);
+    return sysUserMapper.selectOne(queryWrapper);
   }
 
   @Override
@@ -220,9 +249,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           inviteUser.setUserId(sysUser.getInviteUserId());
           kafkaSender.send(inviteUser, KafKaTopics.INVITER_VALUE_ADD);
         }
-        // 同步到缓存
-        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
-
         return SaResult.ok("注册成功").setData(sysUser);
       }
       return SaResult.error("请求参数错误");
@@ -357,13 +383,11 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (ObjectUtils.isEmpty(sysUser)) {
         return SaResult.error("用户不存在");
       }
+      System.out.println("sysUser:" + sysUser);
       if (sysUser.getDisableStatus() == 1) {
         return SaResult.error("账号已被封禁，禁止操作！");
       }
-      // 如果是在修改中，那么禁止重复提交
-      if (sysUser.getUserInfoEditStatus() == 1) {
-        return SaResult.error("修改中，请稍后！");
-      }
+
       // 如果剩余修改的次数小于等于0，那么回复修改失败
       if (sysUser.getEditInfoTimes() <= 0) {
         return SaResult.error("本月剩余修改次数为0，下个月再修改吧！");
@@ -373,10 +397,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 校验电话号码
       if (!Pattern.matches(RegexPool.MOBILE, user.getPhoneNumber())) {
         return SaResult.error("电话格式错误");
-      }
-      // 校验昵称
-      if (!Pattern.matches(RegexPool.GENERAL_WITH_CHINESE, user.getNickName())) {
-        return SaResult.error("昵称格式错误");
       }
 
       // 校验邮箱
@@ -388,13 +408,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       sysUser.setNickName(user.getNickName());
       sysUser.setPhotoUrl(user.getPhotoUrl());
       sysUser.setIpTerritory(user.getIpTerritory());
+      sysUser.setEmail(user.getEmail());
 
-      // 设置为正在修改状态
-      sysUser.setUserInfoEditStatus(1);
-      // 修改缓存中的用户信息为修改中
-      redisService.setCacheObject(account, sysUser);
-      // 设置为修改完毕状态，等MySQL持久化完毕自动变成修改完毕的状态
-      sysUser.setUserInfoEditStatus(0);
       // 设置修改次数减一
       sysUser.setEditInfoTimes(sysUser.getEditInfoTimes() - 1);
       // 修改用户信息，删除缓存
@@ -467,7 +482,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
         // 获取md5格式的密码
         String md5Password = PassWordUtils.passwordToMD5(privateKey, sysUserBo.getNewPassword());
-        if (StringUtils.isBlank(md5Password)) {
+        if (StringUtils.isEmpty(md5Password)) {
           return SaResult.error("数据格式错误");
         }
         // 缓存更新
@@ -499,7 +514,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("身份证号不正确");
       }
       // 从缓存中获取当前登录用户的基本信息
-      SysUser sysUser = redisService.getCacheObject(user.getLoginId(), SysUser.class);
+      SysUser sysUser =
+          redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, user.getLoginId(), SysUser.class);
 
       // 校验当前账户是否是在审核中
       if (sysUser.getRealNameStatus() == USER_AUDIT_STATUS) {
@@ -517,9 +533,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         LOG.error("实名认证提交失败{}" + sysUser.getUserId());
         return SaResult.error("服务器繁忙");
       }
-      return SaResult.ok("提交成功,大概需要一到两个工作日审核").setData(sysUser);
+      return SaResult.ok("提交成功,待审核").setData(sysUser);
     } catch (RuntimeException e) {
       LOG.error("realName failed", e.getMessage());
+      e.printStackTrace();
       return SaResult.error("提交失败，服务器异常");
     }
   }
@@ -537,6 +554,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         FileUtil.uploadFileTolocalServer(
             Resource.SYS_USER_ID_CARD_DIRECTORY, fileName, multipartFile);
 
-    return SaResult.ok().setData(url);
+    return SaResult.ok("上传成功").setData(url);
   }
 }

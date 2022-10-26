@@ -25,7 +25,7 @@ public class ProjectSearchBo {
   private String userId;
 
   /** 当前页 */
-  private Integer pageNumber;
+  private Integer currentPage;
 
   /** 每页条数 */
   private Integer pageSize;

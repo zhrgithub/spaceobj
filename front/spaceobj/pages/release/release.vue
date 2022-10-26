@@ -43,7 +43,7 @@
 				<view class="status-style">
 					审核中
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>
@@ -61,7 +61,7 @@
 				<view class="status-pass-style">
 					发布成功
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>
@@ -79,7 +79,7 @@
 				<view class="status-refuse-style">
 					发布失败
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>
@@ -97,7 +97,7 @@
 				<view class="status-cancel-style">
 					已取消
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>
@@ -115,7 +115,7 @@
 				<view class="status-cancel-style">
 					已取消
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>

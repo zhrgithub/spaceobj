@@ -41,7 +41,7 @@
 				<view class="status-style">
 					助力成功
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>
@@ -63,7 +63,7 @@
 				<view class="status-pass-style">
 					还差3人
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>
@@ -83,7 +83,7 @@
 				<view class="status-refuse-style">
 					甲方已成交
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>

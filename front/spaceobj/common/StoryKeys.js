@@ -1,7 +1,7 @@
 //主要用来存储缓存中的key
 export default {
 	// 退出登录需要清除缓存的列表
-	clearKey:["userInfo","token"],
+	clearKey: ["userInfo", "token"],
 	//用户基础信息
 	userInfo: "userInfo",
 	//token
@@ -15,7 +15,10 @@ export default {
 	//倒计时计数
 	countNumber: "countNumber",
 	// 其它信息
-	otherInfo :"otherInfo"
+	otherInfo: "otherInfo",
+	// 邀请人id
+	inviteUserId: "inviteUserId",
+
 
 
 

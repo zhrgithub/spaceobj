@@ -98,4 +98,7 @@ public class SysUserBo implements Serializable {
 
   /** 审核内容 */
   private String auditMsg;
+
+  /** 微信验证code */
+  private String code;
 }

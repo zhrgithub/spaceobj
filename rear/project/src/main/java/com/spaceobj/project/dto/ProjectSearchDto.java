@@ -29,7 +29,7 @@ public class ProjectSearchDto {
   @NotNull(
       message = "当前页是必填项",
       groups = {ProjectSearchCustomer.class, ProjectSearchAdmin.class})
-  private Integer pageNumber;
+  private Integer currentPage;
 
   /** 每页条数 */
   @NotNull(

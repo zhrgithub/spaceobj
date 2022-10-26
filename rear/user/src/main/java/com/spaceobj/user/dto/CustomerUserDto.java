@@ -19,6 +19,12 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class CustomerUserDto {
 
+  /** 用户登录凭证。开发者需要在开发者服务器后台，使用 code 换取 openid 和 session_key 等信息 */
+  @NotBlank(
+      message = "code不为空",
+      groups = {LoginByWechat.class, BindWechat.class})
+  private String code;
+
   /** 操作类型 */
   @NotNull(
       message = "操作类型不为空",
@@ -50,9 +56,6 @@ public class CustomerUserDto {
   private String phoneNumber;
 
   /** ip */
-  @NotBlank(
-      message = "登录账户ip不为空",
-      groups = {})
   private String ip;
 
   /** requestIP */
@@ -64,18 +67,21 @@ public class CustomerUserDto {
   /** ip属地 */
   @NotBlank(
       message = "ip属地不为空",
-      groups = {LoginOrRegisterGroup.class, UpdateUserInfoGroup.class})
+      groups = {LoginOrRegisterGroup.class, UpdateUserInfoGroup.class, LoginByWechat.class})
   private String ipTerritory;
 
   /** 设备类型 */
   @NotBlank(
       message = "登录设备类型不为空",
-      groups = {LoginOrRegisterGroup.class})
+      groups = {LoginOrRegisterGroup.class, LoginByWechat.class})
   private String deviceType;
 
   /** 邀请人账号id */
   private String inviteUserId;
 
+  @NotBlank(
+      message = "用户id不为空",
+      groups = {BindWechat.class})
   private String userId;
 
   @NotNull(
@@ -100,14 +106,8 @@ public class CustomerUserDto {
       groups = {RealNameGroup.class})
   private String username;
 
-  @NotBlank(
-      message = "昵称不为空",
-      groups = {UpdateUserInfoGroup.class})
   private String nickName;
 
-  @NotBlank(
-      message = "头像URL不为空",
-      groups = {UpdateUserInfoGroup.class})
   private String photoUrl;
 
   private Integer onlineStatus;

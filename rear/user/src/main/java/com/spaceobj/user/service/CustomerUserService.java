@@ -106,10 +106,18 @@ public interface CustomerUserService extends IService<SysUser> {
   SaResult loginByWeChat(LoginByWechatBo loginByWeChatBo);
 
   /**
-   * 获取openID
+   * 用户绑定微信，开启第三方登录
    *
-   * @param code 用户登录凭证。开发者需要在开发者服务器后台，使用 code 换取 openid 和 session_key 等信息
+   * @param sysUserBo
    * @return
    */
-  SaResult getOpenId(String code);
+  SaResult bindWechat(SysUserBo sysUserBo);
+
+  /**
+   * 根据用户id获取用户基本信息
+   *
+   * @param userId
+   * @return
+   */
+  SysUser getUserInfoByUserId(String userId);
 }

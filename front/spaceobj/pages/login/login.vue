@@ -50,6 +50,18 @@
 			<view class="choose-other-style" @click="toLogin" v-if="operationType==1||operationType==2">登录
 			</view>
 		</view>
+		<!-- 第三方授权登录 -->
+		<view class="third-party-login-background">
+			<view class="line-divider"></view>
+			<view class="prompt-information-style">
+				第三方登录
+			</view>
+			<view class="line-divider"></view>
+		</view>
+		<view class="third-party-login-background">
+			<image src="/static/wechat.png" @click="loginByWechat" />
+		</view>
+
 
 	</view>
 </template>
@@ -60,6 +72,7 @@
 	import sk from '@/common/StoryKeys.js'
 	import rgx from '@/utils/Regexs.js'
 	import JSEncrypt from '@/utils/jsencrypt.min.js'
+	import su from '@/utils/StringUtils.js'
 	var that;
 	export default {
 		data() {
@@ -76,16 +89,48 @@
 		created() {
 			that = this;
 		},
+		onLoad(e) {
+			console.log("页面接收参数：", e);
+			// uni.showModal({
+			// 	content:e.inviteUserId
+			// })
+			// 设置邀请人id
+			uni.setStorage({
+				key: "inviteUserId",
+				data: e.inviteUserId
+			})
+		},
 
 		onShow() {
-
 			this.timer = setTimeout(() => {
 				that.number = "获取验证码"
-
 			}, 200)
 
 		},
 		methods: {
+			loginByWechat() {
+				uni.showLoading({
+					title: '登录中...'
+				})
+				uni.login({
+					provider: 'weixin',
+					success: function(res) {
+						console.log("用户授权信息：", res);
+						api.post({
+							code: res.code,
+							ipTerritory: uni.getStorageSync(sk.ipTerritory),
+							deviceType: uni.getStorageSync(sk.deviceModel).model,
+							inviteUserId: uni.getStorageSync(sk.inviteUserId)
+						}, api.loginByWechat).then(res2 => {
+							console.log("登录信息：", res2)
+							that.loginResetUserinFo(res2.data, res2.data.token, res2.msg);
+							uni.hideLoading();
+						})
+
+
+					}
+				});
+			},
 			doRegister() {
 				var email = that.email;
 				var password = that.password;
@@ -121,37 +166,52 @@
 					password: en.encrypt(that.password),
 					ipTerritory: uni.getStorageSync(sk.ipTerritory),
 					deviceType: uni.getStorageSync(sk.deviceModel).model,
-					phoneNumber: phoneNumber
+					phoneNumber: phoneNumber,
+					inviteUserId: uni.getStorageSync(sk.inviteUserId)
 				}, api.login).then(res => {
 					uni.hideLoading();
-					uni.showToast({
-						icon: 'none',
-						title: res.msg,
-					})
 					if (res.code == 200) {
-						// 缓存用户基本信息
-						uni.setStorage({
-							key: sk.userInfo,
-							data: res.data
-						})
-						//缓存token
-						uni.setStorage({
-							key: sk.token,
-							data: res.data.token
-						})
-						// 缓存登录状态
-						uni.setStorage({
-							key: sk.loginStatus,
-							data: true
-						})
-						uni.showToast({
-							icon: 'none',
-							title: res.msg,
-							success() {
-								uni.switchTab({
-									url: '/pages/project/project'
-								})
-							}
+						that.loginResetUserinFo(res.data, res.data.token, res.msg);
+					}
+				})
+			},
+			loginResetUserinFo(userInfo, token, msg) {
+				console.log(userInfo, token, msg);
+				// 缓存用户基本信息
+				uni.setStorage({
+					key: sk.userInfo,
+					data: userInfo
+				})
+				
+				if(su.isBlank(userInfo.email)||su.isBlank(userInfo.phoneNumber)){
+					uni.navigateTo({
+						url:'/pages/addEmailPhoneNumber/addEmailPhoneNumber'
+					})
+					return;
+				}
+				
+				//缓存token
+				uni.setStorage({
+					key: sk.token,
+					data: token
+				})
+				
+				
+				
+				// 缓存登录状态
+				uni.setStorage({
+					key: sk.loginStatus,
+					data: true
+				})
+				
+				
+				
+				uni.showToast({
+					icon: 'none',
+					title: msg,
+					success() {
+						uni.switchTab({
+							url: '/pages/project/project'
 						})
 					}
 				})
@@ -346,6 +406,36 @@
 </script>
 
 <style scoped>
+	.third-party-login-background {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 40rpx;
+	}
+
+	.third-party-login-background image {
+		width: 60rpx;
+		height: 60rpx;
+		margin-top: 20rpx;
+		margin-left: 12rpx;
+		margin-right: 12rpx;
+	}
+
+	.line-divider {
+		width: 20%;
+		border-top: solid #e1e1e1 1rpx;
+		content: '';
+	}
+
+	.prompt-information-style {
+		width: 25%;
+		font-size: 11px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
 	.container {
 		width: 100%;
 		height: 100%;

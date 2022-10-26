@@ -1,6 +1,6 @@
 <template>
 	<view class="release-background-style">
-		<view v-if="contenList.length!=0" class="content-null-style">
+		<view v-if="list.length!=0" class="content-null-style">
 			<view class="image-title-background-style">
 				<view class="not-release-image-style-background">
 					<image src="/static/notAnything.png" mode=""></image>
@@ -60,7 +60,7 @@
 				<view class="status-style">
 					待接包
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>
@@ -126,7 +126,7 @@
 				<view class="status-style">
 					待接包
 				</view>
-				<view class="detail-style">
+				<view class="status-style">
 					查看详情
 				</view>
 			</view>
@@ -142,7 +142,7 @@
 	export default {
 		data() {
 			return {
-				contenList: [],
+				list: [],
 				type: 'center',
 				seachText: "",
 				// 默认激活样式是第一个

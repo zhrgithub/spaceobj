@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.UUID;
@@ -115,7 +117,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_HELP_LIST);
       if (hasKey) {
-        list = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST);
+        list = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
         return list;
       } else {
         boolean flag = redissonService.tryLock(RedisKey.PROJECT_HELP_LIST_SYNC_STATUS);
@@ -125,7 +127,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
           // 再次查询缓存，存在则返回
           hasKey = redisService.hasKey(RedisKey.PROJECT_HELP_LIST);
           if (hasKey) {
-            list = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST);
+            list = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
             return list;
           }
           QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
@@ -150,8 +152,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = getSysUser(loginId);
+      if(StringUtils.isEmpty(sysUser.getEmail())||StringUtils.isEmpty(sysUser.getPhoneNumber())){
+        return SaResult.error("请到个人中心设置邮箱和联系电话");
+      }
       if (!Pattern.matches(RegexPool.EMAIL, sysUser.getEmail())) {
-        return SaResult.error("请设置您的邮箱");
+        return SaResult.error("请到个人中心设置邮箱和联系电话");
       }
 
       // 如果用户的创建剩余次数小于10次，提醒明天再来
@@ -196,10 +201,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
               .build();
       // 创建项目助力信息，并同步到缓存
       int insertResult = projectHelpMapper.insert(projectHelp);
-      if(insertResult==0){
+      if (insertResult == 0) {
         return SaResult.error("创建失败");
-      }else {
-        redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST,projectHelp.getHpId(),projectHelp);
+      } else {
+        redisService.setCacheMapValue(
+            RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
       }
       // 消息队列通知用户服务对该用户的创建次数减一
       sysUser.setCreateProjectHelpTimes(sysUser.getCreateProjectHelpTimes() - 1);
@@ -309,7 +315,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
   public ProjectHelp getProjectHelpByHpId(String hpId) {
     boolean hasKey = redisService.HExists(RedisKey.PROJECT_HELP_LIST, hpId);
     if (hasKey) {
-      return redisService.getCacheMapValue(RedisKey.PROJECT_HELP_LIST, hpId);
+      return redisService.getCacheMapValue(RedisKey.PROJECT_HELP_LIST, hpId, ProjectHelp.class);
     } else {
       //  获取同步锁
       boolean flag = redissonService.tryLock(hpId);
@@ -319,7 +325,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
         // 获取成功，再次判断是否存在key
         hasKey = redisService.HExists(RedisKey.PROJECT_HELP_LIST, hpId);
         if (hasKey) {
-          return redisService.getCacheMapValue(RedisKey.PROJECT_HELP_LIST, hpId);
+          return redisService.getCacheMapValue(RedisKey.PROJECT_HELP_LIST, hpId, ProjectHelp.class);
         }
         QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
         queryWrapper.eq("hp_id", hpId);

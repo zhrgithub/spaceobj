@@ -52,6 +52,23 @@
 				{{ipTerritory}}
 			</view>
 		</view>
+		
+		<view class="edit-background-style" >
+			<view class="change-tips">
+				<image src="/static/wechat.png" mode=""></image>
+			</view>
+			<view class="change-input-style" v-if="openId.length>0">
+				已绑定
+			</view>
+			<view class="change-input-style" v-if="openId.length==0" @click="bindWechat">
+				<view class="tips-info-style">
+					绑定微信
+				</view>
+				<view class="arrow-image-background">
+					<image src="/static/toPersonCerter.png" mode=""></image>
+				</view>
+			</view>
+		</view>
 
 
 
@@ -87,11 +104,23 @@
 				phoneNumber: "未设置",
 				account: "未知",
 				realNameStatus: '未实名',
-				email: '未设置'
+				email: '未设置',
+				openId :'',
+				userId:'',
 			}
 		},
 		onShow() {
 			this.timer = setTimeout(() => {
+				that.loadUserInfo();
+
+			}, 200)
+
+		},
+		created() {
+			that = this;
+		},
+		methods: {
+			loadUserInfo(){
 				var userInfo = uni.getStorageSync(sk.userInfo);
 				console.log(userInfo)
 				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
@@ -102,14 +131,45 @@
 				that.email = strigUtils.isBlank(userInfo.email) ? that.email : userInfo.email;
 				that.realNameStatus = userInfo.realNameStatus != 1 ? '未实名' : '已实名';
 				that.ipTerritory = userInfo.ipTerritory;
-
-			}, 200)
-
-		},
-		created() {
-			that = this;
-		},
-		methods: {
+				that.openId = userInfo.openId;
+				that.userId = userInfo.userId;
+				console.log(that.openId);
+			},
+			bindWechat(){
+				uni.login({
+					provider: 'weixin',
+					success: function(res) {
+						
+						console.log("用户授权信息：", res);
+						api.post({
+							code: res.code,
+							userId:that.userId
+						}, api.bindWechat).then(res2 => {
+							console.log("绑定结果：", res2);
+							// 修改缓存信息
+							if(res2.code==200){
+								uni.setStorage({
+									key: sk.userInfo,
+									data: res2.data,
+									success() {
+										// 重新加载用户信息
+										that.loadUserInfo();
+									}
+								})
+							}
+							
+							uni.showToast({
+								icon: 'none',
+								title: res2.msg
+							})
+							
+							uni.hideLoading();
+						})
+				
+				
+					}
+				});
+			},
 			setEmail(e) {
 				that.email = e.detail.value;
 			},
@@ -201,7 +261,8 @@
 					nickName: that.nickName,
 					photoUrl: that.photoUrl,
 					ipTerritory: that.ipTerritory,
-					email: that.email
+					email: that.email,
+					openId:that.openId
 				}, api.customerUpdateUserInfo).then(res => {
 					console.log("res:", res)
 					uni.hideLoading();
@@ -284,6 +345,10 @@
 		justify-content: left;
 		align-items: center;
 	}
+	.change-tips image{
+		width: 60rpx;
+		height: 60rpx;
+	}
 
 	.change-input-style {
 		width: 70%;
@@ -293,6 +358,25 @@
 		align-items: center;
 		margin-left: 2%;
 	}
+	.tips-info-style{
+		width: 90%;
+		display: flex;
+		justify-content: left;
+		align-items: center;
+	}
+	.arrow-image-background{
+		width: 10%;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.arrow-image-background image{
+		width: 80rpx;
+		height: 60rpx;
+	}
+	
+	
 
 	.change-input-style input {
 		width: 100%;

@@ -41,12 +41,14 @@ public class KafkaCustomerUserConsumer {
               try {
                 SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
                 if (ObjectUtils.isNotEmpty(sysUser)) {
+                  sysUser = customerUserService.getUserInfoByUserId(sysUser.getUserId());
+                  sysUser.setInvitationValue(sysUser.getInvitationValue() + 1);
                   int result = customerUserService.updateUser(sysUser);
                   if (result == 0) {
                     LOG.error("user info update to mysql failed! sysUser {}" + sysUser.getUserId());
+                    return;
                   }
                 }
-
               } catch (Exception e) {
                 LOG.error("update info update to mysql failed!failed info {}", e.getMessage());
               }

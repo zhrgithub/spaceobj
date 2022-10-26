@@ -2,6 +2,7 @@ package com.spaceobj.user.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.spaceobj.user.bo.LoginByWechatBo;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.dto.CustomerUserDto;
@@ -10,6 +11,7 @@ import com.spaceobj.user.service.CustomerUserService;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import com.spaceobj.user.utils.HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,15 +32,32 @@ public class CustomerUserController {
   @PostMapping("loginOrRegister")
   public SaResult loginOrRegister(
       @Validated(LoginOrRegisterGroup.class) CustomerUserDto customerUserDto) {
-
     customerUserDto.setIp(HttpUtils.getIPAddress());
-
     LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
-
     // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginOrRegisterBo);
-
     return customerUserService.loginOrRegister(loginOrRegisterBo);
+  }
+
+  @PostMapping("loginByWechat")
+  public SaResult loginByWechat(@Validated(LoginByWechat.class) CustomerUserDto customerUserDto) {
+    customerUserDto.setIp(HttpUtils.getIPAddress());
+    LoginByWechatBo loginByWechat = LoginByWechatBo.builder().build();
+    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginByWechat);
+    return customerUserService.loginByWeChat(loginByWechat);
+  }
+
+  @PostMapping("bindWechat")
+  public SaResult bindWechat(@Validated(BindWechat.class) CustomerUserDto customerUserDto) {
+    String code = customerUserDto.getCode();
+    if (StringUtils.isEmpty(code)) {
+      return SaResult.error("授权失败");
+    }
+    SysUserBo sysUserBo = new SysUserBo();
+    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+    System.out.println(customerUserDto);
+    System.out.println(sysUserBo);
+    return customerUserService.bindWechat(sysUserBo);
   }
 
   @PostMapping("loginOut")

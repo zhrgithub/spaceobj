@@ -39,6 +39,13 @@ function post(data, url) {
 			})
 			return resultData;
 		}
+		if (resultData.code == 201) {
+			uni.navigateTo({
+				url: '/pages/login/login'
+			})
+			return resultData;
+		}
+
 		return resultData;
 
 	}).catch(err => {
@@ -85,6 +92,12 @@ export default {
 	passwordEncryption: USER + "customerUser/aesEncrypt",
 	// 登录、注册接口
 	login: USER + "customerUser/loginOrRegister",
+	// 微信授权登录
+	loginByWechat: USER + "customerUser/loginByWechat",
+
+	// 绑定微信
+	bindWechat: USER + "customerUser/bindWechat",
+
 	//重置密码
 	resetPassword: USER + "customerUser/resetPassword",
 	//普通用户文件上传
@@ -127,8 +140,8 @@ export default {
 	projectAddProject: PROJECT + "project/addProject",
 	//更新项目列表
 	projectUpdateProject: PROJECT + "project/updateProject",
-	//审核项目列表
-	projectAuditProject: PROJECT + "project/auditProject",
+	//审核项目
+	auditProject: PROJECT + "project/auditProject",
 	//修改项目浏览次数
 	projectAddPageViews: PROJECT + "project/addPageViews",
 	//获取项目联系方式

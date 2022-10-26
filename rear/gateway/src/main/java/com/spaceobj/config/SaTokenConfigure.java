@@ -1,5 +1,6 @@
 package com.spaceobj.config;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
@@ -30,6 +31,8 @@ public class SaTokenConfigure {
         .addExclude("/spaceobj-other/other/getOther")
         .addExclude("/spaceobj-user/customerUser/sendMailCode")
         .addExclude("/spaceobj-user/customerUser/resetPassword")
+        .addExclude("/spaceobj-user/customerUser/loginByWechat")
+        .addExclude("/spaceobj-user/customerUser/bindWechat")
         .addExclude("/spaceobj-user/sysUser/getUserInfoByAccount")
         .addExclude("/spaceobj-user/sysUser/getUserPermissionByAccount")
         .addExclude("/spaceobj-user/sysUser/getSysUserByUserId")
@@ -66,7 +69,9 @@ public class SaTokenConfigure {
         // 异常处理方法：每次setAuth函数出现异常时进入
         .setError(
             e -> {
-              e.printStackTrace();
+              if (e instanceof NotLoginException) {
+                return SaResult.error(e.getMessage()).setCode(201);
+              }
               return SaResult.error(e.getMessage());
             });
   }

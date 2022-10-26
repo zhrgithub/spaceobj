@@ -94,7 +94,7 @@
             "style" :                                                                                    
             {
                 "navigationBarTitleText": "项目管理",
-                "enablePullDownRefresh": false
+                "enablePullDownRefresh": true
             }
             
         }
@@ -175,6 +175,15 @@
             "style" :                                                                                    
             {
                 "navigationBarTitleText": "日志详情",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/addEmailPhoneNumber/addEmailPhoneNumber",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
                 "enablePullDownRefresh": false
             }
             

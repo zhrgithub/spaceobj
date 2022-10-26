@@ -15,6 +15,10 @@ publicKey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzZ5SLWaHmBmGQ2C7HsLPJywhHPTJW
 
 # 应用名称
 spring:
+  servlet:
+    multipart:
+      max-file-size: 200KB
+      max-request-size: 200KB
   application:
     name: spaceobjGateway
   redis:
