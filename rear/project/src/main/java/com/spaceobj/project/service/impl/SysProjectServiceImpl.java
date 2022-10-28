@@ -300,6 +300,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 只有发布成功，并且同步到缓存中的项目才可以追加浏览次数，从Redis中先判断是否存在，不存在的话，停止执行
       // 根据id查询项目
       SysProject sysProject = this.getProjectByUUID(uuid);
+      sysProject.setPageViews(sysProject.getPageViews()+1);
       int result = this.updateResult(sysProject);
       if (result == 0) {
         LOG.error("项目UUID：{}" + sysProject.getUuid() + "浏览次数添加失败");
@@ -327,9 +328,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       QueryWrapper<SysProject> wrapper = new QueryWrapper<>();
       wrapper.eq("p_id", sysProject.getPId());
       System.out.println("sysproject: " + sysProject);
-      sysProject = sysProjectMapper.selectOne(wrapper);
-      wrapper.eq("version", sysProject.getVersion());
-      sysProject.setVersion(sysProject.getVersion() + 1);
+      SysProject sysProjectTwo = sysProjectMapper.selectOne(wrapper);
+      wrapper.eq("version", sysProjectTwo.getVersion());
+      sysProject.setVersion(sysProjectTwo.getVersion() + 1);
       result = sysProjectMapper.update(sysProject, wrapper);
     }
     // 修改成功，刷新缓存信息

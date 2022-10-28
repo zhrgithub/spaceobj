@@ -1,5 +1,6 @@
 package com.spaceobj.project.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.spaceobj.project.group.AddPageViewsGroup;
 import com.spaceobj.project.group.AuditProjectGroup;
 import com.spaceobj.project.group.InsertProjectGroup;
@@ -9,14 +10,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * @author zhr
@@ -74,9 +74,8 @@ public class SysProjectDto implements Serializable {
   /** 审核内容 */
   private String message;
 
-
-  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  private Date createTime;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime createTime;
 
   @NotNull(
       message = "版本号不为空",

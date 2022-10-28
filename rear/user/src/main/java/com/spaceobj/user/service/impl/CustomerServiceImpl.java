@@ -76,9 +76,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 查询最新的版本号然后更新,防止之前修改后的数据被覆盖
         QueryWrapper<SysUser> queryWrapper2 = new QueryWrapper<>();
         queryWrapper2.eq("account", sysUser.getAccount());
-        sysUser = sysUserMapper.selectOne(queryWrapper2);
-        queryWrapper2.eq("version", sysUser.getVersion());
-        sysUser.setVersion(sysUser.getVersion() + 1);
+        SysUser sysUserTwo = sysUserMapper.selectOne(queryWrapper2);
+        queryWrapper2.eq("version", sysUserTwo.getVersion());
+        sysUser.setVersion(sysUserTwo.getVersion() + 1);
         result = sysUserMapper.update(sysUser, queryWrapper2);
       }
       redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);

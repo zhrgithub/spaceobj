@@ -1,6 +1,5 @@
 package com.spaceobj.projectHelp.component;
 
-import cn.dev33.satoken.util.SaResult;
 import com.spaceobj.projectHelp.fallback.UserClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;

@@ -148,17 +148,17 @@
 			uni.showLoading({
 				title: '加载中...',
 			})
-			that.list = [];
-			that.currentPage = 1;
-			that.pageSize = 10;
-			that.loadList();
+			
 		},
 		onShow() {
 			that.shopList = uni.getStorageSync(sk.shopList);
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
 		
-			
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
 
 		},
 		// 触底加载更多

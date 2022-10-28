@@ -104,7 +104,8 @@
 		methods: {
 			doUpdateProjectHelp() {
 				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
-				if (!su.isUndefined(projectHelpShare)) {
+				console.log(projectHelpShare)
+				if (!su.isUndefined(projectHelpShare)&&!su.isBlank(projectHelpShare)) {
 					api.post({
 						hpId: projectHelpShare.hpId,
 					}, api.updateProjectHelpNumber).then(res => {
@@ -192,8 +193,7 @@
 				})
 			},
 			loginResetUserinFo(userInfo, token, msg) {
-				// 登录成功，帮助好友更新项目助力信息
-				that.doUpdateProjectHelp();
+				
 				console.log(userInfo, token, msg);
 				// 缓存用户基本信息
 				uni.setStorage({
@@ -220,6 +220,8 @@
 					data: true
 				})
 				
+				// 登录成功，帮助好友更新项目助力信息
+				that.doUpdateProjectHelp();
 				uni.showToast({
 					icon: 'none',
 					title: msg,

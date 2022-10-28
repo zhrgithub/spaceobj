@@ -287,10 +287,13 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       // 查询最新的数据，然后再次修改
       QueryWrapper<ProjectHelp> wrapper = new QueryWrapper<>();
       wrapper.eq("hp_id", projectHelp.getHpId());
-      projectHelp = projectHelpMapper.selectById(wrapper);
-      queryWrapper.eq("version", projectHelp.getVersion());
-      projectHelp.setVersion(projectHelp.getVersion() + 1);
-      result = this.projectHelpMapper.update(projectHelp, queryWrapper);
+      ProjectHelp projectHelpTwo = projectHelpMapper.selectById(wrapper);
+      wrapper.eq("version", projectHelpTwo.getVersion());
+      projectHelp.setVersion(projectHelpTwo.getVersion() + 1);
+      result = this.projectHelpMapper.update(projectHelp, wrapper);
+    }
+    if(result==0){
+      return result;
     }
     // 修改成功，刷新缓存信息
     redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
@@ -357,7 +360,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
       return SaResult.ok().setData(list);
     } catch (Exception e) {
-      logger.error("get project help list failed", e.getMessage());
+      e.printStackTrace();
       return SaResult.error("服务器异常");
     }
   }

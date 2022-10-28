@@ -56,7 +56,7 @@
 		data() {
 			return {
 				projectObj: "",
-				
+
 				projectHelp: "",
 				// 自定义弹出框居中显示
 				type: 'center',
@@ -75,18 +75,27 @@
 			var obj = JSON.parse(e.obj);
 			console.log(obj)
 			that.projectObj = obj;
+			that.addViews(obj);
 		},
 		onShareAppMessage(res) {
 			if (res.from === 'button') { // 来自页面内分享按钮
 				console.log(res.target)
 			}
-			console.log("分享前的内容",that.projectHelp);
+			console.log("分享前的内容", that.projectHelp);
 			return {
 				title: '欢迎体验spaceObj，项目外包入口',
 				path: 'pages/index/index?projectHelpShare=' + JSON.stringify(that.projectHelp)
 			}
 		},
 		methods: {
+
+			addViews(obj) {
+				api.post({
+					uuid: obj.uuid,
+				}, api.projectAddPageViews).then(res => {
+
+				});
+			},
 			dialogClose() {
 				console.log('点击关闭')
 			},

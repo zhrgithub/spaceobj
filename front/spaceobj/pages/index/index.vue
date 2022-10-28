@@ -71,7 +71,7 @@
 		methods: {
 			doUpdateProjectHelp() {
 				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
-				if (!su.isUndefined(projectHelpShare)) {
+				if (!su.isUndefined(projectHelpShare)&&!su.isBlank(projectHelpShare)) {
 					api.post({
 						hpId: projectHelpShare.hpId,
 					}, api.updateProjectHelpNumber).then(res => {
