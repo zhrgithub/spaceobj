@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Type;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -216,7 +215,7 @@ public class RsaUtils {
    * @param <T> 泛型对象
    * @return 异常则返回null，源对象为空也返回null
    */
-  public static <T> T decryptByPrivateKey(Object source, Object target, String privateKey) {
+  public static <T> T decryptByPrivateKey(Object source, Class<T> target, String privateKey) {
     if (ObjectUtils.isEmpty(source)) {
       return null;
     }
@@ -224,7 +223,7 @@ public class RsaUtils {
       byte[] objByte = (byte[]) source;
       byte[] decodeBytes = decryptByPrivateKey(objByte, privateKey);
       String res = new String(decodeBytes, "UTF-8");
-      return new Gson().fromJson(res, (Type) target.getClass());
+      return new Gson().fromJson(res, target);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

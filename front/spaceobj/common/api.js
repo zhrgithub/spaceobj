@@ -57,6 +57,46 @@ function post(data, url) {
 	})
 }
 
+function postJson(data, url) {
+	var token = uni.getStorageSync(sk.token);
+	console.log("token:", token);
+	return uni.request({
+		url: url,
+		data: data,
+		header: {
+			'content-type': 'application/json',
+			'satoken': token != '' ? token : ''
+		},
+		method: "POST",
+	}).then((res) => {
+		console.log("结果数据：", res)
+		var resultData = res[1].data;
+		console.log(resultData)
+		if (resultData.code == 500) {
+			uni.showToast({
+				icon: "error",
+				title: resultData.msg
+			})
+			return resultData;
+		}
+		if (resultData.code == 201) {
+			uni.navigateTo({
+				url: '/pages/login/login'
+			})
+			return resultData;
+		}
+
+		return resultData;
+
+	}).catch(err => {
+		uni.showToast({
+			title: err,
+			icon: 'error'
+		})
+		return
+	})
+}
+
 function get(data, url) {
 	return uni.request({
 		url: url,
@@ -82,6 +122,7 @@ function get(data, url) {
 
 export default {
 	post,
+	postJson,
 	get,
 	publicKey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzZ5SLWaHmBmGQ2C7HsLPJywhHPTJWaSVDdXd2+wC5NzxBkko8atchNhMB2JKQcMnHy25nmleCK9nNBNJmLTBHE+s49klQSL0j8YrOCt+AF6TKP4ej88HTCVZsi755MM2DUQgC5J5gUpsSM3uKRgqTy7R696Rr4l9VZK4ADqvpgQIDAQAB",
 

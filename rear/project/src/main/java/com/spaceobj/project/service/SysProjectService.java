@@ -99,5 +99,5 @@ public interface SysProjectService extends IService<SysProject> {
    * @param uuid
    * @return
    */
-  SaResult getEncryptProjectByUUID(String uuid);
+  byte[] getEncryptProjectByUUID(String uuid);
 }

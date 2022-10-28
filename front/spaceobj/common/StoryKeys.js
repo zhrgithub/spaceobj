@@ -19,6 +19,11 @@ export default {
 	// 邀请人id
 	inviteUserId: "inviteUserId",
 
+	// 广告列表
+	shopList: "shopList",
+	
+	// 分享项目助力对象
+	projectHelpShare:"projectHelpShare"
 
 
 

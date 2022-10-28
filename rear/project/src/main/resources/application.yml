@@ -7,15 +7,12 @@ privateKey: "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBALNnlItZoeYGYZDYLse
 publicKey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzZ5SLWaHmBmGQ2C7HsLPJywhHPTJWaSVDdXd2+wC5NzxBkko8atchNhMB2JKQcMnHy25nmleCK9nNBNJmLTBHE+s49klQSL0j8YrOCt+AF6TKP4ej88HTCVZsi755MM2DUQgC5J5gUpsSM3uKRgqTy7R696Rr4l9VZK4ADqvpgQIDAQAB"
 
 
-# 设置feign远程调用超时时间
-ribbon:
-  ReadTimeout: 5000
-  ConnectTimeout: 5000
 
 # 应用名称
 spring:
   application:
     name: spaceobj-project
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     name: defaultDataSource
@@ -57,6 +54,10 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer #值的序列化类
 
   cloud:
+    # 该参数用来开启feign重试机制，它默认是关闭的
+    loadbalancer:
+      retry:
+        enabled: true
     # Nacos帮助文档: https://nacos.io/zh-cn/docs/concepts.html
     # Nacos认证信息
     nacos:
@@ -71,6 +72,7 @@ spring:
     multipart:
       max-file-size: 200KB
       max-request-size: 200KB
+
 
 
 # Sa-Token配置

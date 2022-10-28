@@ -31,7 +31,7 @@ public class BlackListFilter implements GlobalFilter, Ordered {
   @Autowired private RedisService redisService;
 
   /** 最大请求次数 */
-  private static final int MAX_REQUEST_TIME = 2;
+  private static final int MAX_REQUEST_TIME = 3;
 
   /** 恶意请求次数 */
   private static final int MALICIOUS_REQUESTS = 5;

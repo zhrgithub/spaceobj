@@ -32,4 +32,15 @@ public class ProjectHelpBo {
   /** 项目预算 */
   private BigDecimal pPrice;
 
+
+  /** 当前页 */
+  private Integer currentPage;
+
+  /** 每页条数 */
+  private Integer pageSize;
+
+
+  private Data createTime;
+
+  private Data updateTime;
 }

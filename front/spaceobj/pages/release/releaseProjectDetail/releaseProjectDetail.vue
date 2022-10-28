@@ -4,28 +4,28 @@
 		<view class="base-info-panel-style">
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
-					项目编号：001
+					项目编号：{{projectObj.pid}}
 				</view>
-				<view class="project-status-style">
-					状态：待接包
+				<view class="project-numer-style">
+					状态：{{getAuditStatus(projectObj.status)}}
 				</view>
 			</view>
 
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
-					预算：2000元
+					预算：{{projectObj.price}}元
 				</view>
-				<view class="project-status-style">
-					浏览：2000次
+				<view class="project-numer-style">
+					浏览：{{projectObj.pageViews}}次
 				</view>
 			</view>
 
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
-					IP属地：深圳
+					IP属地：{{projectObj.ipAddress}}
 				</view>
 				<view class="project-numer-style">
-					用户名：张三
+					用户：{{projectObj.nickname}}
 				</view>
 			</view>
 		</view>
@@ -34,10 +34,8 @@
 
 		<view class="description-requirement-style">
 			<view class="description-content-style">
-				<text
-					style="font-weight: bold;font-size: 14px;color: #7CBF80;">项目描述：</text>测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试吧吧v测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试
+				<text style="font-weight: bold;font-size: 14px;color: #7CBF80;">项目描述：</text>{{projectObj.content}}
 			</view>
-
 		</view>
 		<view class="btn-background-style">
 			<button style="width: 40%;" @click="cancelRelease">删除</button>
@@ -51,11 +49,11 @@
 			<view class="scroll-item-line-two-style"></view>
 			<view class="description-doller-style">
 				<view class="doller-num-style">
-					<input placeholder="请输入预算(单位:元)" type="number" maxlength="7">
+					<input placeholder="请输入预算(单位:元)" :value="projectObj.price" type="number" maxlength="15"
+						@input="setPrice">
 				</view>
 				<view class="description-style">
-					<textarea maxlength="1000" name="needDescription" id="" cols="30" rows="100"
-						placeholder="请输入您的需求信息"></textarea>
+					<textarea maxlength="1000" cols="30" rows="100" placeholder="请输入您的需求信息" :value="projectObj.content" @input="setContent" />
 				</view>
 				<view class="button-style">
 					<button @click="submit">取消</button>
@@ -69,7 +67,10 @@
 </template>
 
 <script>
-	var that;
+	let that;
+	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
+	import su from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
@@ -81,29 +82,58 @@
 				//用户已经获取过
 				getStatus: false,
 				type: 'center',
+
+				projectObj: ""
 			}
 		},
 		created() {
 			that = this;
 		},
-		onShow() {
-			uni.showModal({
-				title: "审核不通过",
-				content: "原因：审核失败，涉嫌推广，引流，涉嫌推广，引流涉嫌推广，引流涉嫌推广，引流涉嫌推广，引流涉嫌推广，引流",
-				showCancel: false,
-			})
+		onLoad(e) {
+			var obj = JSON.parse(e.obj);
+			console.log(obj)
+			that.projectObj = obj;
+			if (obj.status == 2) {
+				uni.showModal({
+					title: "审核不通过",
+					content: obj.message,
+					showCancel: false
+				})
+			}
 		},
 		methods: {
+			setPrice(e) {
+				that.projectObj.price = e.detail.value;
+				console.log(that.projectObj.price);
+			},
+			setContent(e) {
+				that.projectObj.content = e.detail.value;
+				console.log(that.projectObj.content);
+			},
+			getAuditStatus(e) {
+				if (e == 0) {
+					return "待审核";
+				}
+				if (e == 1) {
+					return "审核通过";
+				}
+				if (e == 2) {
+					return "审核不通过";
+				}
+				if (e == 3) {
+					return "已删除";
+				}
+				if (e == 4) {
+					return "已成交";
+				}
+			},
 			cancelRelease() {
 				uni.showModal({
 					content: "取消发布，其他人将无法联系您",
 					success(e) {
 						if (e.confirm) {
-							uni.showToast({
-								duration: 2000,
-								icon: "loading",
-								title: "取消中"
-							})
+							that.projectObj.status = 3;
+							that.updateProject();
 						}
 					}
 				})
@@ -113,12 +143,33 @@
 				// open 方法传入参数 等同在 uni-popup 组件上绑定 type属性
 				this.$refs.popup.open(type)
 			},
+
 			submit() {
 				this.$refs.popup.close();
-				uni.showToast({
-					title: "提交成功",
-					icon: 'none',
-					duration: 2000
+				uni.showModal({
+					title:"确认提交",
+					success(e) {
+						if(e.confirm){
+							that.updateProject();
+						}
+					}
+				})
+				
+			},
+
+			updateProject() {
+				var obj = that.projectObj;
+				api.postJson(obj, api.projectUpdateProject).then(res => {
+					uni.hideLoading();
+					uni.showToast({
+						title: res.msg,
+						icon: 'none',
+						success() {
+							if(res.code==200){
+								uni.navigateBack();
+							}
+						}
+					})
 				})
 			},
 		}
@@ -224,16 +275,10 @@
 
 	.project-numer-style {
 		width: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.project-status-style {
-		width: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		text-align: left;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.description-requirement-style {

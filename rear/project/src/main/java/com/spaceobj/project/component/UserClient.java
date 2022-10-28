@@ -1,21 +1,21 @@
 package com.spaceobj.project.component;
 
-import cn.dev33.satoken.util.SaResult;
+import com.spaceobj.project.fallback.UserClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author zhr_java@163.com
  * @date 2022/10/8 14:27
  */
-@FeignClient(value = "spaceobj-user")
 @Component
+@FeignClient(contextId = "spaceobj-user", name = "spaceobjGateway",fallback = UserClientFallback.class)
 public interface UserClient {
 
-  @PostMapping(value = "/sysUser/getUserInfoByAccount")
-  public SaResult getUserInfoByAccount(@PathVariable("account") String account);
+  @PostMapping(value = "/spaceobj-user/sysUser/getUserInfoByAccount")
+  public byte[] getUserInfoByAccount(@RequestParam("account") String account);
 
   /**
    * 根据用户id返回实体信息
@@ -23,6 +23,6 @@ public interface UserClient {
    * @param userId
    * @return
    */
-  @PostMapping(value = "/sysUser/getSysUserByUserId")
-  public SaResult getSysUserByUserId(String userId);
+  @PostMapping(value = "/spaceobj-user/sysUser/getSysUserByUserId")
+  public byte[] getSysUserByUserId(@RequestParam("userId") String userId);
 }

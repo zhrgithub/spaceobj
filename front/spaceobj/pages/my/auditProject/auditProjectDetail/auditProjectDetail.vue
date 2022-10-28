@@ -70,7 +70,6 @@
 		onLoad(e) {
 			var obj = JSON.parse(e.obj);
 			that.projectObj = obj;
-			console.log(that.projectObj);
 		},
 		methods: {
 			getAuditStatus(e) {
@@ -98,18 +97,18 @@
 						if (e.confirm) {
 							console.log(e.content)
 							uni.showLoading();
-							that.updateProject(2,e.content);
+							that.updateProject(2, e.content);
 						}
 					}
 				})
 			},
 			approve() {
-				uni.showModal({  
+				uni.showModal({
 					content: '确认通过',
 					success(e) {
 						if (e.confirm) {
 							uni.showLoading();
-							that.updateProject(1,"");
+							that.updateProject(1, "");
 						}
 					}
 				})

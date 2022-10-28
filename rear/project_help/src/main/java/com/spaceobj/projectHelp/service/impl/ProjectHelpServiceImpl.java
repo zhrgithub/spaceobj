@@ -54,6 +54,9 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
   @Value("${privateKey}")
   private String privateKey;
 
+  @Value("${publicKey}")
+  private String publicKey;
+
   @Resource private UserClient userClient;
 
   @Resource private ProjectClient projectClient;
@@ -68,7 +71,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
   public SysUser getSysUser(String account) {
     SysUser sysUser = null;
     try {
-      Object res = userClient.getUserInfoByAccount(account).getData();
+      Object res = userClient.getUserInfoByAccount(account);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
@@ -80,7 +83,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
   public SysUser getSysUserByUserId(String userId) {
     SysUser sysUser = null;
     try {
-      Object res = userClient.getSysUserByUserId(userId).getData();
+      Object res = userClient.getSysUserByUserId(userId);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
@@ -112,13 +115,13 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
    * @return
    */
   private List<ProjectHelp> getProjectHelpList() {
-    List<ProjectHelp> list = null;
+    List<ProjectHelp> resultList = null;
 
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_HELP_LIST);
       if (hasKey) {
-        list = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
-        return list;
+        resultList = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
+        return resultList;
       } else {
         boolean flag = redissonService.tryLock(RedisKey.PROJECT_HELP_LIST_SYNC_STATUS);
         if (!flag) {
@@ -127,17 +130,19 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
           // 再次查询缓存，存在则返回
           hasKey = redisService.hasKey(RedisKey.PROJECT_HELP_LIST);
           if (hasKey) {
-            list = redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
-            return list;
+            resultList =
+                redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
+            return resultList;
           }
-          QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper();
+          QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper<>();
           queryWrapper.orderByDesc("create_time");
-          list = projectHelpMapper.selectList(queryWrapper);
+          resultList = projectHelpMapper.selectList(queryWrapper);
+          System.out.println("list:" + resultList);
           // 缓存同步
-          for (ProjectHelp p : list) {
+          for (ProjectHelp p : resultList) {
             redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, p.getHpId(), p);
           }
-          return list;
+          return resultList;
         }
       }
     } catch (Exception e) {
@@ -152,7 +157,8 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     try {
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = getSysUser(loginId);
-      if(StringUtils.isEmpty(sysUser.getEmail())||StringUtils.isEmpty(sysUser.getPhoneNumber())){
+      if (StringUtils.isEmpty(sysUser.getEmail())
+          || StringUtils.isEmpty(sysUser.getPhoneNumber())) {
         return SaResult.error("请到个人中心设置邮箱和联系电话");
       }
       if (!Pattern.matches(RegexPool.EMAIL, sysUser.getEmail())) {
@@ -198,6 +204,9 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
               .pPrice(sysProject.getPrice())
               .pReleaseUserId(sysProject.getReleaseUserId())
               .hpStatus(0)
+              .hpCreateNickName(sysUser.getNickName())
+              .ipTerritory(sysUser.getIpTerritory())
+              .projectCreateNickName(sysProject.getNickname())
               .build();
       // 创建项目助力信息，并同步到缓存
       int insertResult = projectHelpMapper.insert(projectHelp);
@@ -289,14 +298,42 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
   }
 
   @Override
+  public byte[] getProjectHelpLink(String pUUID, String userId) {
+    byte[] rsaEncryptProjectHelp = null;
+    try {
+      List<ProjectHelp> projectHelpList = getProjectHelpList();
+      List<ProjectHelp> resultProjectHelp = null;
+      if (projectHelpList.size() == 0) {
+        //  数据不存在
+        return null;
+      }
+      resultProjectHelp =
+          projectHelpList.stream()
+              .filter(hp -> userId.equals(hp.getCreateUserId()) && pUUID.equals(hp.getPUUID()))
+              .collect(Collectors.toList());
+      if (resultProjectHelp.size() == 0) {
+        //  数据不存在
+        return null;
+      }
+      ProjectHelp projectHelp = resultProjectHelp.get(0);
+      rsaEncryptProjectHelp = RsaUtils.encryptByPublicKey(projectHelp, publicKey);
+    } catch (Exception e) {
+      e.printStackTrace();
+      //  程序异常
+      return null;
+    }
+    return rsaEncryptProjectHelp;
+  }
+
+  @Override
   public SaResult projectHelpList(ProjectHelpBo projectHelpBo) {
-    List<ProjectHelp> resultList = null;
+    List<ProjectHelp> list = null;
     try {
       String loginId = StpUtil.getLoginId().toString();
       SysUser sysUser = getSysUser(loginId);
-      List<ProjectHelp> list = getProjectHelpList();
-      resultList =
-          list.stream()
+      List<ProjectHelp> listCaChe = getProjectHelpList();
+      list =
+          listCaChe.stream()
               .filter(
                   hp -> {
                     return hp.getCreateUserId().equals(sysUser.getUserId());
@@ -304,7 +341,21 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
               .collect(Collectors.toList());
       // 实现分页查询
       // TODO
-      return SaResult.ok().setData(resultList);
+      int endNumber = 0;
+      int startNumber = 0;
+      startNumber = (projectHelpBo.getCurrentPage() - 1) * projectHelpBo.getPageSize();
+      if (list.size() > projectHelpBo.getPageSize() * projectHelpBo.getCurrentPage()) {
+        endNumber = projectHelpBo.getPageSize();
+      } else {
+        endNumber = list.size();
+      }
+      if (startNumber > list.size()) {
+        list.clear();
+        return SaResult.ok().setData(list);
+      }
+      list = list.subList(startNumber, endNumber);
+
+      return SaResult.ok().setData(list);
     } catch (Exception e) {
       logger.error("get project help list failed", e.getMessage());
       return SaResult.error("服务器异常");

@@ -23,7 +23,7 @@
 				<view class="date-style">
 					{{timeStampTurnTime(item.createTime)}}
 				</view>
-				<view class="status-style" >
+				<view class="status-style">
 					{{getAuditStatus(item.status)}}
 				</view>
 				<view class="status-style" @click="toAuditProjectDetail(item)">
@@ -31,8 +31,7 @@
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>{{item.content}}
+				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>{{item.content}}
 			</view>
 		</view>
 
@@ -65,9 +64,9 @@
 			uni.showLoading({
 				title: '加载中...',
 			})
-			that.list=[];
-			that.currentPage=1;
-			that.pageSize=10;
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
 			that.loadList();
 		},
 		// 触底加载更多
@@ -79,6 +78,7 @@
 			that.currentPage = 1;
 			that.list = [];
 			that.loadList();
+			uni.stopPullDownRefresh();
 		},
 		methods: {
 			timeStampTurnTime(str) {
@@ -88,21 +88,21 @@
 				var D = date.getDate() + ' ';
 				return Y + M + D;
 			},
-			
-			getAuditStatus(e){
-				if(e==0){
+
+			getAuditStatus(e) {
+				if (e == 0) {
 					return "待审核";
 				}
-				if(e==1){
+				if (e == 1) {
 					return "审核通过";
 				}
-				if(e==2){
+				if (e == 2) {
 					return "审核不通过";
 				}
-				if(e==3){
+				if (e == 3) {
 					return "已删除";
 				}
-				if(e==4){
+				if (e == 4) {
 					return "已成交";
 				}
 			},
@@ -119,19 +119,18 @@
 							that.currentPage++;
 							console.log(that.currentPage)
 						}
-					} else {
-						uni.showToast({
-							icon: 'none',
-							title: res.msg
-						})
 					}
 					uni.hideLoading();
+					uni.showToast({
+						icon: 'none',
+						title: res.msg
+					})
 				});
 			},
 			toAuditProjectDetail(e) {
 				console.log(e);
 				uni.navigateTo({
-					url: '/pages/my/auditProject/auditProjectDetail/auditProjectDetail?obj='+JSON.stringify(e)
+					url: '/pages/my/auditProject/auditProjectDetail/auditProjectDetail?obj=' + JSON.stringify(e)
 				})
 			},
 			doSearch(e) {
@@ -163,7 +162,9 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-
+		position: fixed;
+		z-index: 999;
+		background-color: #fff;
 	}
 
 	.search-logo-background-style {
@@ -209,7 +210,7 @@
 
 
 	.top-space-line-style {
-		height: 130rpx;
+		height: 150rpx;
 		width: 100%;
 	}
 

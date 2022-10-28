@@ -91,23 +91,35 @@
 		},
 		onLoad(e) {
 			console.log("页面接收参数：", e);
-			// uni.showModal({
-			// 	content:e.inviteUserId
-			// })
-			// 设置邀请人id
-			uni.setStorage({
-				key: "inviteUserId",
-				data: e.inviteUserId
-			})
+			
 		},
 
 		onShow() {
 			this.timer = setTimeout(() => {
 				that.number = "获取验证码"
+				
 			}, 200)
 
 		},
 		methods: {
+			doUpdateProjectHelp() {
+				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
+				if (!su.isUndefined(projectHelpShare)) {
+					api.post({
+						hpId: projectHelpShare.hpId,
+					}, api.updateProjectHelpNumber).then(res => {
+						if (res.code == 200) {
+							uni.removeStorage({
+								key: sk.projectHelpShare
+							})
+						}
+						uni.showToast({
+							title: res.msg,
+							icon: "none"
+						})
+					});
+				}
+			},
 			loginByWechat() {
 				uni.showLoading({
 					title: '登录中...'
@@ -123,7 +135,11 @@
 							inviteUserId: uni.getStorageSync(sk.inviteUserId)
 						}, api.loginByWechat).then(res2 => {
 							console.log("登录信息：", res2)
-							that.loginResetUserinFo(res2.data, res2.data.token, res2.msg);
+							if(res2.code==200){
+								
+								that.loginResetUserinFo(res2.data, res2.data.token, res2.msg);
+								
+							}
 							uni.hideLoading();
 						})
 
@@ -176,6 +192,8 @@
 				})
 			},
 			loginResetUserinFo(userInfo, token, msg) {
+				// 登录成功，帮助好友更新项目助力信息
+				that.doUpdateProjectHelp();
 				console.log(userInfo, token, msg);
 				// 缓存用户基本信息
 				uni.setStorage({
@@ -196,15 +214,11 @@
 					data: token
 				})
 				
-				
-				
 				// 缓存登录状态
 				uni.setStorage({
 					key: sk.loginStatus,
 					data: true
 				})
-				
-				
 				
 				uni.showToast({
 					icon: 'none',
@@ -303,7 +317,6 @@
 				}
 				var deviceModel = uni.getStorageSync(sk.deviceModel);
 				console.log(that.phoneNumber, that.email, that.password, deviceModel);
-
 				var en = new JSEncrypt();
 				en.setPublicKey(api.publicKey);
 				var encryPassword = en.encrypt(that.password);
@@ -316,33 +329,8 @@
 					deviceType: deviceModel.model
 				}, api.login).then(res => {
 					if (res.code == 200) {
-						// 缓存用户基本信息
-						uni.setStorage({
-							key: sk.userInfo,
-							data: res.data
-						})
-						//缓存token
-						uni.setStorage({
-							key: sk.token,
-							data: res.data.token
-						})
-						// 缓存登录状态
-						uni.setStorage({
-							key: sk.loginStatus,
-							data: true
-						})
-						uni.showToast({
-							icon: 'none',
-							title: res.msg,
-							success() {
-								uni.switchTab({
-									url: '/pages/project/project'
-								})
-							}
-						})
+						that.loginResetUserinFo(res.data, res.data.token, res.msg);
 					}
-
-
 				})
 			},
 

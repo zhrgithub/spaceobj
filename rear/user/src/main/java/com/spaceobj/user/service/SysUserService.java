@@ -62,5 +62,5 @@ public interface SysUserService extends IService<SysUser> {
    * @param userId
    * @return
    */
-  SaResult getSysUserByUserId(String userId);
+  byte[] getSysUserByUserId(String userId);
 }

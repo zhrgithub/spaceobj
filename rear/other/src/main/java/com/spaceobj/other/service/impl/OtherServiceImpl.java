@@ -8,6 +8,7 @@ import com.spaceobj.other.pojo.Other;
 import com.spaceobj.other.service.OtherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author zhr_java@163.com
@@ -48,11 +49,14 @@ public class OtherServiceImpl implements OtherService {
             if (StringUtils.isBlank(other.getDownloadUrl())) {
                 other.setDownloadUrl(RestData.DOWNLOAD_URL);
             }
-            return SaResult.ok().setData(other);
+            if(ObjectUtils.isEmpty(other.getOnline())){
+                other.setOnline(RestData.ONLINE);
+            }
+            return SaResult.ok("提交成功").setData(other);
         }
         other = Other.builder().downloadUrl(RestData.DOWNLOAD_URL).wechat(RestData.WECHAT).build();
 
-        return SaResult.ok().setData(other);
+        return SaResult.ok("提交成功").setData(other);
     }
 
 }

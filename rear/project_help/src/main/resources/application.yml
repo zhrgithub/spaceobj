@@ -57,6 +57,10 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer #值的序列化类
 
   cloud:
+    # 该参数用来开启feign重试机制，它默认是关闭的
+    loadbalancer:
+      retry:
+        enabled: true
     # Nacos帮助文档: https://nacos.io/zh-cn/docs/concepts.html
     # Nacos认证信息
     nacos:

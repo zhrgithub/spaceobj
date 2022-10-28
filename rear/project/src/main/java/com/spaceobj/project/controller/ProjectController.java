@@ -12,10 +12,7 @@ import com.spaceobj.project.service.SysProjectService;
 import com.spaceobj.project.util.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author zhr_java@163.com
@@ -37,7 +34,8 @@ public class ProjectController {
   }
 
   @PostMapping(value = "updateProject")
-  public SaResult updateProject(@Validated(UpdateProjectGroup.class) SysProjectDto sysProjectDto) {
+  public SaResult updateProject(
+      @Validated(UpdateProjectGroup.class) @RequestBody SysProjectDto sysProjectDto) {
 
     SysProject sysProject = SysProject.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
@@ -69,23 +67,25 @@ public class ProjectController {
   }
 
   @PostMapping("getPhoneNumberByProjectId")
-  public SaResult getPhoneNumberByProjectId(@Validated GetPhoneNumberDto getPhoneNumberDto) {
+  public SaResult getPhoneNumberByProjectId(
+      @Validated(GetPhoneNumberGroup.class) GetPhoneNumberDto getPhoneNumberDto) {
     GetPhoneNumberBo getPhoneNumberBo = GetPhoneNumberBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(getPhoneNumberDto, getPhoneNumberBo);
     return sysProjectService.getPhoneNumberByProjectId(getPhoneNumberBo);
   }
 
   @PostMapping(value = "queryListAdmin")
-  public SaResult queryListAdmin(@Validated(ProjectSearchAdmin.class) ProjectSearchDto projectSearchDto) {
+  public SaResult queryListAdmin(
+      @Validated(ProjectSearchAdmin.class) ProjectSearchDto projectSearchDto) {
 
     ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
     return sysProjectService.queryListAdmin(projectSearchBo);
   }
 
-
   @PostMapping(value = "getEncryptProjectByUUID")
-  public SaResult getEncryptProjectByUUID(String uuid){
+  public byte[] getEncryptProjectByUUID(String uuid) {
+    System.out.println("uuid:"+uuid);
     return sysProjectService.getEncryptProjectByUUID(uuid);
   }
 }

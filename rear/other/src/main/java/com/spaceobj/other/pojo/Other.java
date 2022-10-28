@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -28,5 +29,11 @@ public class Other implements Serializable {
      */
     @NotBlank(message = "下载链接不为空")
     private String downloadUrl;
+
+    /**
+     * 上线开关
+     */
+    @NotNull(message = "上线开关不为空")
+    private Integer online;
 
 }

@@ -1,17 +1,17 @@
 <template>
 	<view class="release-background-style">
-		<view v-if="contenList.length!=0" class="content-null-style">
+		<view v-if="list.length==0" class="content-null-style">
 			<view class="image-title-background-style">
 				<view class="not-release-image-style-background">
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					您还没有发布项目信息~
+					未找到需求信息~
 				</view>
 			</view>
 		</view>
 
-		<view class="click-release-style" @click="showMoreUser('bottom')">发需求</view>
+		<view class="click-release-style" @click="releaseProject('bottom')">发需求</view>
 
 		<uni-popup ref="popup" background-color="#fff">
 			<view class="need-description-budget-style">
@@ -20,14 +20,14 @@
 			<view class="scroll-item-line-two-style"></view>
 			<view class="description-doller-style">
 				<view class="doller-num-style">
-					<input placeholder="请输入预算(单位:元)" type="number" maxlength="7">
+					<input placeholder="请输入预算(单位:元)" type="number" maxlength="15" :value="price" @input="setPrice">
 				</view>
 				<view class="description-style">
-					<textarea maxlength="1000" name="needDescription" id="" cols="30" rows="100"
-						placeholder="请输入您的需求信息"></textarea>
+					<textarea maxlength="1000" cols="30" rows="100" placeholder="请输入您的需求信息" :value="content"
+						@input="setContent"></textarea>
 				</view>
 				<view class="button-style">
-					<button @click="submit">取消</button>
+					<button @click="cancelSubmit">取消</button>
 					<view class="button-space"></view>
 					<button @click="submit">确认发布</button>
 				</view>
@@ -35,95 +35,34 @@
 		</uni-popup>
 
 		<!-- 发布的列表 -->
-		<view class="project-list-style" @click="toProjecDetail">
+		<view class="project-list-style" @click="toProjecDetail(item)" v-for="(item,idx) in list" :key="idx"
+			v-if="item.status!=3">
 			<view class="date-status-style">
 				<view class="date-style">
-					2022-06-18
+					{{timeStampTurnTime(item.createTime)}}
 				</view>
-				<view class="status-style">
+				<view class="status-style" v-if="item.status==0">
 					审核中
 				</view>
-				<view class="status-style">
-					查看详情
-				</view>
-			</view>
-			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
-			</view>
-		</view>
-
-		<view class="project-list-style" @click="toProjecDetail">
-			<view class="date-status-style">
-				<view class="date-style">
-					2022-06-17
-				</view>
-				<view class="status-pass-style">
+				<view class="status-pass-style" v-if="item.status==1">
 					发布成功
 				</view>
-				<view class="status-style">
-					查看详情
-				</view>
-			</view>
-			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
-			</view>
-		</view>
-
-		<view class="project-list-style" @click="toProjecDetail">
-			<view class="date-status-style">
-				<view class="date-style">
-					2022-06-16
-				</view>
-				<view class="status-refuse-style">
+				<view class="status-refuse-style" v-if="item.status==2">
 					发布失败
 				</view>
+				<view class="status-cancel-style" v-if="item.status==4">
+					已成交
+				</view>
 				<view class="status-style">
 					查看详情
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
+				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>{{item.content}}
 			</view>
 		</view>
 
-		<view class="project-list-style" @click="toProjecDetail">
-			<view class="date-status-style">
-				<view class="date-style">
-					2022-06-16
-				</view>
-				<view class="status-cancel-style">
-					已取消
-				</view>
-				<view class="status-style">
-					查看详情
-				</view>
-			</view>
-			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
-			</view>
-		</view>
 
-		<view class="project-list-style" @click="toProjecDetail">
-			<view class="date-status-style">
-				<view class="date-style">
-					2022-06-16
-				</view>
-				<view class="status-cancel-style">
-					已取消
-				</view>
-				<view class="status-style">
-					查看详情
-				</view>
-			</view>
-			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手此电脑萨克才能上看大手此电脑萨克才能上看大手
-			</view>
-		</view>
 		<view class="space-line-style">
 
 		</view>
@@ -133,30 +72,183 @@
 </template>
 
 <script>
+	let that;
+	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
+	import su from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
-				contenList: [],
 				type: 'center',
+				seachText: '',
+				list: [],
+				projecObj: null,
+				currentPage: 1,
+				pageSize: 10,
+				price: "",
+				content: "",
+				userInfo: ""
 			}
 		},
+		created() {
+			that = this;
+		},
+		onLoad() {
+			uni.showLoading({
+				title: '加载中...',
+			})
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
+		},
+		onShow() {
+			var userInfo = uni.getStorageSync(sk.userInfo);
+			that.userInfo = userInfo;
+			
+			
+		},
+		// 触底加载更多
+		onReachBottom() {
+			uni.showLoading({
+				title:"加载中..."
+			})
+			that.loadList();
+		},
+		// 下拉刷新
+		onPullDownRefresh() {
+			uni.showLoading({
+				title:"加载中..."
+			})
+			that.currentPage = 1;
+			that.list = [];
+			that.loadList();
+			uni.stopPullDownRefresh();
+		},
 		methods: {
-			showMoreUser(type) {
+			setPrice(e) {
+				that.price = e.detail.value;
+				console.log(that.price);
+			},
+			setContent(e) {
+				that.content = e.detail.value;
+				console.log(that.content);
+			},
+
+			timeStampTurnTime(str) {
+				var date = new Date(str); // 参数需要毫秒数，所以这里将秒数乘于 1000
+				var Y = date.getFullYear() + '-';
+				var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+				var D = date.getDate() + ' ';
+				return Y + M + D;
+			},
+
+			getAuditStatus(e) {
+				if (e == 0) {
+					return "待审核";
+				}
+				if (e == 1) {
+					return "审核通过";
+				}
+				if (e == 2) {
+					return "审核不通过";
+				}
+				if (e == 3) {
+					return "已删除";
+				}
+				if (e == 4) {
+					return "已成交";
+				}
+			},
+
+			loadList() {
+				
+				api.post({
+					projectType: 1,
+					currentPage: that.currentPage,
+					pageSize: that.pageSize
+				}, api.projectFindList).then(res => {
+					if (res.code == 200) {
+						if (res.data.length > 0) {
+							that.list = that.list.concat(res.data);
+							that.currentPage++;
+							console.log(that.currentPage)
+						}
+					} else {
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
+					}
+					uni.hideLoading();
+				});
+			},
+			releaseProject(type) {
+				console.log(type)
 				this.type = type;
 				// open 方法传入参数 等同在 uni-popup 组件上绑定 type属性
-				this.$refs.popup.open(type)
+				this.$refs.popup.open(type);
 			},
 			submit() {
-				this.$refs.popup.close();
-				uni.showToast({
-					title: "提交成功",
-					icon: 'none',
-					duration: 2000
-				})
+				if (su.isBlank(that.price)) {
+					uni.showToast({
+						icon: 'none',
+						title: '预算不为空',
+					})
+					return;
+				}
+				if (that.price < 50) {
+					uni.showToast({
+						icon: 'none',
+						title: '预算低于50元',
+					})
+					return;
+				}
+
+				if (su.isBlank(that.content)) {
+					uni.showToast({
+						icon: 'none',
+						title: '需求内容不为空',
+					})
+					return;
+				}
+
+				uni.showLoading({
+					title:"加载中..."
+				});
+				api.post({
+					content: that.content,
+					price: that.price,
+					ipAddress: uni.getStorageSync(sk.ipTerritory),
+					nickname: that.userInfo.nickName,
+				}, api.projectAddProject).then(res => {
+					if (res.code == 200) {
+
+						uni.showLoading({
+							title: '加载中...',
+						})
+						that.content = '';
+						that.price = '';
+						that.list = [];
+						that.currentPage = 1;
+						that.pageSize = 10;
+						that.loadList();
+						this.$refs.popup.close();
+					} else {
+						uni.hideLoading();
+					}
+					uni.showToast({
+						icon: 'none',
+						title: res.msg
+					})
+				});
 			},
-			toProjecDetail() {
+			cancelSubmit() {
+				this.$refs.popup.close();
+			},
+			toProjecDetail(e) {
 				uni.navigateTo({
-					url: '/pages/release/releaseProjectDetail/releaseProjectDetail'
+					url: '/pages/release/releaseProjectDetail/releaseProjectDetail?obj='+ JSON.stringify(e)
 				})
 			},
 		}

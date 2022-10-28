@@ -46,6 +46,20 @@ public interface ProjectHelpService extends IService<ProjectHelp> {
    */
   ProjectHelp getProjectHelpByHpId(String hpId);
 
+  /**
+   * 更新项目助力链接
+   *
+   * @param projectHelp
+   * @return
+   */
   int updateProjectHelp(ProjectHelp projectHelp);
 
+  /**
+   * 根据项目id和UUID获取项目助力链接
+   *
+   * @param pUUID
+   * @param userId
+   * @return
+   */
+  byte[] getProjectHelpLink(String pUUID,String userId);
 }

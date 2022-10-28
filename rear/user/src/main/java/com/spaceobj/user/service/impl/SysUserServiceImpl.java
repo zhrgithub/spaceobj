@@ -203,7 +203,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   }
 
   @Override
-  public SaResult getSysUserByUserId(String userId) {
+  public byte[] getSysUserByUserId(String userId) {
     SysUser sysUser = null;
     byte[] rsaEncryptSysUser = null;
     try {
@@ -211,10 +211,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       queryWrapper.eq("user_id", userId);
       sysUser = sysUserMapper.selectOne(queryWrapper);
       rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
-      return SaResult.ok().setData(rsaEncryptSysUser);
+      return rsaEncryptSysUser;
     } catch (Exception e) {
       e.printStackTrace();
-      return SaResult.error().setData(null);
+      return null;
     }
   }
 }

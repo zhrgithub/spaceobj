@@ -13,6 +13,7 @@ import com.redis.common.service.RedissonService;
 import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.component.KafkaSender;
+import com.spaceobj.project.component.ProjectHelpClient;
 import com.spaceobj.project.component.UserClient;
 import com.spaceobj.project.constant.KafKaTopics;
 import com.spaceobj.project.constant.RedisKey;
@@ -50,6 +51,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   @Autowired private SysProjectMapper sysProjectMapper;
 
   @Resource private UserClient userClient;
+
+  @Resource private ProjectHelpClient projectHelpClient;
 
   @Value("${privateKey}")
   private String privateKey;
@@ -102,7 +105,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
       // 刷新缓存
       redisService.setCacheMapValue(RedisKey.PROJECT_LIST, uuid, sysProject);
-      return SaResult.ok();
+      return SaResult.ok("提交成功");
     } catch (Exception e) {
       e.printStackTrace();
       LOG.error("project add error", e.getMessage());
@@ -128,8 +131,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         if (!sysUser.getUserId().equals(project.getReleaseUserId())) {
           return SaResult.error("违规操作");
         }
-        // 修改的项目设置成待审核
-        sysProject.setStatus(0);
+        if (sysProject.getStatus() != 3) {
+          // 修改的项目设置成待审核
+          sysProject.setStatus(0);
+        }
+
         // 根据项目id和version修改数据,每次修改都让版本号+1,用于处理并发修改业务
         int result = this.updateResult(sysProject);
         if (result == 0) {
@@ -137,7 +143,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           //  如果修改失败，那么根据id查询最新的版本号再次修改
           return SaResult.error("修改失败");
         }
-        return SaResult.ok();
+        return SaResult.ok("提交成功");
       }
       return SaResult.error("请求错误");
     } catch (Exception e) {
@@ -190,19 +196,25 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                       }
                     })
                 .collect(Collectors.toList());
-        int pageSiz = 0;
-        if (list.size() > projectSearchBo.getPageSize()) {
-          pageSiz = projectSearchBo.getPageSize();
+        int endNumber = 0;
+        int startNumber = 0;
+        startNumber = (projectSearchBo.getCurrentPage() - 1) * projectSearchBo.getPageSize();
+        if (list.size() > projectSearchBo.getPageSize() * projectSearchBo.getCurrentPage()) {
+          endNumber = projectSearchBo.getPageSize();
         } else {
-          pageSiz = list.size();
+          endNumber = list.size();
         }
-        list =
-            list.subList(
-                (projectSearchBo.getCurrentPage() - 1) * projectSearchBo.getPageSize(), pageSiz);
+        if (startNumber > list.size()) {
+          list.clear();
+          return SaResult.ok().setData(list);
+        }
+        list = list.subList(startNumber, endNumber);
       } else if (projectSearchBo.getProjectType() == 1) {
         // 查询自己发布的信息,根据项目创建人id查询项目
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("p_release_user_id", projectSearchBo.getUserId());
+        queryWrapper
+            .eq("p_release_user_id", projectSearchBo.getUserId())
+            .orderByDesc("create_time");
         Page<SysProject> page =
             new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
         IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
@@ -264,6 +276,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       List<SysProject> list;
       QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
+      queryWrapper.orderByDesc("create_time");
       if (!StringUtils.isEmpty(projectSearchBo.getContent())) {
         queryWrapper.like("p_content", projectSearchBo.getContent());
         queryWrapper.or().like("p_id", projectSearchBo.getContent());
@@ -330,7 +343,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       String loginId = (String) StpUtil.getLoginId();
       SysUser sysUser = getSysUser(loginId);
       getPhoneNumberBo.setUserId(sysUser.getUserId());
-      SysProject sysProject = this.getProjectByUUID(getPhoneNumberBo.getPUUID());
+      SysProject sysProject = this.getProjectByUUID(getPhoneNumberBo.getUuid());
       if (ObjectUtils.isEmpty(sysProject)) {
         return SaResult.error("项目不存在");
       }
@@ -338,35 +351,25 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (sysProject.getReleaseUserId().equals(getPhoneNumberBo.getUserId())) {
         return SaResult.ok().setData(sysUser.getPhoneNumber());
       }
-      //  判断当前用户是否已经实名认证
-      if (sysUser.getRealNameStatus() != 1) {
-        return SaResult.error("请实名认证后再来获取");
-      }
+
       //  判断项目是否审核通过
       if (sysProject.getStatus() != 1) {
         return SaResult.error("项目未通过审核");
       }
       // 判断该用户的助力列表中是否有该项目数据，当前方案要保证项目助力hash表的RedisKey永不失效
       // 判断是否已经获取到该项目联系人
-      List<ProjectHelp> projectHelpList =
-          redisService.getHashMapValues(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
-      List<ProjectHelp> resultProjectHelp = null;
-      if (ObjectUtils.isEmpty(projectHelpList)) {
-        return SaResult.error("服务器繁忙");
-      }
-      resultProjectHelp =
-          projectHelpList.stream()
-              .filter(
-                  hp ->
-                      hp.getCreateUserId().equals(getPhoneNumberBo.getUserId())
-                          && getPhoneNumberBo.getPUUID().equals(hp.getPUUID()))
-              .collect(Collectors.toList());
-      if (resultProjectHelp.size() > 0) {
-        ProjectHelp helpBo = resultProjectHelp.get(0);
+      ProjectHelp helpBo =
+          this.getProjectHelpLink(getPhoneNumberBo.getUuid(), getPhoneNumberBo.getUserId());
+      System.out.println("helpBo:"+helpBo);
+      if (!ObjectUtils.isEmpty(helpBo)) {
         if (helpBo.getHpStatus() == 1 || helpBo.getHpNumber() >= 10) {
           // 获取项目发布者id的联系方式,后期此处修改成根据账户获取用户信息，项目中的userId设置成email,数据进行脱敏
           String releaseId = sysProject.getReleaseUserId();
           SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
+          //  判断当前用户是否已经实名认证
+          if (sysUser.getRealNameStatus() != 1) {
+            return SaResult.error("请实名认证后再来获取");
+          }
           return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
         }
       }
@@ -375,12 +378,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (sysUser.getInvitationValue() > 0) {
         //  邀请值减一，如果项目助力列表中没有该项目，那么设置成已经获取到，如果没有，那么新增到项目助力列表并设置成已经获取到的状态
         sysUser.setInvitationValue(sysUser.getInvitationValue() - 1);
-        ProjectHelp helpBo;
-        if (!ObjectUtils.isEmpty(resultProjectHelp) && resultProjectHelp.size() > 0) {
-          helpBo = resultProjectHelp.get(0);
+        if (!ObjectUtils.isEmpty(helpBo)) {
           helpBo.setHpNumber(10);
           helpBo.setHpStatus(1);
-          // 通知项目助力服务更新数据
+          // 通知项目助力服务更新该用户助力的项目助力信息
           kafkaSender.send(helpBo, KafKaTopics.UPDATE_HELP_PROJECT);
         } else {
           helpBo =
@@ -394,16 +395,21 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                   .pReleaseUserId(sysProject.getReleaseUserId())
                   .hpStatus(1)
                   .build();
-          // 通知项目助力服务新增数据
+          // 通知项目助力服务该用户新增一条获取成功的项目助力信息
           kafkaSender.send(helpBo, KafKaTopics.ADD_HELP_PROJECT);
         }
-        // 消息队列发送用户信息
+        // 通知用户服务更新该用户的基本信息
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         String releaseId = sysProject.getReleaseUserId();
         SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
+        //  判断当前用户是否已经实名认证
+        if (sysUser.getRealNameStatus() != 1) {
+          return SaResult.error("请实名认证后再来获取");
+        }
         return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
       }
-      return SaResult.error("分享项目助力链接");
+      // 需要获取助力链接
+      return SaResult.error("好友助力获取").setCode(202);
     } catch (Exception e) {
       e.printStackTrace();
       return SaResult.error("服务器异常");
@@ -455,10 +461,16 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   }
 
   @Override
-  public SaResult getEncryptProjectByUUID(String uuid) {
-    SysProject sysProject = this.getProjectByUUID(uuid);
-    byte[] res = RsaUtils.encryptByPublicKey(sysProject, publicKey);
-    return SaResult.ok().setData(res);
+  public byte[] getEncryptProjectByUUID(String uuid) {
+    byte[] res = null;
+    try {
+      SysProject sysProject = this.getProjectByUUID(uuid);
+      res = RsaUtils.encryptByPublicKey(sysProject, publicKey);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+    return res;
   }
 
   /**
@@ -471,7 +483,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SysUser getSysUser(String account) {
     SysUser sysUser = null;
     try {
-      Object res = userClient.getUserInfoByAccount(account).getData();
+      // 先到Redis中取一下
+      boolean flag = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+      if (flag) {
+        return redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
+      }
+      Object res = userClient.getUserInfoByAccount(account);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
@@ -483,12 +500,24 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SysUser getSysUserByUserId(String userId) {
     SysUser sysUser = null;
     try {
-      Object res = userClient.getSysUserByUserId(userId).getData();
+      Object res = userClient.getSysUserByUserId(userId);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
       return null;
     }
     return sysUser;
+  }
+
+  public ProjectHelp getProjectHelpLink(String pUUID, String userId) {
+    ProjectHelp projectHelp = null;
+    try {
+      Object res = projectHelpClient.getProjectHelpLink(pUUID, userId);
+      projectHelp = RsaUtils.decryptByPrivateKey(res, ProjectHelp.class, privateKey);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+    return projectHelp;
   }
 }

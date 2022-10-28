@@ -1,12 +1,16 @@
 package com.spaceobj.projectHelp.dto;
 
 import com.spaceobj.projectHelp.group.InsertProjectHelpGroup;
+import com.spaceobj.projectHelp.group.QueryProjectHelpListGroup;
 import com.spaceobj.projectHelp.group.UpdateProjectHelpGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -37,4 +41,21 @@ public class ProjectHelpDto {
   private String pReleaseUserId;
 
   private Integer hpStatus;
+
+
+  /** 当前页 */
+  @NotNull(message = "当前页非空",groups = {QueryProjectHelpListGroup.class})
+  private Integer currentPage;
+
+  /** 每页条数 */
+  @NotNull(message = "每页条数条数非空",groups = {QueryProjectHelpListGroup.class})
+  private Integer pageSize;
+
+  @DateTimeFormat(pattern="yyy-MM-dd HH:mm:ss")
+  private Data createTime;
+
+  @DateTimeFormat(pattern="yyy-MM-dd HH:mm:ss")
+  private Data updateTime;
+
+
 }

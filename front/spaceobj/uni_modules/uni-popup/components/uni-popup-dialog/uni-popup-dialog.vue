@@ -18,9 +18,10 @@
 				<text class="uni-dialog-button-text">{{closeText}}</text>
 			</view>
 			<view class="uni-dialog-button uni-border-left" @click="onOk">
-				<text class="uni-dialog-button-text uni-button-color">{{okText}}</text>
+				<!-- <text class="uni-dialog-button-text uni-button-color">{{okText}}</text> -->
+				<button open-type="share">{{okText}}</button>
 			</view>
-		</view>
+		</view> 
 
 	</view>
 </template>
@@ -227,11 +228,18 @@
 		align-items: center;
 		height: 45px;
 	}
+	
 
 	.uni-border-left {
 		border-left-color: #f0f0f0;
 		border-left-style: solid;
 		border-left-width: 1px;
+	}
+	.uni-border-left button{
+		width: 100%;
+		height: 100%;
+		font-size: 16px;
+		background-color: #fff;
 	}
 
 	.uni-dialog-button-text {

@@ -147,7 +147,7 @@
 				userId: null,
 			}
 		},
-		created() { 
+		created() {
 			that = this;
 		},
 		onShareAppMessage(res) {
@@ -156,18 +156,15 @@
 			}
 			return {
 				title: '欢迎体验spaceObj，项目外包入口',
-				path: 'pages/project/project?inviteUserId=' + that.userId
+				path: 'pages/index/index?inviteUserId=' + that.userId
 			}
-			
-			// return {
-			// 	title: '欢迎体验spaceObj',
-			// 	path: 'pages/login/login?inviteUserId=' + "123"
-			// }
+		},
+		onLoad() {
+
 		},
 		onShow() {
 			this.timer = setTimeout(() => {
-				// that.getUserInfo();
-				
+
 				// 第一步：加载用户基本信息
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
 				if (that.loginStatus) {
@@ -185,6 +182,11 @@
 			getUserInfo() {
 				api.post({}, api.getUserInfo).then(res => {
 					console.log("res:", res);
+					// 刷新缓存
+					uni.setStorage({
+						key:sk.userInfo,
+						data:res.data
+					})
 					var userInfo = res.data;
 					if (userInfo != '') {
 						that.userType = userInfo.userType;

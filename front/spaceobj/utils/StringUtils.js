@@ -10,6 +10,15 @@ function isBlank(str) {
 	}
 }
 
+
+function isUndefined(obj) {
+	if (obj == 'undefined' || obj == undefined) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 function timeStampTurnTime(str) {
 	var date = new Date(str); // 参数需要毫秒数，所以这里将秒数乘于 1000
 	var Y = date.getFullYear() + '-';
@@ -19,5 +28,7 @@ function timeStampTurnTime(str) {
 }
 export default {
 	isBlank,
-	timeStampTurnTime
+	timeStampTurnTime,
+	isUndefined
+	
 }

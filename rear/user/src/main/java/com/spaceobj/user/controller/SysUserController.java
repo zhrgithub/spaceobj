@@ -50,7 +50,7 @@ public class SysUserController {
   }
 
   @PostMapping(value = "getSysUserByUserId")
-  public SaResult getSysUserByUserId(String userId) {
+  public byte[] getSysUserByUserId(String userId) {
     return sysUserService.getSysUserByUserId(userId);
   }
 }

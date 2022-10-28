@@ -46,7 +46,6 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
         List<JdAdvertise> list = null;
         try {
             boolean hasKey = redisService.hasKey(RedisKey.JD_ADVERTISE_LIST);
-            System.out.println(hasKey);
             if (hasKey) {
                 return redisService.getCacheList(RedisKey.JD_ADVERTISE_LIST,JdAdvertise.class);
             } else {
@@ -116,7 +115,6 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
     public SaResult deleteAdvertise(long id) {
 
         try {
-            System.out.println(id);
             int result = jdAdvertiseMapper.deleteById(id);
             if (result == 1) {
                 //删除缓存

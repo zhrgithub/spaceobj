@@ -66,21 +66,26 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Override
   public int updateUser(SysUser sysUser) {
     int result = 0;
-    QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
-    queryWrapper.eq("version", sysUser.getVersion());
-    queryWrapper.eq("account", sysUser.getAccount());
-    sysUser.setVersion(sysUser.getVersion() + 1);
-    result = sysUserMapper.update(sysUser, queryWrapper);
-    if (result == 0) {
-      // 查询最新的版本号然后更新,防止之前修改后的数据被覆盖
-      QueryWrapper<SysUser> queryWrapper2 = new QueryWrapper<>();
-      queryWrapper2.eq("account", sysUser.getAccount());
-      sysUser = sysUserMapper.selectOne(queryWrapper2);
+    try {
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
       queryWrapper.eq("version", sysUser.getVersion());
+      queryWrapper.eq("account", sysUser.getAccount());
       sysUser.setVersion(sysUser.getVersion() + 1);
       result = sysUserMapper.update(sysUser, queryWrapper);
+      if (result == 0) {
+        // 查询最新的版本号然后更新,防止之前修改后的数据被覆盖
+        QueryWrapper<SysUser> queryWrapper2 = new QueryWrapper<>();
+        queryWrapper2.eq("account", sysUser.getAccount());
+        sysUser = sysUserMapper.selectOne(queryWrapper2);
+        queryWrapper2.eq("version", sysUser.getVersion());
+        sysUser.setVersion(sysUser.getVersion() + 1);
+        result = sysUserMapper.update(sysUser, queryWrapper2);
+      }
+      redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return 0;
     }
-    redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
     return result;
   }
 
@@ -115,7 +120,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (result == 0) {
           return SaResult.error("服务器繁忙");
         }
-        return SaResult.ok().setData(sysUser);
+        return SaResult.ok("提交成功").setData(sysUser);
       } else {
         // 账号登录
         //  判断用户是否被封禁
@@ -365,7 +370,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (ObjectUtils.isEmpty(sysUser)) {
         return SaResult.error("用户不存在");
       }
-      return SaResult.ok().setData(sysUser);
+      return SaResult.ok("提交成功").setData(sysUser);
     } catch (RuntimeException e) {
       LOG.error("getUserInfo failed", e.getMessage());
       return SaResult.error("服务器异常");

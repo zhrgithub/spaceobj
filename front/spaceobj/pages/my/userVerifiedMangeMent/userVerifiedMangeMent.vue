@@ -94,6 +94,7 @@
 			that.currentPage = 1;
 			that.list = [];
 			that.loadList();
+			uni.stopPullDownRefresh();
 		},
 
 		methods: {

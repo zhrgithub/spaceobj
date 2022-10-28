@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
@@ -73,9 +74,11 @@ public class SysProjectDto implements Serializable {
   /** 审核内容 */
   private String message;
 
+
+  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private Date createTime;
 
-  @NotBlank(
+  @NotNull(
       message = "版本号不为空",
       groups = {UpdateProjectGroup.class})
   private long version;

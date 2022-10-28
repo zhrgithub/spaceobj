@@ -49,4 +49,9 @@ public class ProjectHelpController {
     return projectHelpService.projectHelpList(projectHelpBo);
   }
 
+  @PostMapping("getProjectHelpLink")
+  public byte[] getProjectHelpLink(String pUUID,String userId){
+    return projectHelpService.getProjectHelpLink(pUUID,userId);
+  }
+
 }

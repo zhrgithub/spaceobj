@@ -162,6 +162,7 @@
 			that.currentPage = 1;
 			that.list = [];
 			that.loadList();
+			uni.stopPullDownRefresh();
 		},
 		methods: {
 			setUserName(e) {
@@ -266,7 +267,9 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-
+		position: fixed;
+		z-index: 999;
+		background-color: #fff;
 	}
 
 	.search-logo-background-style {

@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "spring.cloud.ribbon.ConnectTimeout",
+      "type": "java.lang.String",
+      "description": "Description for spring.cloud.ribbon.ConnectTimeout."
+  }
+] }

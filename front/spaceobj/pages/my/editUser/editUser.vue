@@ -14,7 +14,7 @@
 				昵称
 			</view>
 			<view class="change-input-style">
-				<input type="text" maxlength="5" :value="nickName" @input="setNickName">
+				<input type="text" maxlength="8" :value="nickName" @input="setNickName">
 			</view>
 		</view>
 
@@ -97,7 +97,7 @@
 	export default {
 		data() {
 			return {
-				photoUrl: '/static/photo.jpg',
+				photoUrl: '/static/photo.png',
 				selectPhotoList: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 				ipTerritory: "未知",
 				nickName: "未设置",
@@ -112,7 +112,6 @@
 		onShow() {
 			this.timer = setTimeout(() => {
 				that.loadUserInfo();
-
 			}, 200)
 
 		},

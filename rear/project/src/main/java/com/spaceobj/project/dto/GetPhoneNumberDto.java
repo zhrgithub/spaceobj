@@ -1,9 +1,11 @@
 package com.spaceobj.project.dto;
 
+import com.spaceobj.project.group.GetPhoneNumberGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
 
@@ -17,8 +19,11 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class GetPhoneNumberDto {
 
-  @NotNull(message = "项目id不为空")
   private long projectId;
 
   private String userId;
+
+
+  @NotBlank(message = "UUID为空",groups={GetPhoneNumberGroup.class})
+  private String uuid;
 }

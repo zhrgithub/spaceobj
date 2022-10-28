@@ -7,6 +7,18 @@
 		},
 		onShow: function() {
 			console.log('App Show')
+			// 获取广告
+			api.post({
+				
+			}, api.jdList).then(res => {
+				console.log("广告内容：",res);
+				if(res.code==200){
+					uni.setStorage({
+						key:sk.shopList,
+						data:res.data
+					})
+				}
+			})
 			// 获取ip属地
 			api.get({}, api.ipTerritory).then(res => {
 				uni.setStorage({
@@ -14,13 +26,7 @@
 					data: res.replace(/[\r\n]/g, "")
 				})
 			});
-			api.post({
-			}, api.getOther).then(res => {
-				uni.setStorage({
-					key:sk.otherInfo,
-					data:res.data
-				})
-			})
+			
 			// 获取设备信息
 			const res = uni.getSystemInfoSync();
 			uni.setStorage({

@@ -17,6 +17,18 @@
 				<input type="text" :value="downloadUrl" @input="setDownLoad">
 			</view>
 		</view>
+
+		<view class="edit-background-style">
+			<view class="change-tips">
+				上线开关
+			</view>
+			<view class="change-input-style">
+				<switch color="#49A8E7" @change="setOnline" :checked="online==1" />
+			</view>
+		</view>
+
+
+
 		<view class="save-btn-style">
 			<button @click="save">保存</button>
 		</view>
@@ -35,7 +47,7 @@
 				downloadUrl: null,
 				wechat: null,
 				otherInfo: null,
-
+				online: null,
 			}
 		},
 		created() {
@@ -47,9 +59,19 @@
 				console.log(otherInfo.downloadUrl)
 				that.downloadUrl = otherInfo.downloadUrl;
 				that.wechat = otherInfo.wechat;
+				that.online = otherInfo.online;
 			}, 200);
 		},
 		methods: {
+			setOnline() {
+				console.log(online)
+				var online = that.online;
+				if (online == 0) {
+					that.online = 1;
+				} else {
+					that.online = 0;
+				}
+			},
 			setWechat(e) {
 				that.wechat = e.detail.value;
 			},
@@ -74,7 +96,8 @@
 				console.log(that.wechat, that.downloadUrl)
 				api.post({
 					wechat: that.wechat,
-					downloadUrl: that.downloadUrl
+					downloadUrl: that.downloadUrl,
+					online:that.online
 				}, api.updateOther).then(res => {
 					if (res.code == 200) {
 						uni.showToast({

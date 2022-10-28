@@ -1,86 +1,34 @@
 <template>
 	<view class="release-background-style">
-		<view v-if="contenList.length!=0" class="content-null-style">
+		<view v-if="list.length==0" class="content-null-style">
 			<view class="image-title-background-style">
 				<view class="not-release-image-style-background">
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					没有发起助力信息~
+					未找到助力信息~
 				</view>
 			</view>
 		</view>
 
-		<uni-popup ref="popup" background-color="#fff">
-			<view class="need-description-budget-style">
-				项目描述和预算
-			</view>
-			<view class="scroll-item-line-two-style"></view>
-			<view class="description-doller-style">
-				<view class="doller-num-style">
-					<input placeholder="请输入预算(单位:元)" type="number" maxlength="7">
-				</view>
-				<view class="description-style">
-					<textarea maxlength="1000" name="needDescription" id="" cols="30" rows="100"
-						placeholder="请输入您的需求信息"></textarea>
-				</view>
-				<view class="button-style">
-					<button @click="submit">取消</button>
-					<view class="button-space"></view>
-					<button @click="submit">确认发布</button>
-				</view>
-			</view>
-		</uni-popup>
+
 
 		<!-- 发布的列表 -->
-		<view class="project-list-style" @click="toProjecDetail">
+		<view class="project-list-style" v-for="(item,idx) in list" :key="idx" @click="toProjecDetail(item)">
 			<view class="date-status-style">
 				<view class="date-style">
-					2022-06-18
+					{{timeStampTurnTime(item.createTime)}}
 				</view>
-				<view class="status-style">
+				<view class="status-pass-style" v-if="item.hpStatus==0">
+					还差{{10-item.hpNumber}}人
+				</view>
+				<view class="status-style" v-if="item.hpStatus==1">
 					助力成功
 				</view>
-				<view class="status-style">
-					查看详情
+				<view class="status-refuse-style" v-if="item.hpStatus==2">
+					已删除
 				</view>
-			</view>
-			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手
-			</view>
-			<view class="slider-style">
-				<slider value="10" activeColor="green" backgroundColor="darkgray" block-color="#49A8E7" block-size="10"
-					show-value min="0" max="10" disabled="true" />
-			</view>
-		</view>
-
-		<view class="project-list-style">
-			<view class="date-status-style">
-				<view class="date-style">
-					2022-06-17
-				</view>
-				<view class="status-pass-style">
-					还差3人
-				</view>
-				<view class="status-style">
-					查看详情
-				</view>
-			</view>
-			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手
-			</view>
-			<slider value="7" activeColor="green" backgroundColor="darkgray" block-color="#49A8E7" block-size="10"
-				show-value min="0" max="10" disabled="true" />
-		</view>
-
-		<view class="project-list-style">
-			<view class="date-status-style">
-				<view class="date-style">
-					2022-06-17
-				</view>
-				<view class="status-refuse-style">
+				<view class="status-refuse-style" v-if="item.hpStatus==3">
 					甲方已成交
 				</view>
 				<view class="status-style">
@@ -88,26 +36,88 @@
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text
-					style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手大脚看看是科斯康查看详情初三初四就看出的扩散才开始单词卡死此电脑萨克才能上看大手
+				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>{{item.pcontent}}
 			</view>
-			<slider value="7" activeColor="green" backgroundColor="darkgray" block-color="#49A8E7" block-size="10"
-				show-value min="0" max="10" disabled="true" />
+			<view class="slider-style">
+				<slider :value="item.hpNumber" activeColor="green" backgroundColor="darkgray" block-color="#49A8E7"
+					block-size="10" show-value min="0" max="10" disabled="true" />
+			</view>
 		</view>
-
-
 
 	</view>
 </template>
 
 <script>
+	let that;
+	import sk from '@/common/StoryKeys.js'
+	import api from '@/common/api.js'
+	import su from '@/utils/StringUtils.js'
 	export default {
 		data() {
 			return {
-				contenList: [],
+				list: [],
+				projecObj: null,
+				currentPage: 1,
+				pageSize: 10,
 			}
 		},
+		// 触底加载更多
+		onReachBottom() {
+			that.loadList();
+		},
+		// 下拉刷新
+		onPullDownRefresh() {
+			that.currentPage = 1;
+			that.list = [];
+			that.loadList();
+
+			uni.stopPullDownRefresh();
+
+		},
+		created() {
+			that = this;
+		},
+		onLoad() {
+			uni.showLoading({
+				title: '加载中...',
+			})
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
+		},
+		onShow() {
+			var userInfo = uni.getStorageSync(sk.userInfo);
+			that.userInfo = userInfo;
+		},
 		methods: {
+			timeStampTurnTime(str) {
+				var date = new Date(str); // 参数需要毫秒数，所以这里将秒数乘于 1000
+				var Y = date.getFullYear() + '-';
+				var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+				var D = date.getDate() + ' ';
+				return Y + M + D;
+			},
+			loadList() {
+				api.post({
+					currentPage: that.currentPage,
+					pageSize: that.pageSize
+				}, api.projectHelpList).then(res => {
+					if (res.code == 200) {
+						if (res.data.length > 0) {
+							that.list = that.list.concat(res.data);
+							that.currentPage++;
+							console.log(that.currentPage)
+						}
+					} else {
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
+					}
+					uni.hideLoading();
+				});
+			},
 			submit() {
 				this.$refs.popup.close();
 				uni.showToast({
@@ -119,9 +129,9 @@
 			sliderChange(e) {
 				console.log('value 发生变化：' + e.detail.value)
 			},
-			toProjecDetail() {
+			toProjecDetail(e) {
 				uni.navigateTo({
-					url: '/pages/help/helpProjectDetail/helpProjectDetail'
+					url: '/pages/help/helpProjectDetail/helpProjectDetail?obj=' + JSON.stringify(e)
 				})
 			},
 		}

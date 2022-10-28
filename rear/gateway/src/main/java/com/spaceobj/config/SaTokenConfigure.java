@@ -39,6 +39,8 @@ public class SaTokenConfigure {
         .addExclude("/spaceobj-advertise/jd/list")
         .addExclude("/spaceobj-project/project/findList")
         .addExclude("/spaceobj-project/project/addPageViews")
+        .addExclude("/spaceobj-project/project/getEncryptProjectByUUID")
+        .addExclude("/spaceobj-project-help/projectHelp/getProjectHelpLink")
         // 鉴权方法：每次访问进入
         .setAuth(
             obj -> {
