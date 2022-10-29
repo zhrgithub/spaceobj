@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.ObjectUtils;
 
 /**
  * spring redis 工具类
@@ -131,7 +132,15 @@ public class RedisService {
   public <T> T getCacheObject(final String key, Class<T> clazz) {
     ValueOperations<String, T> operation = redisTemplate.opsForValue();
     Object obj = operation.get(key);
-    return getTargetObject(obj, clazz);
+    try {
+      if (ObjectUtils.isEmpty(obj)) {
+        return null;
+      }
+      return getTargetObject(obj, clazz);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   /**
@@ -173,7 +182,15 @@ public class RedisService {
    */
   public <T> List<T> getCacheList(final String key, Class<T> clazz) {
     Object obj = redisTemplate.opsForList().range(key, 0, -1);
-    return getTargetListObj(obj, clazz);
+    try {
+      if (ObjectUtils.isEmpty(obj)) {
+        return null;
+      }
+      return getTargetListObj(obj, clazz);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   /**
@@ -258,7 +275,15 @@ public class RedisService {
   public <T> T getCacheMapValue(final String key, final String hKey, Class<T> clazz) {
     HashOperations<String, String, T> opsForHash = redisTemplate.opsForHash();
     Object obj = opsForHash.get(key, hKey);
-    return getTargetObject(obj, clazz);
+    try {
+      if (ObjectUtils.isEmpty(obj)) {
+        return null;
+      }
+      return getTargetObject(obj, clazz);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   /**
@@ -302,6 +327,14 @@ public class RedisService {
    */
   public <T> List<T> getHashMapValues(String key, Class<T> clazz) {
     Object obj = redisTemplate.opsForHash().values(key);
-    return getTargetListObj(obj, clazz);
+    try {
+      if (ObjectUtils.isEmpty(obj)) {
+        return null;
+      }
+      return getTargetListObj(obj, clazz);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 }

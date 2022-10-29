@@ -185,9 +185,11 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       resultList =
           list.stream()
               .filter(
-                  ph ->
-                      ph.getCreateUserId().equals(sysUser.getUserId())
-                          && ph.getPUUID().equals(projectHelpBo.getPUUID()))
+                  ph -> {
+                    return !ObjectUtils.isEmpty(ph)
+                        && ph.getCreateUserId().equals(sysUser.getUserId())
+                        && ph.getPUUID().equals(projectHelpBo.getPUUID());
+                  })
               .collect(Collectors.toList());
       // 如果之前创建过那么直接返回之前创建过的
       if (resultList.size() > 0) {
@@ -292,7 +294,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       projectHelp.setVersion(projectHelpTwo.getVersion() + 1);
       result = this.projectHelpMapper.update(projectHelp, wrapper);
     }
-    if(result==0){
+    if (result == 0) {
       return result;
     }
     // 修改成功，刷新缓存信息
@@ -312,7 +314,12 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       }
       resultProjectHelp =
           projectHelpList.stream()
-              .filter(hp -> userId.equals(hp.getCreateUserId()) && pUUID.equals(hp.getPUUID()))
+              .filter(
+                  hp -> {
+                    return !ObjectUtils.isEmpty(hp)
+                        && userId.equals(hp.getCreateUserId())
+                        && pUUID.equals(hp.getPUUID());
+                  })
               .collect(Collectors.toList());
       if (resultProjectHelp.size() == 0) {
         //  数据不存在
@@ -339,7 +346,8 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
           listCaChe.stream()
               .filter(
                   hp -> {
-                    return hp.getCreateUserId().equals(sysUser.getUserId());
+                    return !ObjectUtils.isEmpty(hp)
+                        && hp.getCreateUserId().equals(sysUser.getUserId());
                   })
               .collect(Collectors.toList());
       // 实现分页查询

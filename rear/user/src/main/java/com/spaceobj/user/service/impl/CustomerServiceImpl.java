@@ -37,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -451,10 +452,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           ReceiveEmailBo.builder()
               .receiverEmail(sysUser.getEmail())
               .title("spaceObj")
-              .content("邮箱验证码:" + getEmailCodeVerify)
+              .content("邮箱验证码:" + getEmailCodeVerify + "，有效期：3 分钟")
               .build();
-      // 重置当前用户的邮箱验证码
-      sysUser.setEmailCode(getEmailCodeVerify);
+      // 缓存邮箱验证码到Redis，有效期3分钟
+      redisService.setCacheObject(sysUser.getEmail(), getEmailCodeVerify, 3L, TimeUnit.MINUTES);
       // 邮箱、短信剩余发送次数减一
       sysUser.setSendCodeTimes(sysUser.getSendCodeTimes() - 1);
       // 消息队列通知邮箱服务器发送邮件
@@ -482,7 +483,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("用户不存在");
       }
       // 验证邮箱验证码是否和服务器保存的一致
-      String emailCodeFromRedis = sysUser.getEmailCode();
+      if (!redisService.hasKey(sysUser.getEmail())) {
+        return SaResult.error("验证码已失效");
+      }
+      String emailCodeFromRedis = redisService.getCacheObject(sysUser.getEmail(), String.class);
       if (emailCodeFromRedis.equals(sysUserBo.getEmailCode())) {
 
         // 获取md5格式的密码
@@ -496,17 +500,17 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 修改用户数据，并删除缓存
         int result = updateUser(sysUser);
         if (result == 0) {
-          LOG.error("密码修改失败{}", sysUser.getUserId());
+          LOG.error("修改失败{}", sysUser.getUserId());
           return SaResult.error("服务器繁忙");
         }
-        return SaResult.ok("密码修改成功");
+        return SaResult.ok("修改成功");
       }
-      return SaResult.error("验证码错误，密码修改失败");
+      return SaResult.error("验证码错误");
     } catch (SaTokenException e) {
-      return SaResult.error("密码格式不正确");
+      return SaResult.error("密码格式错误");
     } catch (RuntimeException e) {
       LOG.error("resetPassword failed", e.getMessage());
-      return SaResult.error("密码重置失败，服务器异常");
+      return SaResult.error("服务器异常");
     }
   }
 

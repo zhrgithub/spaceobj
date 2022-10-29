@@ -69,6 +69,43 @@
 				</view>
 			</view>
 		</view>
+		
+		<view class="edit-background-style">
+			<view class="change-tips">
+				设备
+			</view>
+			<view class="change-input-style">
+				{{deviceModel.model}}
+			</view>
+		</view>
+		
+		<view class="edit-background-style">
+			<view class="change-tips">
+				IP
+			</view>
+			<view class="change-input-style">
+				{{userInfo.ip}}
+			</view>
+		</view>
+		<view class="edit-background-style">
+			<view class="change-tips">
+				操作系统
+			</view>
+			<view class="change-input-style">
+				{{deviceModel.system}}
+			</view>
+		</view>
+		<view class="edit-background-style">
+			<view class="change-tips">
+				电池电量
+			</view>
+			<view class="change-input-style">
+				{{deviceModel.batteryLevel}}%
+			</view>
+		</view>
+		<view class="space-line-style">
+			
+		</view>
 
 
 
@@ -107,12 +144,19 @@
 				email: '未设置',
 				openId :'',
 				userId:'',
+				deviceModel:'',
+				ip:"",
+				userInfo:""
 			}
 		},
 		onShow() {
-			this.timer = setTimeout(() => {
-				that.loadUserInfo();
-			}, 200)
+			that.deviceModel = uni.getStorageSync(sk.deviceModel);
+			that.loadUserInfo();
+			// this.timer = setTimeout(() => {
+				
+			// 	// 加载设备信息
+				
+			// }, 200)
 
 		},
 		created() {
@@ -121,6 +165,7 @@
 		methods: {
 			loadUserInfo(){
 				var userInfo = uni.getStorageSync(sk.userInfo);
+				that.userInfo= userInfo;
 				console.log(userInfo)
 				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
@@ -284,6 +329,10 @@
 </script>
 
 <style scoped>
+	.space-line-style{
+		width: 100%;
+		height: 200rpx;
+	}
 	.container {
 		width: 100%;
 		height: 100%;
@@ -382,19 +431,19 @@
 	}
 
 	.save-btn-style {
-		width: 96%;
-		margin-left: 2%;
-		height: 100rpx;
+		width: 100%;
+		height: 120rpx;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		position: fixed;
-		bottom: 20rpx;
+		bottom: 0rpx;
+		background-color: #fff;
 	}
 
 	.save-btn-style button {
 		width: 30%;
-		height: 90%;
+		height: 90rpx;
 		background-color: #49A8E7;
 		color: #fff;
 	}
