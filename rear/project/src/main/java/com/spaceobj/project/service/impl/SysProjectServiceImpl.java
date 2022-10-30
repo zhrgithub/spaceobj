@@ -529,24 +529,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public ProjectHelp getProjectHelpLink(String pUUID, String userId) {
     ProjectHelp projectHelp = null;
     try {
-      boolean flag = redisService.hasKey(RedisKey.PROJECT_HELP_LIST);
-      if (flag) {
-        List<ProjectHelp> projectHelpList =
-            redisService.getCacheList(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
-        System.out.println(projectHelpList);
-        List<ProjectHelp> resultProjectHelpList =
-            projectHelpList.stream()
-                .filter(
-                    ph -> {
-                      return !ObjectUtils.isEmpty(ph)
-                          && ph.getPUUID().equals(pUUID)
-                          && ph.getCreateUserId().equals(userId);
-                    })
-                .collect(Collectors.toList());
-        if (resultProjectHelpList.size() > 0) {
-          return resultProjectHelpList.get(0);
-        }
-      }
       projectHelp = projectHelpService.getProjectHelpLink(pUUID, userId);
     } catch (Exception e) {
       e.printStackTrace();
