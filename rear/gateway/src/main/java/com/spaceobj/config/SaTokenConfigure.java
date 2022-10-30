@@ -28,7 +28,7 @@ public class SaTokenConfigure {
         .addInclude("/**")
         // 开放地址
         .addExclude("/favicon.ico")
-        .addExclude("/spaceobj-other/other/getOther")
+        .addExclude("/spaceobj-user/other/getOther")
         .addExclude("/spaceobj-user/customerUser/sendMailCode")
         .addExclude("/spaceobj-user/customerUser/resetPassword")
         .addExclude("/spaceobj-user/customerUser/loginByWechat")
@@ -36,11 +36,11 @@ public class SaTokenConfigure {
         .addExclude("/spaceobj-user/sysUser/getUserInfoByAccount")
         .addExclude("/spaceobj-user/sysUser/getUserPermissionByAccount")
         .addExclude("/spaceobj-user/sysUser/getSysUserByUserId")
-        .addExclude("/spaceobj-advertise/jd/list")
+        .addExclude("/spaceobj-user/jd/list")
         .addExclude("/spaceobj-project/project/findList")
         .addExclude("/spaceobj-project/project/addPageViews")
         .addExclude("/spaceobj-project/project/getEncryptProjectByUUID")
-        .addExclude("/spaceobj-project-help/projectHelp/getProjectHelpLink")
+        .addExclude("/spaceobj-project/projectHelp/getProjectHelpLink")
         // 鉴权方法：每次访问进入
         .setAuth(
             obj -> {
@@ -50,7 +50,7 @@ public class SaTokenConfigure {
 
               // 权限认证 -- 不同模块, 校验不同权限
               SaRouter.match(
-                  "/spaceobj-other/other/updateOther", r -> StpUtil.checkPermission("other"));
+                  "/spaceobj-user/other/updateOther", r -> StpUtil.checkPermission("other"));
               SaRouter.match(
                   "/spaceobj-user/sysUser/findList", r -> StpUtil.checkPermission("user"));
               SaRouter.match(
@@ -60,7 +60,7 @@ public class SaTokenConfigure {
               SaRouter.match(
                   "/spaceobj-user/sysPhoto/delete", r -> StpUtil.checkPermission("user"));
 
-              SaRouter.match("/spaceobj-advertise/**", r -> StpUtil.checkPermission("advertise"));
+              SaRouter.match("/spaceobj-user/jd/**", r -> StpUtil.checkPermission("advertise"));
               SaRouter.match(
                   "/spaceobj-project/project/auditProject",
                   r -> StpUtil.checkPermission("project"));

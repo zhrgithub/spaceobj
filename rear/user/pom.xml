@@ -118,6 +118,19 @@
             <version>5.2.0.Final</version>
         </dependency>
 
+        <!-- 邮箱验证 -->
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>

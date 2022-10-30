@@ -61,6 +61,8 @@ spring:
         server-addr: 124.70.3.244:8848
         # 注册到 nacos 的指定 namespace，默认为 public
         namespace: public
+  #        ip: 82.156.38.119
+  #        port: 8083
   servlet:
     multipart:
       max-file-size: 200KB

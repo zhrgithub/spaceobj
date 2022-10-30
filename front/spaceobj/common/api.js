@@ -1,26 +1,25 @@
 import sk from "@/common/StoryKeys.js"
 // 服务器地址
 let SERVER_HEADER = 'http://localhost:8081/'
- // let SERVER_HEADER = "https://www.spaceobj.com/"
+// let SERVER_HEADER = "https://www.spaceobj.com/"
 
 // 用户模块
 let USER = SERVER_HEADER + "spaceobj-user/"
 
 //广告模块
-let ADVERTISE = SERVER_HEADER + "spaceobj-advertise/"
+let ADVERTISE = SERVER_HEADER + "spaceobj-user/"
 
 //项目模块
 let PROJECT = SERVER_HEADER + "spaceobj-project/"
 
 //项目助力模块
-let PROJECT_HELP = SERVER_HEADER + "spaceobj-project-help/"
+let PROJECT_HELP = SERVER_HEADER + "spaceobj-project/"
 
 //其它模块
-let OTHER = SERVER_HEADER + "spaceobj-other/"
+let OTHER = SERVER_HEADER + "spaceobj-user/"
 
 function post(data, url) {
 	var token = uni.getStorageSync(sk.token);
-	console.log("token:", token);
 	return uni.request({
 		url: url,
 		data: data,
@@ -30,9 +29,8 @@ function post(data, url) {
 		},
 		method: "POST",
 	}).then((res) => {
-		console.log("结果数据：", res)
 		var resultData = res[1].data;
-		console.log(resultData)
+		console.log("结果数据：", resultData)
 		if (resultData.code == 500) {
 			uni.showToast({
 				icon: "none",
@@ -60,7 +58,6 @@ function post(data, url) {
 
 function postJson(data, url) {
 	var token = uni.getStorageSync(sk.token);
-	console.log("token:", token);
 	return uni.request({
 		url: url,
 		data: data,
@@ -70,9 +67,8 @@ function postJson(data, url) {
 		},
 		method: "POST",
 	}).then((res) => {
-		console.log("结果数据：", res)
 		var resultData = res[1].data;
-		console.log(resultData)
+		console.log("结果数据：", resultData)
 		if (resultData.code == 500) {
 			uni.showToast({
 				icon: "error",
@@ -103,12 +99,13 @@ function get(data, url) {
 		url: url,
 		data: data,
 		header: {
-			'content-type': 'application/x-www-form-urlencoded',
+			'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
 		},
 		method: "GET",
 	}).then((res) => {
-		console.log(res)
-		return res[1].data;
+		var data = res[1].data;
+		console.log("结果数据：", data)
+		return data;
 
 	}).catch(err => {
 		uni.showToast({
@@ -128,7 +125,7 @@ export default {
 	publicKey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzZ5SLWaHmBmGQ2C7HsLPJywhHPTJWaSVDdXd2+wC5NzxBkko8atchNhMB2JKQcMnHy25nmleCK9nNBNJmLTBHE+s49klQSL0j8YrOCt+AF6TKP4ej88HTCVZsi755MM2DUQgC5J5gUpsSM3uKRgqTy7R696Rr4l9VZK4ADqvpgQIDAQAB",
 
 	// 获取ip属地
-	ipTerritory: "http://whois.pconline.com.cn/ip.jsp",
+	ipTerritory: "http://ip-api.com/json/?lang=zh-CN",
 
 	//密码加密
 	passwordEncryption: USER + "customerUser/aesEncrypt",

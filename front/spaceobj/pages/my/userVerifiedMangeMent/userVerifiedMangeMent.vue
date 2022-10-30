@@ -120,7 +120,6 @@
 				});
 			},
 			auditUser(e) {
-				console.log(e);
 				that.userObj = e;
 				this.$refs.popup.open('bottom');
 			},
@@ -135,7 +134,6 @@
 						confirmColor: '#000',
 						success(e) {
 							if (e.confirm) {
-								console.log(e.content);
 								userObj.auditMsg = e.content;
 								userObj.realNameStatus = 3;
 								that.save(userObj);

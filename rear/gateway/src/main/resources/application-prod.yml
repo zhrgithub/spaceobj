@@ -44,7 +44,7 @@ spring:
     loadbalancer:
       retry:
         enabled: true
-    
+
     gateway:
       routes: # 数组模式
         - id: spaceobj-advertise # 广告模块

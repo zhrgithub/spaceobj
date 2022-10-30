@@ -12,7 +12,6 @@ import com.redis.common.service.RedissonService;
 import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.component.KafkaSender;
-import com.spaceobj.project.component.ProjectHelpClient;
 import com.spaceobj.project.component.UserClient;
 import com.spaceobj.project.constant.KafKaTopics;
 import com.spaceobj.project.constant.RedisKey;
@@ -20,6 +19,7 @@ import com.spaceobj.project.mapper.SysProjectMapper;
 import com.spaceobj.project.pojo.ProjectHelp;
 import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.pojo.SysUser;
+import com.spaceobj.project.service.ProjectHelpService;
 import com.spaceobj.project.service.SysProjectService;
 import com.spaceobj.project.util.RsaUtils;
 import org.slf4j.Logger;
@@ -52,13 +52,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
   @Resource private UserClient userClient;
 
-  @Resource private ProjectHelpClient projectHelpClient;
+  @Autowired private ProjectHelpService projectHelpService;
 
   @Value("${privateKey}")
   private String privateKey;
 
-  @Value("${publicKey}")
-  private String publicKey;
 
   Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
 
@@ -387,7 +385,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         if (!ObjectUtils.isEmpty(helpBo)) {
           helpBo.setHpNumber(10);
           helpBo.setHpStatus(1);
-          // 通知项目助力服务更新该用户助力的项目助力信息
+          // 更新该用户助力的项目助力信息
+
           kafkaSender.send(helpBo, KafKaTopics.UPDATE_HELP_PROJECT);
         } else {
           helpBo =
@@ -474,19 +473,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     return sysProject;
   }
 
-  @Override
-  public byte[] getEncryptProjectByUUID(String uuid) {
-    byte[] res = null;
-    try {
-      SysProject sysProject = this.getProjectByUUID(uuid);
-      res = RsaUtils.encryptByPublicKey(sysProject, publicKey);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
-    return res;
-  }
-
   /**
    * 根据账户获取用户信息，异常则返回null
    *
@@ -497,10 +483,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SysUser getSysUser(String account) {
     SysUser sysUser = null;
     try {
-      // 先到Redis中取一下
-      boolean flag = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+      boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
       if (flag) {
-        return redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
+        sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
+        if (!ObjectUtils.isEmpty(sysUser)) {
+          return sysUser;
+        }
       }
       Object res = userClient.getUserInfoByAccount(account);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
@@ -514,6 +502,21 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public SysUser getSysUserByUserId(String userId) {
     SysUser sysUser = null;
     try {
+      boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
+      if (flag) {
+        List<SysUser> sysUserList =
+            redisService.getCacheList(RedisKey.SYS_USER_LIST, SysUser.class);
+        List<SysUser> resultSysUserList =
+            sysUserList.stream()
+                .filter(
+                    u -> {
+                      return !ObjectUtils.isEmpty(u) && u.getUserId().equals(userId);
+                    })
+                .collect(Collectors.toList());
+        if (resultSysUserList.size() > 0) {
+          return resultSysUserList.get(0);
+        }
+      }
       Object res = userClient.getSysUserByUserId(userId);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
@@ -526,8 +529,25 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
   public ProjectHelp getProjectHelpLink(String pUUID, String userId) {
     ProjectHelp projectHelp = null;
     try {
-      Object res = projectHelpClient.getProjectHelpLink(pUUID, userId);
-      projectHelp = RsaUtils.decryptByPrivateKey(res, ProjectHelp.class, privateKey);
+      boolean flag = redisService.hasKey(RedisKey.PROJECT_HELP_LIST);
+      if (flag) {
+        List<ProjectHelp> projectHelpList =
+            redisService.getCacheList(RedisKey.PROJECT_HELP_LIST, ProjectHelp.class);
+        System.out.println(projectHelpList);
+        List<ProjectHelp> resultProjectHelpList =
+            projectHelpList.stream()
+                .filter(
+                    ph -> {
+                      return !ObjectUtils.isEmpty(ph)
+                          && ph.getPUUID().equals(pUUID)
+                          && ph.getCreateUserId().equals(userId);
+                    })
+                .collect(Collectors.toList());
+        if (resultProjectHelpList.size() > 0) {
+          return resultProjectHelpList.get(0);
+        }
+      }
+      projectHelp = projectHelpService.getProjectHelpLink(pUUID, userId);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

@@ -16,4 +16,10 @@ public class RedisKey {
 
   /** 头像列表同步状态 */
   public static final String PHOTO_LIST_SYNC_STATUS = "photo_list_sync_status";
+
+  /** 京东广告列表 */
+  public static final String JD_ADVERTISE_LIST = "jd_advertise_list";
+
+  /** 京东广告同步状态 */
+  public static final String JD_ADVERTISE_LIST_SYNC_STATUS = "jd_advertise_list_sync_status";
 }

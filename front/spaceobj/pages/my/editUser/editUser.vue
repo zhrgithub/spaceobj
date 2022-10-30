@@ -166,7 +166,6 @@
 			loadUserInfo(){
 				var userInfo = uni.getStorageSync(sk.userInfo);
 				that.userInfo= userInfo;
-				console.log(userInfo)
 				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
 				that.phoneNumber = strigUtils.isBlank(userInfo.phoneNumber) ? that.phoneNumber : userInfo
@@ -177,19 +176,16 @@
 				that.ipTerritory = userInfo.ipTerritory;
 				that.openId = userInfo.openId;
 				that.userId = userInfo.userId;
-				console.log(that.openId);
 			},
 			bindWechat(){
 				uni.login({
 					provider: 'weixin',
 					success: function(res) {
 						
-						console.log("用户授权信息：", res);
 						api.post({
 							code: res.code,
 							userId:that.userId
 						}, api.bindWechat).then(res2 => {
-							console.log("绑定结果：", res2);
 							// 修改缓存信息
 							if(res2.code==200){
 								uni.setStorage({
@@ -232,7 +228,6 @@
 				api.post({
 
 				}, api.sysPhotoList).then(res => {
-					console.log("res:", res)
 					that.selectPhotoList = res.data;
 					uni.hideLoading();
 				});
@@ -292,7 +287,6 @@
 					})
 					return;
 				}
-				console.log(that.email)
 				if (that.email.length == 0 || that.email == '未设置') {
 					uni.showToast({
 						icon: 'none',
@@ -308,7 +302,6 @@
 					email: that.email,
 					openId:that.openId
 				}, api.customerUpdateUserInfo).then(res => {
-					console.log("res:", res)
 					uni.hideLoading();
 					if (res.code == 200) {
 						uni.setStorage({

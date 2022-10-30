@@ -68,7 +68,8 @@
 			that = this;
 		},
 		onLoad(e) {
-			var obj = JSON.parse(e.obj);
+			var str = decodeURIComponent(e.obj);
+			var obj = JSON.parse(str);
 			that.projectObj = obj;
 		},
 		methods: {
@@ -95,7 +96,6 @@
 					editable: true,
 					success(e) {
 						if (e.confirm) {
-							console.log(e.content)
 							uni.showLoading();
 							that.updateProject(2, e.content);
 						}

@@ -7,6 +7,7 @@ import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author zhr_java@163.com
@@ -33,7 +34,14 @@ public class RedissonConfiguration {
   public RedissonClient getRedisson() {
 
     Config config = new Config();
-    config.useSingleServer().setAddress("redis://"+redisHost+":"+port).setPassword(password);
+    if (ObjectUtils.isEmpty(password)) {
+      config.useSingleServer().setAddress("redis://" + redisHost + ":" + port);
+    } else {
+      config
+          .useSingleServer()
+          .setAddress("redis://" + redisHost + ":" + port)
+          .setPassword(password);
+    }
 
     return Redisson.create(config);
   }

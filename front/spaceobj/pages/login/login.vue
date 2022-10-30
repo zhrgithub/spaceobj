@@ -90,22 +90,20 @@
 			that = this;
 		},
 		onLoad(e) {
-			console.log("页面接收参数：", e);
-			
+
 		},
 
 		onShow() {
 			this.timer = setTimeout(() => {
 				that.number = "获取验证码"
-				
+
 			}, 200)
 
 		},
 		methods: {
 			doUpdateProjectHelp() {
 				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
-				console.log(projectHelpShare)
-				if (!su.isUndefined(projectHelpShare)&&!su.isBlank(projectHelpShare)) {
+				if (!su.isUndefined(projectHelpShare) && !su.isBlank(projectHelpShare)) {
 					api.post({
 						hpId: projectHelpShare.hpId,
 					}, api.updateProjectHelpNumber).then(res => {
@@ -128,18 +126,16 @@
 				uni.login({
 					provider: 'weixin',
 					success: function(res) {
-						console.log("用户授权信息：", res);
 						api.post({
 							code: res.code,
 							ipTerritory: uni.getStorageSync(sk.ipTerritory),
 							deviceType: uni.getStorageSync(sk.deviceModel).model,
 							inviteUserId: uni.getStorageSync(sk.inviteUserId)
 						}, api.loginByWechat).then(res2 => {
-							console.log("登录信息：", res2)
-							if(res2.code==200){
-								
+							if (res2.code == 200) {
+
 								that.loginResetUserinFo(res2.data, res2.data.token, res2.msg);
-								
+
 							}
 							uni.hideLoading();
 						})
@@ -193,33 +189,32 @@
 				})
 			},
 			loginResetUserinFo(userInfo, token, msg) {
-				
-				console.log(userInfo, token, msg);
+
 				// 缓存用户基本信息
 				uni.setStorage({
 					key: sk.userInfo,
 					data: userInfo
 				})
-				
-				if(su.isBlank(userInfo.email)||su.isBlank(userInfo.phoneNumber)){
+
+				if (su.isBlank(userInfo.email) || su.isBlank(userInfo.phoneNumber)) {
 					uni.navigateTo({
-						url:'/pages/addEmailPhoneNumber/addEmailPhoneNumber'
+						url: '/pages/addEmailPhoneNumber/addEmailPhoneNumber'
 					})
 					return;
 				}
-				
+
 				//缓存token
 				uni.setStorage({
 					key: sk.token,
 					data: token
 				})
-				
+
 				// 缓存登录状态
 				uni.setStorage({
 					key: sk.loginStatus,
 					data: true
 				})
-				
+
 				// 登录成功，帮助好友更新项目助力信息
 				that.doUpdateProjectHelp();
 				uni.showToast({
@@ -236,7 +231,6 @@
 				var email = that.email;
 				var password = that.password;
 				var verificatioin = that.verificatioin;
-				console.log(email, password, verificatioin)
 				if (!rgx.checkEmail(email)) {
 					uni.showToast({
 						icon: 'none',
@@ -318,11 +312,9 @@
 					return;
 				}
 				var deviceModel = uni.getStorageSync(sk.deviceModel);
-				console.log(that.phoneNumber, that.email, that.password, deviceModel);
 				var en = new JSEncrypt();
 				en.setPublicKey(api.publicKey);
 				var encryPassword = en.encrypt(that.password);
-				console.log(encryPassword)
 				api.post({
 					operateType: 3,
 					account: that.email,
@@ -371,7 +363,6 @@
 				api.post({
 					account: that.email,
 				}, api.sendMailCode).then(res => {
-					console.log("res:", res);
 					uni.showToast({
 						title: res.msg,
 						icon: 'none'

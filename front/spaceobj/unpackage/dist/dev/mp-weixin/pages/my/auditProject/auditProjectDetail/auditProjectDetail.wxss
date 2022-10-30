@@ -1,0 +1,75 @@
+
+.main-content-right.data-v-56a5f598 {
+	width: 100%;
+	height: 200rpx;
+	display: none;
+}
+.project-detail-background-style.data-v-56a5f598 {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+.base-info-panel-style.data-v-56a5f598 {
+	width: 96%;
+	margin-left: 2%;
+	height: 300rpx;
+	box-shadow: darkgray 0px 0px 2px 0px;
+	margin-top: 50rpx;
+	border-radius: 10px;
+}
+.project-num-status-style.data-v-56a5f598 {
+	width: 90%;
+	margin-left: 5%;
+	height: 95rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+}
+.project-numer-style.data-v-56a5f598 {
+	width: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.project-status-style.data-v-56a5f598 {
+	width: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.description-requirement-style.data-v-56a5f598 {
+	width: 96%;
+	margin-left: 2%;
+	margin-top: 50rpx;
+	border-radius: 10rpx;
+	box-shadow: darkgray 0px 0px 2px 0px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.description-content-style.data-v-56a5f598 {
+	width: 90%;
+	margin-top: 30rpx;
+	margin-bottom: 30rpx;
+	font-size: 15px;
+}
+.btn-background-style.data-v-56a5f598 {
+	width: 96%;
+	height: 280rpx;
+	margin-left: 2%;
+	margin-bottom: 500rpx;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.btn-background-style button.data-v-56a5f598 {
+	width: 40%;
+	background-color: #49A8E7;
+	color: white;
+	height: 100rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+

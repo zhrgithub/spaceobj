@@ -56,7 +56,6 @@
 		onShow() {
 			that.timer = setTimeout(() => {
 				var otherInfo = uni.getStorageSync(sk.otherInfo);
-				console.log(otherInfo.downloadUrl)
 				that.downloadUrl = otherInfo.downloadUrl;
 				that.wechat = otherInfo.wechat;
 				that.online = otherInfo.online;
@@ -64,7 +63,6 @@
 		},
 		methods: {
 			setOnline() {
-				console.log(online)
 				var online = that.online;
 				if (online == 0) {
 					that.online = 1;
@@ -93,7 +91,6 @@
 					})
 					return;
 				}
-				console.log(that.wechat, that.downloadUrl)
 				api.post({
 					wechat: that.wechat,
 					downloadUrl: that.downloadUrl,

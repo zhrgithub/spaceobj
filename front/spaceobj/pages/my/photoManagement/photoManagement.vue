@@ -39,7 +39,6 @@
 				api.post({
 
 				}, api.sysPhotoList).then(res => {
-					console.log("res:", res)
 					that.photoList = res.data;
 					uni.hideLoading();
 				});
@@ -50,7 +49,6 @@
 					editable: true,
 					confirmColor: '#000',
 					success(e) {
-						console.log(e.content)
 						if (e.confirm) {
 							that.addOrUpdatePhoto('', e.content, 0)
 						}
@@ -58,7 +56,6 @@
 				})
 			},
 			editPhoto(e) {
-				console.log(e)
 				var photoId = e.photoId;
 				uni.showModal({
 					title: '编辑头像',
@@ -68,7 +65,6 @@
 					confirmColor: '#000',
 					editable: true,
 					success(e) {
-						console.log(e.content)
 						if(e.content==''){
 							uni.showToast({
 								title:'请设置URL',
@@ -92,7 +88,6 @@
 					operation: operation,
 					photoId: photoId
 				}, api.addOrUpdatePhoto).then(res => {
-					console.log(res)
 					if (res.code == 200) {
 						that.loadPhotoList();
 						uni.showToast({
@@ -111,7 +106,6 @@
 				api.post({
 					photoId: photoId
 				}, api.sysPhotoDelete).then(res => {
-					console.log("res:", res)
 					if (res.code == 200) {
 						that.loadPhotoList();
 						uni.showToast({

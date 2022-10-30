@@ -16,7 +16,6 @@
 			}
 		},
 		onLoad(e) {
-			// console.log(uni.getStorageSync(sk.inviteUserId))
 			if (!su.isBlank(e)) {
 				// 设置邀请人id
 				if (!su.isUndefined(e.inviteUserId)) {
@@ -27,7 +26,8 @@
 				}
 				// 设置项目助力projectHelpShare
 				if (!su.isUndefined(e.projectHelpShare)) {
-					var projectHelpShare = JSON.parse(e.projectHelpShare);
+					var str = decodeURIComponent(e.projectHelpShare);
+					var projectHelpShare = JSON.parse(str);
 					uni.setStorage({
 						key: sk.projectHelpShare,
 						data: projectHelpShare
@@ -63,7 +63,6 @@
 				key: sk.deviceModel,
 				data: res
 			})
-			console.log("设备信息:", res) // 设备信息
 			if (res.model != "PC") {
 
 			}

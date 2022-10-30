@@ -117,7 +117,6 @@
 						if (res.data.length > 0) {
 							that.list = that.list.concat(res.data);
 							that.currentPage++;
-							console.log(that.currentPage)
 						}
 					}
 					uni.hideLoading();
@@ -128,13 +127,11 @@
 				});
 			},
 			toAuditProjectDetail(e) {
-				console.log(e);
 				uni.navigateTo({
-					url: '/pages/my/auditProject/auditProjectDetail/auditProjectDetail?obj=' + JSON.stringify(e)
+					url: '/pages/my/auditProject/auditProjectDetail/auditProjectDetail?obj=' + encodeURIComponent(JSON.stringify(e))
 				})
 			},
 			doSearch(e) {
-				console.log(e.detail.value)
 				that.currentPage = 1;
 				that.list = [];
 				that.loadList();

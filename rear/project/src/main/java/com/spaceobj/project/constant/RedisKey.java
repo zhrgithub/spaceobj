@@ -6,8 +6,6 @@ package com.spaceobj.project.constant;
  */
 public class RedisKey {
 
-  /** 设置项目列表的key过期时间 */
-  public static final int PROJECT_LIST_EXPIRE_TIME = 5;
 
   /** 项目列表 */
   public static final String PROJECT_LIST = "project_list";
@@ -20,4 +18,8 @@ public class RedisKey {
 
   /** 系统用户列表 */
   public static final String SYS_USER_LIST = "sys_user_list";
+
+  /** 项目助力列表同步状态 */
+  public static final String PROJECT_HELP_LIST_SYNC_STATUS = "project_help_list_sync_status";
+
 }

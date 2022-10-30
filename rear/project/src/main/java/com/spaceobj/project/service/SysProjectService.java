@@ -93,11 +93,5 @@ public interface SysProjectService extends IService<SysProject> {
    */
   SysProject getProjectByUUID(String uuid);
 
-  /**
-   * 根据项目的UUID获取项目信息
-   *
-   * @param uuid
-   * @return
-   */
-  byte[] getEncryptProjectByUUID(String uuid);
+
 }

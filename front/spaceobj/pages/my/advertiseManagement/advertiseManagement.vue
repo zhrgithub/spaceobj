@@ -150,7 +150,6 @@
 				api.post({
 
 				}, api.jdList).then(res => {
-					console.log("res:", res)
 					that.list = res.data;
 					uni.hideLoading();
 				});
@@ -210,7 +209,6 @@
 			submit() {
 				// 判断是新增还是修改
 				var operationType = that.operationType;
-				console.log(operationType)
 				if (that.jdAdHyperlink.length == 0) {
 					uni.showToast({
 						icon: 'none',

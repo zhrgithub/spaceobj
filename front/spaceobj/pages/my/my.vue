@@ -152,7 +152,6 @@
 		},
 		onShareAppMessage(res) {
 			if (res.from === 'button') { // 来自页面内分享按钮
-				console.log(res.target)
 			}
 			return {
 				title: '欢迎体验spaceObj，项目外包入口',
@@ -181,7 +180,6 @@
 			// 根据用户登录账户刷新用户基本信息
 			getUserInfo() {
 				api.post({}, api.getUserInfo).then(res => {
-					console.log("res:", res);
 					// 刷新缓存
 					uni.setStorage({
 						key:sk.userInfo,
@@ -252,7 +250,6 @@
 				})
 			},
 			copyWeChat() {
-				console.log(that.wechat)
 				uni.setClipboardData({
 					data: that.wechat,
 					showToast: false,

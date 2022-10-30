@@ -202,7 +202,6 @@
 				});
 			},
 			editUser(e) {
-				console.log(e);
 				that.userObj = e;
 				this.$refs.popup.open('bottom')
 			},
@@ -217,7 +216,6 @@
 			save() {
 				uni.showLoading();
 				var userObj = that.userObj;
-				console.log("userObj:", userObj)
 				api.post(userObj, api.updateSysUser).then(res => {
 					uni.hideLoading();
 					if (res.code == 200) {
@@ -233,7 +231,6 @@
 				this.$refs.popup.close();
 			},
 			doSearch(e) {
-				console.log(e.detail.value)
 				that.currentPage = 1;
 				that.list = [];
 				that.loadList();

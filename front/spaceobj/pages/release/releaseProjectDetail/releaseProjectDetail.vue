@@ -90,8 +90,8 @@
 			that = this;
 		},
 		onLoad(e) {
-			var obj = JSON.parse(e.obj);
-			console.log(obj)
+			var str = decodeURIComponent(e.obj);
+			var obj = JSON.parse(str);
 			that.projectObj = obj;
 			if (obj.status == 2) {
 				uni.showModal({
@@ -104,11 +104,9 @@
 		methods: {
 			setPrice(e) {
 				that.projectObj.price = e.detail.value;
-				console.log(that.projectObj.price);
 			},
 			setContent(e) {
 				that.projectObj.content = e.detail.value;
-				console.log(that.projectObj.content);
 			},
 			getAuditStatus(e) {
 				if (e == 0) {

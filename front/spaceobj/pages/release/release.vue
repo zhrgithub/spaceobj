@@ -98,15 +98,17 @@
 				title: '加载中...',
 			})
 			
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
+			
 		},
 		onShow() {
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
 			
-			that.list = [];
-			that.currentPage = 1;
-			that.pageSize = 10;
-			that.loadList();
+			
 		},
 		// 触底加载更多
 		onReachBottom() {
@@ -128,11 +130,9 @@
 		methods: {
 			setPrice(e) {
 				that.price = e.detail.value;
-				console.log(that.price);
 			},
 			setContent(e) {
 				that.content = e.detail.value;
-				console.log(that.content);
 			},
 
 			timeStampTurnTime(str) {
@@ -172,7 +172,6 @@
 						if (res.data.length > 0) {
 							that.list = that.list.concat(res.data);
 							that.currentPage++;
-							console.log(that.currentPage)
 						}
 					} else {
 						uni.showToast({
@@ -184,7 +183,6 @@
 				});
 			},
 			releaseProject(type) {
-				console.log(type)
 				this.type = type;
 				// open 方法传入参数 等同在 uni-popup 组件上绑定 type属性
 				this.$refs.popup.open(type);
@@ -248,7 +246,7 @@
 			},
 			toProjecDetail(e) {
 				uni.navigateTo({
-					url: '/pages/release/releaseProjectDetail/releaseProjectDetail?obj='+ JSON.stringify(e)
+					url: '/pages/release/releaseProjectDetail/releaseProjectDetail?obj='+ encodeURIComponent(JSON.stringify(e))
 				})
 			},
 		}

@@ -81,16 +81,16 @@
 			uni.showLoading({
 				title: '加载中...',
 			})
-			
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
 		},
 		onShow() {
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
 			
-			that.list = [];
-			that.currentPage = 1;
-			that.pageSize = 10;
-			that.loadList();
+			
 		},
 		methods: {
 			timeStampTurnTime(str) {
@@ -109,7 +109,6 @@
 						if (res.data.length > 0) {
 							that.list = that.list.concat(res.data);
 							that.currentPage++;
-							console.log(that.currentPage)
 						}
 					} else {
 						uni.showToast({
@@ -129,11 +128,10 @@
 				})
 			},
 			sliderChange(e) {
-				console.log('value 发生变化：' + e.detail.value)
 			},
 			toProjecDetail(e) {
 				uni.navigateTo({
-					url: '/pages/help/helpProjectDetail/helpProjectDetail?obj=' + JSON.stringify(e)
+					url: '/pages/help/helpProjectDetail/helpProjectDetail?obj=' + encodeURIComponent(JSON.stringify(e))
 				})
 			},
 		}

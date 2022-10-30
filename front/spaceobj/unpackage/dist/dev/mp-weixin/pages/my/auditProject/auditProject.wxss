@@ -1,0 +1,277 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 搜索框 */
+.search-background-style.data-v-e15a5676 {
+	width: 100%;
+	height: 130rpx;
+	position: absolute;
+	z-index: 9;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: fixed;
+	z-index: 999;
+	background-color: #fff;
+}
+.search-logo-background-style.data-v-e15a5676 {
+	width: 90%;
+	height: 60%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 10px;
+	background-color: #F5F5F5;
+}
+.image-background-style.data-v-e15a5676 {
+	width: 10%;
+	height: 30rpx;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.image-background-style image.data-v-e15a5676 {
+	width: 40rpx;
+	height: 40rpx;
+}
+.input-background-style.data-v-e15a5676 {
+	width: 85%;
+	height: 80%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.input-background-style input.data-v-e15a5676 {
+	width: 90%;
+	height: 100%;
+}
+.input-background-style image.data-v-e15a5676 {
+	width: 40rpx;
+	height: 40rpx;
+}
+.top-space-line-style.data-v-e15a5676 {
+	height: 150rpx;
+	width: 100%;
+}
+/* 项目列表 */
+.project-list-style.data-v-e15a5676 {
+	width: 96%;
+	margin-left: 2%;
+	height: 280rpx;
+	box-shadow: darkgray 0px 0px 2px 0px;
+	border-radius: 10rpx;
+	margin-bottom: 30rpx;
+}
+.date-status-style.data-v-e15a5676 {
+	width: 98%;
+	margin-left: 1%;
+	height: 35%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.brief-information-style.data-v-e15a5676 {
+	width: 96%;
+	margin-left: 2%;
+	height: 160rpx;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	font-size: 15px;
+}
+.date-style.data-v-e15a5676 {
+	width: 30%;
+	background-color: #49A8E7;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	border-radius: 10rpx;
+	height: 60%;
+	font-size: 14px;
+}
+.status-style.data-v-e15a5676 {
+	width: 30%;
+	background-color: #49A8E7;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	border-radius: 10rpx;
+	height: 60%;
+	margin-left: 3%;
+	margin-right: 3%;
+	font-size: 14px;
+}
+.detail-style.data-v-e15a5676 {
+	width: 30%;
+	background-color: #EBA54B;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	border-radius: 10rpx;
+	height: 60%;
+	font-size: 14px;
+}
+.release-background-style.data-v-e15a5676 {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+

@@ -49,7 +49,6 @@
 				// 第一步：加载用户基本信息
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
 				var userInfo = uni.getStorageSync(sk.userInfo);
-				console.log(userInfo);
 				if (userInfo != '') {
 					that.realNameStatus = userInfo.realNameStatus;
 					that.idCardPic = userInfo.idCardPic;
@@ -70,11 +69,9 @@
 		},
 		methods: {
 			setUserName(e){
-				console.log(e.detail.value);
 				that.username = e.detail.value;
 			},
 			setIdCardNumber(e){
-				console.log(e.detail.value);
 				that.idCardNum = e.detail.value;
 			},
 			submit(){
@@ -103,15 +100,12 @@
 					})
 					return;
 				}
-				console.log(userInfo)
 				userInfo.username = username;
 				userInfo.idCardNum = idCardNum;
 				userInfo.idCardPic = idCardPic;
 				
 				
-				console.log(userInfo)
 				api.post(userInfo, api.realName).then(res => {
-					console.log("res:", res)
 					uni.hideLoading();  
 					if (res.code == 200) {
 						uni.setStorage({
@@ -143,7 +137,6 @@
 								'file': tempFilePaths
 							},
 							success: (uploadFileRes) => {
-								console.log(uploadFileRes);
 								var data = JSON.parse(uploadFileRes.data);
 								if(data.code==200){
 									that.idCardPic = data.data;

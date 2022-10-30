@@ -47,7 +47,6 @@
 		onShow() {
 			this.timer = setTimeout(() => {
 				var userInfo = uni.getStorageSync(sk.userInfo);
-				console.log(userInfo)
 				that.email = strigUtils.isBlank(userInfo.email) ? that.email : userInfo.email;
 				that.phoneNumber = strigUtils.isBlank(userInfo.phoneNumber) ? that.phoneNumber : userInfo
 					.phoneNumber;
@@ -79,7 +78,6 @@
 					return;
 				}
 
-				console.log(that.email)
 				if (that.email.length == 0 || that.email == '未设置') {
 					uni.showToast({
 						icon: 'none',
@@ -97,7 +95,6 @@
 							phoneNumber: that.phoneNumber,
 							ipTerritory: uni.getStorageSync(sk.ipTerritory),
 						}, api.customerUpdateUserInfo).then(res => {
-							console.log("res:", res)
 							uni.hideLoading();
 							if (res.code == 200) {
 								// 设置用户信息

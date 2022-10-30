@@ -83,9 +83,5 @@ public class ProjectController {
     return sysProjectService.queryListAdmin(projectSearchBo);
   }
 
-  @PostMapping(value = "getEncryptProjectByUUID")
-  public byte[] getEncryptProjectByUUID(String uuid) {
-    System.out.println("uuid:"+uuid);
-    return sysProjectService.getEncryptProjectByUUID(uuid);
-  }
+
 }

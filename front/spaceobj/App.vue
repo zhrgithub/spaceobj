@@ -1,6 +1,7 @@
 <script>
 	import sk from '@/common/StoryKeys.js'
 	import api from '@/common/api.js'
+	
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
@@ -9,24 +10,25 @@
 			console.log('App Show')
 			// 获取广告
 			api.post({
-				
+
 			}, api.jdList).then(res => {
-				console.log("广告内容：",res);
-				if(res.code==200){
+
+				if (res.code == 200) {
 					uni.setStorage({
-						key:sk.shopList,
-						data:res.data
+						key: sk.shopList,
+						data: res.data
 					})
 				}
 			})
 			// 获取ip属地
 			api.get({}, api.ipTerritory).then(res => {
+				var ip_Territory = res.country+res.regionName+res.city;
 				uni.setStorage({
 					key: sk.ipTerritory,
-					data: res.replace(/[\r\n]/g, "")
+					data: ip_Territory
 				})
 			});
-			
+
 			// 获取设备信息
 			const res = uni.getSystemInfoSync();
 			uni.setStorage({

@@ -79,26 +79,21 @@
 			that = this;
 		},
 		onLoad(e) {
-			var obj = JSON.parse(e.obj);
-			console.log(obj)
+			var str = decodeURIComponent(e.obj);
+			var obj = JSON.parse(str);
 			that.projectHelp = obj;
 		},
 		onShareAppMessage(res) {
 			if (res.from === 'button') { // 来自页面内分享按钮
-				console.log(res.target)
 			}
-			console.log("分享前的内容", that.projectHelp);
 			return {
 				title: '欢迎体验spaceObj，项目外包入口',
-				path: 'pages/index/index?projectHelpShare=' + JSON.stringify(that.projectHelp)
+				path: 'pages/index/index?projectHelpShare=' + encodeURIComponent(JSON.stringify(that.projectHelp))
 			}
 		},
 		methods: {
-			dialogClose() {
-				console.log('点击关闭')
-			},
+			dialogClose() {},
 			dialogConfirm() {
-				console.log('点击确认')
 				// this.$refs.message.open();
 			},
 			dialogToggle(type) {
@@ -150,13 +145,11 @@
 				uni.showLoading({
 					title: '加载中...'
 				})
-				console.log(that.projectHelp);
 
 				api.post({
 					uuid: that.projectHelp.puuid,
 				}, api.getPhoneNumberByProjectId).then(res => {
 					uni.hideLoading();
-					console.log(res)
 					if (res.code == 200) {
 						that.copyPhoneNumber(res.data);
 					}

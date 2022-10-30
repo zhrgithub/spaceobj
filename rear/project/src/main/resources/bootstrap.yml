@@ -1,15 +1,27 @@
-# Nacos帮助文档: https://nacos.io/zh-cn/docs/concepts.html
-# Nacos认证信息
 
+# prod
+
+#spring:
+#  cloud:
+#    nacos:
+#      config:
+#        username: nacos
+#        password: W6rkecAN123nacos
+#        context-path: /nacos
+#        # 设置配置中心服务端地址
+#        server-addr: 124.70.3.244:8848
+#        # Nacos 配置中心的namespace。需要注意，如果使用 public 的 namcespace ，请不要填写这个值，直接留空即可
+#        namespace:
+
+# dev
 spring:
   cloud:
     nacos:
       config:
         username: nacos
-        password: W6rkecAN123nacos
+        password: nacos
         context-path: /nacos
         # 设置配置中心服务端地址
-#        server-addr: localhost:8848
-        server-addr: 124.70.3.244:8488
+        server-addr: localhost:8848
         # Nacos 配置中心的namespace。需要注意，如果使用 public 的 namcespace ，请不要填写这个值，直接留空即可
         namespace: 

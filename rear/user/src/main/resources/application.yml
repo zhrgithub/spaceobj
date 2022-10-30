@@ -12,14 +12,14 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     name: defaultDataSource
-    url: jdbc:mysql://124.70.3.244:3306/spaceobj-user?autoReconnect=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/spaceobj-user?autoReconnect=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
     username: root
-    password: W6rkecAN123Rhz
+    password: 123456
   # Redis
   redis:
-    host: 124.70.3.244
+    host: 127.0.0.1
     port: 6380
-    password: foobaredW6rkecAN
+    password:
     database: 1
     timeout: 20s
     lettuce:
@@ -33,7 +33,7 @@ spring:
         # 连接池中的最小空闲连接
         min-idle: 0
   kafka:
-    bootstrap-servers: 124.70.3.244:9092  #bootstrap-servers：连接kafka的地址，多个地址用逗号分隔
+    bootstrap-servers: 127.0.0.1:9092  #bootstrap-servers：连接kafka的地址，多个地址用逗号分隔
     consumer:
       group-id: sysUser
       enable-auto-commit: true
@@ -56,9 +56,9 @@ spring:
     nacos:
       discovery:
         username: nacos
-        password: W6rkecAN123nacos
+        password: nacos
         # Nacos 服务发现与注册配置，其中子属性 server-addr 指定 Nacos 服务器主机和端口
-        server-addr: 124.70.3.244:8848
+        server-addr: localhost:8848
         # 注册到 nacos 的指定 namespace，默认为 public
         namespace: public
   servlet:
@@ -85,9 +85,9 @@ sa-token:
   # 配置 Sa-Token 单独使用的 Redis 连接
   alone-redis:
     database: 0
-    host: 124.70.3.244
+    host: 127.0.0.1
     port: 6380
-    password: foobaredW6rkecAN
+    password:
     timeout: 20s
 
 
