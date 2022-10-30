@@ -120,7 +120,13 @@ public class RedisService {
    * @return true 存在 false不存在
    */
   public Boolean hasKey(String key) {
-    return redisTemplate.hasKey(key);
+    boolean flag = false;
+    try{
+      flag =redisTemplate.hasKey(key);
+    }catch (Exception e){
+      return false;
+    }
+    return flag;
   }
 
   /**

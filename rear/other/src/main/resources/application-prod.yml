@@ -1,21 +1,15 @@
 # 应用服务 WEB 访问端口
 server:
-  port: 8082
+  port: 8085
 
 # 应用名称
 spring:
   application:
-    name: spaceobj-advertise
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    name: defaultDataSource
-    url: jdbc:mysql://124.70.3.244:3306/spaceobj-advertise?autoReconnect=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
-    username: root
-    password: W6rkecAN123Rhz
+    name: spaceobj-other
   redis:
     host: 124.70.3.244
     port: 6380
-    password: foobaredW6rkecAN
+    password: W6rkecAN123Rhz
     database: 1
     timeout: 20s
     lettuce:
@@ -39,6 +33,9 @@ spring:
         server-addr: 124.70.3.244:8848
         # 注册到 nacos 的指定 namespace，默认为 public
         namespace: public
+
+
+
 # Sa-Token配置
 sa-token:
   # token 名称 (同时也是cookie名称)
@@ -60,7 +57,13 @@ sa-token:
     database: 0
     host: 124.70.3.244
     port: 6380
-    password: foobaredW6rkecAN
-    timeout: 20s
+    password: W6rkecAN123Rhz
+    timeout: 10s
+
+
+
+
+
+
 
 

@@ -41,7 +41,7 @@ public class OtherServiceImpl implements OtherService {
         Other other = null;
 
         if (redisService.hasKey(OTHER_INFO)) {
-            other = (Other) redisService.getCacheObject(OTHER_INFO,Other.class);
+            other = (Other) redisService.getCacheObject(OTHER_INFO, Other.class);
 
             if (StringUtils.isBlank(other.getWechat())) {
                 other.setWechat(RestData.WECHAT);
@@ -49,14 +49,14 @@ public class OtherServiceImpl implements OtherService {
             if (StringUtils.isBlank(other.getDownloadUrl())) {
                 other.setDownloadUrl(RestData.DOWNLOAD_URL);
             }
-            if(ObjectUtils.isEmpty(other.getOnline())){
+            if (ObjectUtils.isEmpty(other.getOnline())) {
                 other.setOnline(RestData.ONLINE);
             }
-            return SaResult.ok("提交成功").setData(other);
+            return SaResult.ok().setData(other);
         }
-        other = Other.builder().downloadUrl(RestData.DOWNLOAD_URL).wechat(RestData.WECHAT).build();
-
-        return SaResult.ok("提交成功").setData(other);
+        other = Other.builder().downloadUrl(RestData.DOWNLOAD_URL).wechat(RestData.WECHAT).online(RestData.ONLINE).build();
+        redisService.setCacheObject(OTHER_INFO, other);
+        return SaResult.ok().setData(other);
     }
 
 }

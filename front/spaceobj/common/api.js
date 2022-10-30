@@ -1,6 +1,7 @@
 import sk from "@/common/StoryKeys.js"
 // 服务器地址
 let SERVER_HEADER = 'http://localhost:8081/'
+ // let SERVER_HEADER = "https://www.spaceobj.com/"
 
 // 用户模块
 let USER = SERVER_HEADER + "spaceobj-user/"

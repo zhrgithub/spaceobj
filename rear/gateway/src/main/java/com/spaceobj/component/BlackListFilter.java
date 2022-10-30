@@ -67,7 +67,7 @@ public class BlackListFilter implements GlobalFilter, Ordered {
 
       redisService.increment(clientIp);
       // 如果请求次数大于等于攻击次数，1天后解封
-      if (redisService.getCacheObject(clientIp, Integer.class) >= MALICIOUS_REQUESTS) {
+      if (redisService.hasKey(clientIp)&&redisService.getCacheObject(clientIp, Integer.class) >= MALICIOUS_REQUESTS) {
         redisService.expire(clientIp, 1, TimeUnit.DAYS);
         return responseWrap(response);
       }
@@ -75,7 +75,7 @@ public class BlackListFilter implements GlobalFilter, Ordered {
       redisService.setCacheObject(clientIp, 1);
       redisService.expire(clientIp, 1, TimeUnit.SECONDS);
     }
-    if (redisService.getCacheObject(clientIp, Integer.class) > MAX_REQUEST_TIME) {
+    if (redisService.hasKey(clientIp)&&redisService.getCacheObject(clientIp, Integer.class) > MAX_REQUEST_TIME) {
       return responseWrap(response);
     }
 
