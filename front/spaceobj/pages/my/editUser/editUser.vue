@@ -79,14 +79,14 @@
 			</view>
 		</view>
 		
-		<view class="edit-background-style">
+		<!-- <view class="edit-background-style">
 			<view class="change-tips">
 				IP
 			</view>
 			<view class="change-input-style">
 				{{userInfo.ip}}
 			</view>
-		</view>
+		</view> -->
 		<view class="edit-background-style">
 			<view class="change-tips">
 				操作系统

@@ -8,6 +8,10 @@ export default {
 	token: "token",
 	//设备信息
 	deviceModel: "deviceModel",
+
+	//当前用户ip
+	ip: "ip",
+	
 	//ip属地
 	ipTerritory: "ipTerritory",
 	//登录状态
@@ -21,9 +25,11 @@ export default {
 
 	// 广告列表
 	shopList: "shopList",
-	
+
 	// 分享项目助力对象
-	projectHelpShare:"projectHelpShare"
+	projectHelpShare: "projectHelpShare",
+
+
 
 
 

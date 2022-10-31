@@ -74,8 +74,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                         && p.getContent().equals(sysProject.getContent());
                   })
               .collect(Collectors.toList());
-      for (SysProject p : sysProjectList) {}
-
       if (resultSysProjectList.size() > 0) {
         return SaResult.error("请勿重复提交");
       }
@@ -108,6 +106,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       redisService.setCacheMapValue(RedisKey.PROJECT_LIST, uuid, sysProject);
       return SaResult.ok("提交成功");
     } catch (Exception e) {
+      // LOG.error(e.printStackTrace());
       e.printStackTrace();
       LOG.error("project add error", e.getMessage());
       return SaResult.error("服务器异常");
@@ -240,7 +239,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
    *
    * @return
    */
-  private List<SysProject> getSysProjectList() throws InterruptedException {
+  private List<SysProject> getSysProjectList() {
     List<SysProject> list = null;
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);

@@ -1,7 +1,7 @@
 <script>
 	import sk from '@/common/StoryKeys.js'
 	import api from '@/common/api.js'
-	
+	import su from '@/utils/StringUtils.js'
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
@@ -12,7 +12,6 @@
 			api.post({
 
 			}, api.jdList).then(res => {
-
 				if (res.code == 200) {
 					uni.setStorage({
 						key: sk.shopList,
@@ -20,13 +19,34 @@
 					})
 				}
 			})
-			// 获取ip属地
-			api.get({}, api.ipTerritory).then(res => {
-				var ip_Territory = res.country+res.regionName+res.city;
-				uni.setStorage({
-					key: sk.ipTerritory,
-					data: ip_Territory
-				})
+			// 获取ip
+			api.get({}, api.GET_IP).then(res => {
+				var ip = su.getIp(res);
+				
+				console.log(ip);
+				// 获取ip属地
+				api.get({
+					ip: ip
+				}, api.ipTerritory).then(res => {
+					console.log("ip属地", res);
+					if (res.code == 200) {
+						var ip_Territory = res.country + res.province + res.city + res.isp;
+						uni.setStorage({
+							key: sk.ipTerritory,
+							data: ip_Territory
+						})
+					} else {
+						uni.setStorage({
+							key: sk.ipTerritory,
+							data: "中国大陆"
+						})
+						
+						uni.setStorage({
+							key:sk.ip,
+							data:"未知"
+						})
+					}
+				});
 			});
 
 			// 获取设备信息

@@ -59,6 +59,7 @@
 			that = this;
 
 			const res = uni.getSystemInfoSync();
+			console.log("设备信息：",res)
 			uni.setStorage({
 				key: sk.deviceModel,
 				data: res

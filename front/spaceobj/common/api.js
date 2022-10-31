@@ -1,7 +1,14 @@
 import sk from "@/common/StoryKeys.js"
 // 服务器地址
-let SERVER_HEADER = 'http://localhost:8081/'
-// let SERVER_HEADER = "https://www.spaceobj.com/"
+// let SERVER_HEADER = 'http://localhost:8081/'
+let SERVER_HEADER = "https://www.spaceobj.com/"
+
+// 获取ip
+
+let GET_IP = "https://whois.pconline.com.cn/ipJson.jsp";
+
+// 获取IP属地
+let IP_ipTerritory = "https://ip.useragentinfo.com/json";
 
 // 用户模块
 let USER = SERVER_HEADER + "spaceobj-user/"
@@ -18,8 +25,11 @@ let PROJECT_HELP = SERVER_HEADER + "spaceobj-project/"
 //其它模块
 let OTHER = SERVER_HEADER + "spaceobj-user/"
 
+
+
 function post(data, url) {
 	var token = uni.getStorageSync(sk.token);
+	console.log("请求接口", url);
 	return uni.request({
 		url: url,
 		data: data,
@@ -58,6 +68,7 @@ function post(data, url) {
 
 function postJson(data, url) {
 	var token = uni.getStorageSync(sk.token);
+	console.log("请求接口", url);
 	return uni.request({
 		url: url,
 		data: data,
@@ -95,13 +106,14 @@ function postJson(data, url) {
 }
 
 function get(data, url) {
+	console.log("请求接口", url);
 	return uni.request({
 		url: url,
 		data: data,
 		header: {
-			'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
+			'content-type': 'application/x-www-form-urlencoded;',
 		},
-		method: "GET",
+		method: "GET", 
 	}).then((res) => {
 		var data = res[1].data;
 		console.log("结果数据：", data)
@@ -124,8 +136,10 @@ export default {
 	get,
 	publicKey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzZ5SLWaHmBmGQ2C7HsLPJywhHPTJWaSVDdXd2+wC5NzxBkko8atchNhMB2JKQcMnHy25nmleCK9nNBNJmLTBHE+s49klQSL0j8YrOCt+AF6TKP4ej88HTCVZsi755MM2DUQgC5J5gUpsSM3uKRgqTy7R696Rr4l9VZK4ADqvpgQIDAQAB",
 
+	// 获取ip
+	GET_IP: GET_IP,
 	// 获取ip属地
-	ipTerritory: "http://ip-api.com/json/?lang=zh-CN",
+	ipTerritory: IP_ipTerritory,
 
 	//密码加密
 	passwordEncryption: USER + "customerUser/aesEncrypt",

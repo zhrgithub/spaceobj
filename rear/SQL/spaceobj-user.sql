@@ -11,11 +11,59 @@
  Target Server Version : 50720
  File Encoding         : 65001
 
- Date: 29/10/2022 17:46:55
+ Date: 31/10/2022 00:07:17
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for jd_advertise
+-- ----------------------------
+DROP TABLE IF EXISTS `jd_advertise`;
+CREATE TABLE `jd_advertise` (
+  `jd_ad_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '广告ID',
+  `jd_ad_hyperlink` varchar(200) DEFAULT NULL COMMENT '广告超链接',
+  `jd_ad_image_link` varchar(200) DEFAULT NULL COMMENT '图片链接',
+  `jd_ad_name` varchar(50) DEFAULT NULL COMMENT '商品名称',
+  `jd_ad_store_name` varchar(50) DEFAULT NULL COMMENT '商店名称',
+  `jd_ad_coupon` varchar(50) DEFAULT NULL COMMENT '优惠券描述',
+  `jd_ad_price` decimal(50,2) DEFAULT NULL COMMENT '价格描述',
+  `jd_ad_comment_num` varchar(50) DEFAULT NULL COMMENT '好评数量',
+  `jd_ad_create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `jd_ad_update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (`jd_ad_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=121180162 DEFAULT CHARSET=utf8 COMMENT='京东广告';
+
+-- ----------------------------
+-- Records of jd_advertise
+-- ----------------------------
+BEGIN;
+INSERT INTO `jd_advertise` (`jd_ad_id`, `jd_ad_hyperlink`, `jd_ad_image_link`, `jd_ad_name`, `jd_ad_store_name`, `jd_ad_coupon`, `jd_ad_price`, `jd_ad_comment_num`, `jd_ad_create_time`, `jd_ad_update_time`) VALUES (-1216761855, 'https://item.jd.com/10056426707425.html', 'https://img10.360buyimg.com/n1/jfs/t1/23860/33/17905/222376/62d181c3E2dc499a3/f1a79117eba68f4d.jpg.avif', '烟薯25号红薯 糖心蜜薯 烤红薯地瓜 健康轻食 新鲜水果蔬菜生鲜 精选3斤', '寻鲜记专营店', ' 购买不超过20件时享受单件价￥9.90', 1000.00, '12', '2022-09-28 21:05:59', '2022-10-07 13:56:18');
+INSERT INTO `jd_advertise` (`jd_ad_id`, `jd_ad_hyperlink`, `jd_ad_image_link`, `jd_ad_name`, `jd_ad_store_name`, `jd_ad_coupon`, `jd_ad_price`, `jd_ad_comment_num`, `jd_ad_create_time`, `jd_ad_update_time`) VALUES (1, 'https://item.jd.com/10028959766071.html', 'https://img11.360buyimg.com/n1/jfs/t1/168928/12/26983/398301/61badc0dE70e6c50d/07d36fa0c2abf9b4.jpg', '千丝肉松饼整箱500g ', '中国特产·泉州馆', '购买不超过200件时享受单件价￥8.90', 32.00, '10', '2022-09-10 02:51:00', '2022-09-28 20:58:07');
+INSERT INTO `jd_advertise` (`jd_ad_id`, `jd_ad_hyperlink`, `jd_ad_image_link`, `jd_ad_name`, `jd_ad_store_name`, `jd_ad_coupon`, `jd_ad_price`, `jd_ad_comment_num`, `jd_ad_create_time`, `jd_ad_update_time`) VALUES (2, 'https://item.jd.com/10023433160986.html', 'https://img11.360buyimg.com/n1/jfs/t1/126829/25/11015/116254/5f48aaa7E4fc5dc94/990e9acfada642f9.jpg', '甘肃天水花牛 国产红蛇果 新鲜苹果水果 2斤', '中国特产', '每满300元，可减30元现金', 9.90, '100', '2022-09-13 00:52:43', '2022-09-28 21:09:58');
+INSERT INTO `jd_advertise` (`jd_ad_id`, `jd_ad_hyperlink`, `jd_ad_image_link`, `jd_ad_name`, `jd_ad_store_name`, `jd_ad_coupon`, `jd_ad_price`, `jd_ad_comment_num`, `jd_ad_create_time`, `jd_ad_update_time`) VALUES (121180161, 'https://img2.baidu.com/it/u=1893470775,4143435497&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500', 'https://img2.baidu.com/it/u=1893470775,4143435497&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500', '111', '11', '11', 11.00, '11', '2022-10-07 14:20:12', NULL);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_email
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_email`;
+CREATE TABLE `sys_email` (
+  `email_id` bigint(50) NOT NULL AUTO_INCREMENT COMMENT '邮箱ID',
+  `email_account` varchar(50) DEFAULT NULL COMMENT '邮箱账号',
+  `email_password` varchar(50) DEFAULT NULL COMMENT '邮箱密码',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`email_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='系统邮箱';
+
+-- ----------------------------
+-- Records of sys_email
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_email` (`email_id`, `email_account`, `email_password`, `create_time`, `update_time`) VALUES (1, 'spaceobj@163.com', 'MOQEKYDJGBXPKCCE', '2022-07-27 11:48:13', '2022-09-16 13:55:31');
+COMMIT;
 
 -- ----------------------------
 -- Table structure for sys_photo
@@ -97,14 +145,8 @@ CREATE TABLE `sys_user` (
 -- Records of sys_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('16bd345b-ad9d-4bb0-9b84-4b33c4b982c0', 'null', 'csca@163.com', 'null', 'e10adc3949ba59abbe56e057f20f883e', '94af4653-5bd9-4dad-9bf5-7c1cfd3a7d9b', 'null', '1322222222', 0, 0, 'null', 'null', '哈哈11', '测试11', 'https://img0.baidu.com/it/u=846799635,2112893415&fm=253&fmt=auto&app=138&f=JPEG?w=434&h=640', 1, 1, 0, 'null', 'null', '192.168.0.114', '上海市 联通', 3, 3, 10, 10, 'iPhone 6/7/8', '2022-09-16 22:33:23', '2022-10-29 02:22:33', 10, 0, 'zhr_java@163.com', 0, 'null');
-INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('2659b44c-f4aa-4ed8-83bf-8f5a782e7cbf', 'null', 'ccc@qq.com', 'null', 'e10adc3949ba59abbe56e057f20f883e', '8520d621-fa2f-458e-99df-00800af69902', 'null', '13212346439', 0, 0, 'null', 'null', '吼吼111', '1112', 'https://img0.baidu.com/it/u=846799635,2112893415&fm=253&fmt=auto&app=138&f=JPEG?w=434&h=640', 1, 2, 0, 'null', 'null', '127.0.0.1', '上海市', 3, 3, 10, 10, 'MacBook Pro', '2022-09-09 19:41:06', '2022-10-27 23:25:40', 10, 0, '11', 0, 'null');
-INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('2e93dc8e-9b47-4c2c-bca0-1f3c97805571', 'null', 'bbb@qq.com', 'null', 'e10adc3949ba59abbe56e057f20f883e', '8fc52f2a-5ddd-4b6b-80c9-4ca3936190ce', 'null', '13212346439', 0, 0, 'null', 'null', '11', '快乐的张三', 'https://img0.baidu.com/it/u=1915308837,2015938396&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500', 0, 2, 0, 'null', 'null', '172.20.10.2', '广东省深圳市 联通', 1, 3, 10, 10, 'iPhone 6/7/8', '2022-09-08 23:48:30', '2022-10-27 23:25:40', 10, 0, 'ccc@qq.com', 13, NULL);
-INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('5eb8b88d-b7b4-4cd6-a66b-b3a03be29f11', 'null', 'zhr_java2@163.com', 'null', 'e10adc3949ba59abbe56e057f20f883e', '7e096538-f860-4585-a899-1287da0ee448', 'null', '13212346439', 0, 0, 'null', 'null', '11', '11', 'https://img0.baidu.com/it/u=846799635,2112893415&fm=253&fmt=auto&app=138&f=JPEG?w=434&h=640', 1, 2, 0, 'null', 'null', '172.20.10.2', '上海市', 3, 3, 10, 10, 'MacBook Pro', '2022-09-15 15:53:11', '2022-10-27 23:25:40', 10, 0, 'zhr_java@163.com', 0, NULL);
-INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('8e10b07d-0217-4bba-a8f5-979159d049d8', '', 'zhr_java@163.com', '937331', '96e79218965eb72c92a549dd5a330112', '070644b7-da80-42ac-adb6-805933340d37', 'ocnPE5CvJ1kE-HbMKmAE0xRrup4Q', '13212346939', 0, 99, 'root', 'user,other,advertise,project', '张泓锐', 'spaceObj', 'https://img2.baidu.com/it/u=1114729443,1120710416&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500', 0, 1, 0, '130427199600000000', '/Users/zhr/Downloads/20221026191037-d2855dc1-f02e-480e-ac77-669adf022a56.jpg', '172.20.10.2', '广东省深圳市 联通', 959, 1, 10, 9, 'iPhone 6/7/8', '2022-09-10 00:27:28', '2022-10-29 15:43:17', 10, 0, 'zhr_java@163.com', 26, '身份证不清晰');
-INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('cb7b3a1e-1415-4970-8f24-09d7da024ac8', NULL, 'abc@163.com', NULL, 'e10adc3949ba59abbe56e057f20f883e', '42e77420-252e-4e1d-a8d0-68ae4ffc74f3', NULL, '13212346439', 0, 0, NULL, NULL, NULL, NULL, 'https://img0.baidu.com/it/u=846799635,2112893415&fm=253&fmt=auto&app=138&f=JPEG?w=434&h=640', 1, 2, 0, NULL, NULL, '127.0.0.1', '上海市', 3, 3, 10, 10, 'MacBook Pro', '2022-09-10 15:38:20', '2022-10-27 23:25:40', 10, 0, NULL, 0, NULL);
-INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('f2b60761-7eec-426d-ba06-6f3bc780d44e', NULL, 'dsadc@163.com', NULL, 'e10adc3949ba59abbe56e057f20f883e', '7649670c-4408-4488-a496-57f12fe57a09', NULL, '13232322323', 0, 0, NULL, NULL, NULL, NULL, 'https://img0.baidu.com/it/u=846799635,2112893415&fm=253&fmt=auto&app=138&f=JPEG?w=434&h=640', 1, 2, 0, NULL, NULL, '192.168.0.114', '上海市 联通', 3, 3, 10, 10, 'iPhone 6/7/8', '2022-09-18 12:56:56', '2022-10-27 23:25:40', 10, 0, NULL, 0, NULL);
-INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('f74e9cb1-7eda-44ef-9cdd-5d831ffdce57', NULL, 'spaceobj@163.com', '030581', 'e10adc3949ba59abbe56e057f20f883e', 'e6eee4ca-5464-4d6d-95b0-3542df819ef3', NULL, '13237434384', 0, 0, NULL, NULL, NULL, NULL, 'https://img0.baidu.com/it/u=846799635,2112893415&fm=253&fmt=auto&app=138&f=JPEG?w=434&h=640', 0, 2, 0, NULL, NULL, '192.168.0.114', '上海市 联通', 3, 3, 10, 10, 'iPhone 6/7/8', '2022-09-16 22:31:03', '2022-10-27 23:25:40', 10, 0, NULL, 0, NULL);
+INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('2e93dc8e-9b47-4c2c-bca0-1f3c97805571', 'null', 'bbb@qq.com', 'null', 'e10adc3949ba59abbe56e057f20f883e', 'c820c9f6-3a5f-4cf3-b107-0f8baf6d68d5', 'null', '13212346439', 0, 0, 'null', 'null', '11', '快乐的张三', 'https://img0.baidu.com/it/u=1915308837,2015938396&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500', 1, 2, 0, 'null', 'null', '172.20.10.2', '中国广东深圳', 1, 3, 10, 10, 'iPhone 6/7/8', '2022-09-08 23:48:30', '2022-10-30 22:56:05', 9, 0, 'ccc@qq.com', 19, NULL);
+INSERT INTO `sys_user` (`user_id`, `invite_user_id`, `account`, `email_code`, `password`, `token`, `open_id`, `phone_number`, `assist_value`, `invitation_value`, `user_type`, `user_rights`, `username`, `nick_name`, `photo_url`, `online_status`, `real_name_status`, `user_info_edit_status`, `id_card_num`, `id_card_pic`, `ip`, `ip_territory`, `edit_info_times`, `send_code_times`, `release_project_times`, `project_help_times`, `device_type`, `create_time`, `update_time`, `create_project_help_times`, `disable_status`, `email`, `version`, `audit_msg`) VALUES ('6b2186e7-e050-47f4-8a39-06c858b8f4a8', NULL, 'ocnPE5CvJ1kE-HbMKmAE0xRrup4Q', NULL, NULL, '9dc0b0ac-150f-4ae5-9325-cdb584f510b7', 'ocnPE5CvJ1kE-HbMKmAE0xRrup4Q', '13212346439', 0, 0, 'root', 'root,user,project,other,advertise', NULL, '张三', 'https://img0.baidu.com/it/u=1915308837,2015938396&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500', 0, 0, 0, NULL, NULL, '172.20.10.2', '中国广东深圳', 0, 3, 9, 9, NULL, '2022-10-30 22:19:05', '2022-10-30 22:51:57', 10, 0, 'zhr_java@163.com', 16, NULL);
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

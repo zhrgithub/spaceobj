@@ -26,9 +26,33 @@ function timeStampTurnTime(str) {
 	var D = date.getDate() + ' ';
 	return Y + M + D;
 }
+
+function getIp(res){
+	var ip = null;
+	// 去除空格
+	var remove_blank_space_str = res.replace(/[\r\n]/g, "");
+	// 设置剪切ip的正则
+	let ip_reg = /([\d\.]*)/gi;
+	// 根据ip正则剪切得到ip数组
+	var ip_arr = remove_blank_space_str.match(ip_reg);
+	// 从ip数组中获取ip
+	// 设置合法ip
+	var reg_legal =
+		/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+	for (var i = 0; i < ip_arr.length; i++) {
+		var flag = reg_legal.test(ip_arr[i]);
+		if (flag) {
+			ip = ip_arr[i];
+		}
+	}
+	return ip;
+}
+
+
 export default {
 	isBlank,
 	timeStampTurnTime,
-	isUndefined
+	isUndefined,
+	getIp,
 	
 }

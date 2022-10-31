@@ -24,7 +24,7 @@ spring:
   application:
     name: spaceobjGateway
   redis:
-    host: 124.70.3.244
+    host: 114.132.226.147
     port: 6380
     password: foobaredW6rkecAN
     database: 1
@@ -89,7 +89,7 @@ spring:
         username: nacos
         password: W6rkecAN123nacos
         # Nacos 服务发现与注册配置，其中子属性 server-addr 指定 Nacos 服务器主机和端口
-        server-addr: 124.70.3.244:8848
+        server-addr: 114.132.226.147:8848
         # 注册到 nacos 的指定 namespace，默认为 public
         namespace: public
 
@@ -112,7 +112,7 @@ sa-token:
   # 配置 Sa-Token 单独使用的 Redis 连接
   alone-redis:
     database: 0
-    host: 124.70.3.244
+    host: 114.132.226.147
     port: 6380
     password: foobaredW6rkecAN
     timeout: 20s
