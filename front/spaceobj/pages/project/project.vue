@@ -20,7 +20,7 @@
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					未找到需求信息~
+					下拉刷新项目信息~
 				</view>
 			</view>
 		</view>
@@ -148,27 +148,29 @@
 			uni.showLoading({
 				title: '加载中...',
 			})
-			that.list = [];
-			that.currentPage = 1;
-			that.pageSize = 10;
-			that.loadList();
+
 		},
 		onShow() {
 			that.shopList = uni.getStorageSync(sk.shopList);
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
+
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
 		},
 		// 触底加载更多
 		onReachBottom() {
 			uni.showLoading({
-				title:"加载中..."
+				title: "加载中..."
 			})
 			that.loadList();
 		},
 		// 下拉刷新
 		onPullDownRefresh() {
 			uni.showLoading({
-				title:"加载中..."
+				title: "加载中..."
 			})
 			that.currentPage = 1;
 			that.list = [];
@@ -279,6 +281,9 @@
 						that.pageSize = 10;
 						that.loadList();
 						that.$refs.popup.close();
+						uni.switchTab({
+							url:'/pages/release/release'
+						})
 					} else {
 						uni.hideLoading();
 					}
@@ -586,6 +591,9 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		
+		position: fixed;
+		bottom: 10rpx;
 	}
 
 	.button-style button {
@@ -602,16 +610,18 @@
 		width: 90%;
 		margin-left: 5%;
 		display: flex;
-		align-items: center;
 		margin-top: 30rpx;
+		margin-bottom: 30rpx;
 		box-shadow: darkgray 0px 0px 2px 0px;
 		border-radius: 10px;
+		height: 320rpx;
 	}
 
 	.description-style textarea {
 		width: 96%;
 		margin-top: 20rpx;
 		margin-left: 2%;
+		height: 280rpx;
 	}
 
 	.doller-num-style {
@@ -632,7 +642,7 @@
 
 	.description-doller-style {
 		width: 100%;
-		height: 700rpx;
+		height: 950rpx;
 	}
 
 	.release-background-style {

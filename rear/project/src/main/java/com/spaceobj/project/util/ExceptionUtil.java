@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
 
 /**
  * @author zhr_java@163.com
@@ -20,10 +21,27 @@ public class ExceptionUtil {
   public static void exceptionToString(Exception e) {
     StringWriter sw = new StringWriter();
     e.printStackTrace(new PrintWriter(sw, true));
-    String str = sw.toString();
-    log.error("=========start==========");
-    log.error(str);
-    log.error("=========end=============");
+
+    // 异常内容
+    String content = sw.toString();
+    // 堆栈信息
+    StackTraceElement ste = e.getStackTrace()[0];
+    // 类名
+    String className = ste.getClassName();
+    // 方法名
+    String methodName = ste.getMethodName();
+    // 行号
+    Integer lineNumber = ste.getLineNumber();
+    // 文件名
+    String fileName = ste.getFileName();
+    // 创建时间
+    Date createTime = new Date();
+
+
+
+
+
+
 
 
 

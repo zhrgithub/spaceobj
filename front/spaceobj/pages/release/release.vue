@@ -6,7 +6,7 @@
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					未找到需求信息~
+					下拉刷新项目信息~
 				</view>
 			</view>
 		</view>
@@ -23,14 +23,14 @@
 					<input placeholder="请输入预算(单位:元)" type="number" maxlength="15" :value="price" @input="setPrice">
 				</view>
 				<view class="description-style">
-					<textarea maxlength="1000" cols="30" rows="100" placeholder="请输入您的需求信息" :value="content"
+					<textarea maxlength="1000" cols="30" rows="2" placeholder="请输入您的需求信息" :value="content"
 						@input="setContent"></textarea>
 				</view>
-				<view class="button-style">
-					<button @click="cancelSubmit">取消</button>
+				<view class="button-style">  
+					<button @click="cancelSubmit">取消</button>   
 					<view class="button-space"></view>
 					<button @click="submit">确认发布</button>
-				</view>
+				</view>  
 			</view>
 		</uni-popup>
 
@@ -86,8 +86,10 @@
 				currentPage: 1,
 				pageSize: 10,
 				price: "",
-				content: "",
-				userInfo: ""
+				content: " ",
+				userInfo: "",
+				// 根据屏幕高度显示输入框
+				screenHeight: "0px",
 			}
 		},
 		created() {
@@ -97,30 +99,33 @@
 			uni.showLoading({
 				title: '加载中...',
 			})
-			
-			that.list = [];
-			that.currentPage = 1;
-			that.pageSize = 10;
-			that.loadList();
-			
+
+			// 获取设备信息
+			var deviceModel = uni.getStorageSync(sk.deviceModel);
+			that.screenHeight = deviceModel.screenHeight;
+			console.log(that.screenHeight)
+
 		},
 		onShow() {
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
-			
-			
+
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
 		},
 		// 触底加载更多
 		onReachBottom() {
 			uni.showLoading({
-				title:"加载中..."
+				title: "加载中..."
 			})
 			that.loadList();
 		},
 		// 下拉刷新
 		onPullDownRefresh() {
 			uni.showLoading({
-				title:"加载中..."
+				title: "加载中..."
 			})
 			that.currentPage = 1;
 			that.list = [];
@@ -162,7 +167,7 @@
 			},
 
 			loadList() {
-				
+
 				api.post({
 					projectType: 1,
 					currentPage: that.currentPage,
@@ -212,7 +217,7 @@
 				}
 
 				uni.showLoading({
-					title:"加载中..."
+					title: "加载中..."
 				});
 				api.post({
 					content: that.content,
@@ -246,14 +251,15 @@
 			},
 			toProjecDetail(e) {
 				uni.navigateTo({
-					url: '/pages/release/releaseProjectDetail/releaseProjectDetail?obj='+ encodeURIComponent(JSON.stringify(e))
+					url: '/pages/release/releaseProjectDetail/releaseProjectDetail?obj=' + encodeURIComponent(JSON
+						.stringify(e))
 				})
 			},
 		}
 	}
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 	.space-line-style {
 		width: 100%;
 		height: 200rpx;
@@ -380,6 +386,10 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		
+		position: fixed;
+		bottom: 10rpx;
+		
 	}
 
 	.button-style button {
@@ -396,16 +406,18 @@
 		width: 90%;
 		margin-left: 5%;
 		display: flex;
-		align-items: center;
 		margin-top: 30rpx;
+		margin-bottom: 30rpx;
 		box-shadow: darkgray 0px 0px 2px 0px;
 		border-radius: 10px;
+		height: 320rpx;
 	}
 
 	.description-style textarea {
 		width: 96%;
 		margin-top: 20rpx;
 		margin-left: 2%;
+		height: 280rpx;
 	}
 
 	.doller-num-style {
@@ -424,9 +436,10 @@
 		width: 90%;
 	}
 
+
 	.description-doller-style {
 		width: 100%;
-		height: 700rpx;
+		height: 950rpx;
 	}
 
 	.release-background-style {

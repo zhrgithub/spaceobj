@@ -53,10 +53,11 @@
 						@input="setPrice">
 				</view>
 				<view class="description-style">
-					<textarea maxlength="1000" cols="30" rows="100" placeholder="请输入您的需求信息" :value="projectObj.content" @input="setContent" />
+					<textarea maxlength="1000" cols="30" rows="100" placeholder="请输入您的需求信息" :value="projectObj.content"
+						@input="setContent" />
 				</view>
 				<view class="button-style">
-					<button @click="submit">取消</button>
+					<button @click="cancel">取消</button>
 					<view class="button-space"></view>
 					<button @click="submit">确认发布</button>
 				</view>
@@ -127,13 +128,13 @@
 			},
 			cancelRelease() {
 				uni.showModal({
-					content: "取消发布，其他人将无法联系您",
+					content: "删除后其他人将无法联系您",
 					success(e) {
 						if (e.confirm) {
 							that.projectObj.status = 3;
 							that.updateProject();
 						}
-					}
+					} 
 				})
 			},
 			repeatRelease(type) {
@@ -141,18 +142,21 @@
 				// open 方法传入参数 等同在 uni-popup 组件上绑定 type属性
 				this.$refs.popup.open(type)
 			},
+			cancel(){
+				this.$refs.popup.close();
+			},
 
 			submit() {
 				this.$refs.popup.close();
 				uni.showModal({
-					title:"确认提交",
+					title: "确认提交",
 					success(e) {
-						if(e.confirm){
+						if (e.confirm) {
 							that.updateProject();
 						}
 					}
 				})
-				
+
 			},
 
 			updateProject() {
@@ -163,7 +167,7 @@
 						title: res.msg,
 						icon: 'none',
 						success() {
-							if(res.code==200){
+							if (res.code == 200) {
 								uni.navigateBack();
 							}
 						}
@@ -181,7 +185,7 @@
 
 	.description-doller-style {
 		width: 100%;
-		height: 700rpx;
+		height: 950rpx;
 	}
 
 	.doller-num-style {
@@ -204,16 +208,18 @@
 		width: 90%;
 		margin-left: 5%;
 		display: flex;
-		align-items: center;
 		margin-top: 30rpx;
+		margin-bottom: 30rpx;
 		box-shadow: darkgray 0px 0px 2px 0px;
 		border-radius: 10px;
+		height: 320rpx;
 	}
 
 	.description-style textarea {
 		width: 96%;
 		margin-top: 20rpx;
 		margin-left: 2%;
+		height: 280rpx;
 	}
 
 	.button-style {
@@ -223,6 +229,9 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		
+		position: fixed;
+		bottom: 10rpx;
 	}
 
 	.button-style button {

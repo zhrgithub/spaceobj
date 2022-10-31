@@ -6,7 +6,7 @@
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					未找到助力信息~
+					下拉刷新项目信息~
 				</view>
 			</view>
 		</view>
@@ -81,16 +81,17 @@
 			uni.showLoading({
 				title: '加载中...',
 			})
-			that.list = [];
-			that.currentPage = 1;
-			that.pageSize = 10;
-			that.loadList();
+
 		},
 		onShow() {
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
-			
-			
+
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
+
 		},
 		methods: {
 			timeStampTurnTime(str) {
@@ -127,11 +128,11 @@
 					duration: 2000
 				})
 			},
-			sliderChange(e) {
-			},
+			sliderChange(e) {},
 			toProjecDetail(e) {
 				uni.navigateTo({
-					url: '/pages/help/helpProjectDetail/helpProjectDetail?obj=' + encodeURIComponent(JSON.stringify(e))
+					url: '/pages/help/helpProjectDetail/helpProjectDetail?obj=' + encodeURIComponent(JSON
+						.stringify(e))
 				})
 			},
 		}
@@ -263,21 +264,6 @@
 		width: 10%;
 	}
 
-	.description-style {
-		width: 90%;
-		margin-left: 5%;
-		display: flex;
-		align-items: center;
-		margin-top: 30rpx;
-		box-shadow: darkgray 0px 0px 2px 0px;
-		border-radius: 10px;
-	}
-
-	.description-style textarea {
-		width: 96%;
-		margin-top: 20rpx;
-		margin-left: 2%;
-	}
 
 	.doller-num-style {
 		width: 90%;
