@@ -10,11 +10,11 @@
 		</view>
 
 		<view class="id-card-style" @click="uploadImageItem">
-			<view class="image-background-one" v-if="idCardPic==''">
+			<view class="image-background-one" v-if="idCardPic==''||idCardPic==null||idCardPic=='null'||idCardPic.length==0">
 				<image src="/static/camera.png"></image>
-				<view class="image-title">本人手举身份证正面(必填)</view>
+				<view class="image-title">身份证正面(必填)</view>
 			</view>
-			<block class="image-background-two" v-if="idCardPic!=''">
+			<block class="image-background-two" v-if="idCardPic!=''&&idCardPic!=null&&idCardPic!='null'&&idCardPic.length!=0">
 				<img :src="idCardPic" style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
 			</block>
 		</view> 
