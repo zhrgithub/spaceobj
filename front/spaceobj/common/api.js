@@ -52,10 +52,16 @@ function post(data, url) {
 			uni.navigateTo({
 				url: '/pages/login/login'
 			})
+			
+			// 设置登录状态为非登录
+			uni.setStorage({
+				key:sk.loginStatus,
+				data:false
+			});
 			return resultData;
 		}
 
-		return resultData;
+		return resultData;  
 
 	}).catch(err => {
 		uni.showToast({

@@ -18,7 +18,7 @@
 		<view class="top-space-line-style"></view>
 
 		<!-- 发布的列表 -->
-		<view class="project-list-style" @click="toAuditProjectDetail" v-for="(item,idx) in list" :key="idx">
+		<view class="project-list-style" @click="toAuditProjectDetail(item)" v-for="(item,idx) in list" :key="idx">
 			<view class="date-status-style">
 				<view class="date-style">
 					{{timeStampTurnTime(item.createTime)}}
@@ -31,7 +31,7 @@
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>{{item.content}}
+				项目描述：{{item.content}}
 			</view>
 		</view>
 

@@ -1,7 +1,7 @@
 <template>
 	<view class="project-detail-background-style">
 
-		<view class="base-info-panel-style">
+		<view class="base-info-panel-style" >
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
 					项目编号：{{projectHelp.puuid}}
@@ -32,8 +32,10 @@
 		</view>
 		<view class="description-requirement-style">
 			<view class="description-content-style">
-				<text style="font-weight: bold;font-size: 14px;color: #7CBF80;">项目描述：</text>{{projectHelp.pcontent}}
+				项目描述：{{projectHelp.pcontent}}
 			</view>
+		</view>
+		<view class="space-line-style">
 		</view>
 		<view class="btn-background-style">
 			<button @click="getUserInfo">立即联系</button>
@@ -92,6 +94,21 @@
 			}
 		},
 		methods: {
+			copyPid(e) {
+				uni.setClipboardData({
+					data: e,
+					showToast: false,
+					success: function() {
+						uni.showToast({
+							icon: 'none',
+							title: '项目编号已复制'
+						})
+					},
+					fail(res) {
+						console.log(res)
+					}
+				});
+			},
 			dialogClose() {},
 			dialogConfirm() {
 				// this.$refs.message.open();
@@ -224,20 +241,29 @@
 	}
 
 	.btn-background-style {
-		width: 96%;
-		height: 280rpx;
-		margin-left: 2%;
-		margin-top: 80rpx;
-		margin-bottom: 500rpx;
-	}
-
-	.btn-background-style button {
+		height: 120rpx;
+		position: fixed;
+		bottom: 0rpx;
 		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: #fff;
+	}
+	
+	.btn-background-style button {
+		width: 96%;
+		margin-left: 2%;
 		background-color: #49A8E7;
 		color: white;
-		height: 100rpx;
+		height: 80rpx;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+	}
+	
+	.space-line-style{
+		width: 100%;
+		height: 200rpx;
 	}
 </style>

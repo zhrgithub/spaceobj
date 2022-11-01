@@ -36,12 +36,21 @@
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>{{item.pcontent}}
+				项目描述：{{item.pcontent}}
 			</view>
 			<view class="slider-style">
 				<slider :value="item.hpNumber" activeColor="green" backgroundColor="darkgray" block-color="#49A8E7"
 					block-size="10" show-value min="0" max="10" disabled="true" />
 			</view>
+		</view>
+		
+		<!-- 提示下拉刷新~ -->
+		<view class="tips-background-style" v-if="list.length>0&&list.length<10">
+			下 拉 刷 新 ~ ~ ~
+		</view>
+		<!-- 提示上滑加载更多~ -->
+		<view class="tips-background-style" v-if="list.length>=10">
+			上 滑 加 载 更 多 ~ ~ ~
 		</view>
 
 	</view>
@@ -103,23 +112,30 @@
 				return Y + M + D;
 			},
 			loadList() {
-				api.post({
-					currentPage: that.currentPage,
-					pageSize: that.pageSize
-				}, api.projectHelpList).then(res => {
-					if (res.code == 200) {
-						if (res.data.length > 0) {
-							that.list = that.list.concat(res.data);
-							that.currentPage++;
+
+				var loginSataus = uni.getStorageSync(sk.loginStatus);
+				if (loginSataus) {
+					api.post({
+						currentPage: that.currentPage,
+						pageSize: that.pageSize
+					}, api.projectHelpList).then(res => {
+						if (res.code == 200) {
+							if (res.data.length > 0) {
+								that.list = that.list.concat(res.data);
+								that.currentPage++;
+							}
+						} else {
+							uni.showToast({
+								icon: 'none',
+								title: res.msg
+							})
 						}
-					} else {
-						uni.showToast({
-							icon: 'none',
-							title: res.msg
-						})
-					}
+						uni.hideLoading();
+					});
+				}else{
 					uni.hideLoading();
-				});
+				}
+
 			},
 			submit() {
 				this.$refs.popup.close();
@@ -141,6 +157,18 @@
 </script>
 
 <style scoped>
+	
+	.tips-background-style {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 28rpx;
+		font-size: 12px;
+		color: #bfbfbf;
+		margin-top: 20rpx;
+		margin-bottom: 20rpx;
+	}
 	.project-list-style {
 		width: 96%;
 		margin-left: 2%;

@@ -34,7 +34,7 @@
 
 		<view class="description-requirement-style">
 			<view class="description-content-style">
-				<text style="font-weight: bold;font-size: 14px;color: #7CBF80;">项目描述：</text>{{projectObj.content}}
+				项目描述：{{projectObj.content}}
 			</view>
 
 		</view>
@@ -68,10 +68,12 @@
 			that = this;
 		},
 		onLoad(e) {
+			
 			var str = decodeURIComponent(e.obj);
 			var obj = JSON.parse(str);
 			that.projectObj = obj;
 		},
+		
 		methods: {
 			getAuditStatus(e) {
 				if (e == 0) {

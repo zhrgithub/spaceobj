@@ -58,8 +58,17 @@
 				</view>
 			</view>
 			<view class="brief-information-style">
-				<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">项目描述：</text>{{item.content}}
+				项目描述：{{item.content}}
 			</view>
+		</view>
+		
+		<!-- 提示下拉刷新~ -->
+		<view class="tips-background-style" v-if="list.length>0&&list.length<10">
+			下 拉 刷 新 ~ ~ ~
+		</view>
+		<!-- 提示上滑加载更多~ -->
+		<view class="tips-background-style" v-if="list.length>=10">
+			上 滑 加 载 更 多 ~ ~ ~
 		</view>
 
 
@@ -134,6 +143,7 @@
 			uni.stopPullDownRefresh();
 		},
 		methods: {
+			
 			setPrice(e) {
 				that.price = e.detail.value;
 			},
@@ -168,25 +178,32 @@
 			},
 
 			loadList() {
-
-				api.post({
-					projectType: 1,
-					currentPage: that.currentPage,
-					pageSize: that.pageSize
-				}, api.projectFindList).then(res => {
-					if (res.code == 200) {
-						if (res.data.length > 0) {
-							that.list = that.list.concat(res.data);
-							that.currentPage++;
+				
+				var loginSataus =  uni.getStorageSync(sk.loginStatus);
+				if(loginSataus){
+					api.post({
+						projectType: 1,
+						currentPage: that.currentPage,
+						pageSize: that.pageSize
+					}, api.projectFindList).then(res => {
+						if (res.code == 200) {
+							if (res.data.length > 0) {
+								that.list = that.list.concat(res.data);
+								that.currentPage++;
+							}
+						} else {
+							uni.showToast({
+								icon: 'none',
+								title: res.msg
+							})
 						}
-					} else {
-						uni.showToast({
-							icon: 'none',
-							title: res.msg
-						})
-					}
+						uni.hideLoading();
+					});
+				}else{
 					uni.hideLoading();
-				});
+				}
+
+				
 			},
 			releaseProject(type) {
 				this.type = type;
@@ -226,11 +243,8 @@
 					ipAddress: uni.getStorageSync(sk.ipTerritory),
 					nickname: that.userInfo.nickName,
 				}, api.projectAddProject).then(res => {
+					uni.hideLoading();
 					if (res.code == 200) {
-
-						uni.showLoading({
-							title: '加载中...',
-						})
 						that.content = '';
 						that.price = '';
 						that.list = [];
@@ -238,9 +252,7 @@
 						that.pageSize = 10;
 						that.loadList();
 						this.$refs.popup.close();
-					} else {
-						uni.hideLoading();
-					}
+					} 
 					uni.showToast({
 						icon: 'none',
 						title: res.msg
@@ -261,6 +273,17 @@
 </script>
 
 <style lang="scss" scoped>
+	.tips-background-style {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 28rpx;
+		font-size: 12px;
+		color: #bfbfbf;
+		margin-top: 20rpx;
+		margin-bottom: 20rpx;
+	}
 	.space-line-style {
 		width: 100%;
 		height: 200rpx;

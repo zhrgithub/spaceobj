@@ -64,7 +64,7 @@
 					</view>
 				</view>
 				<view class="brief-information-style">
-					<text style="color: #7CBF80;font-weight: bold;font-size: 15px;">需求描述：</text>{{item.content}}
+					项目描述：{{item.content}}
 				</view>
 			</view>
 
@@ -115,6 +115,15 @@
 			</view>
 		</view>
 
+		<!-- 提示下拉刷新~ -->
+		<view class="tips-background-style" v-if="list.length>0&&list.length<10">
+			下 拉 刷 新 ~ ~ ~
+		</view>
+		<!-- 提示上滑加载更多~ -->
+		<view class="tips-background-style" v-if="list.length>=10">
+			上 滑 加 载 更 多 ~ ~ ~
+		</view>
+
 	</view>
 </template>
 
@@ -152,7 +161,7 @@
 			that.currentPage = 1;
 			that.pageSize = 10;
 			that.loadList();
-			
+
 			// 登录成功，帮助好友更新项目助力信息
 			that.doUpdateProjectHelp();
 		},
@@ -183,10 +192,11 @@
 
 		},
 		methods: {
-			
+
 			doUpdateProjectHelp() {
 				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
-				if (!su.isUndefined(projectHelpShare) && !su.isBlank(projectHelpShare)) {
+				var loginStatus = uni.getStorageSync(sk.loginStatus);
+				if (!su.isUndefined(projectHelpShare) && !su.isBlank(projectHelpShare) && loginStatus) {
 					api.post({
 						hpId: projectHelpShare.hpId,
 					}, api.updateProjectHelpNumber).then(res => {
@@ -291,11 +301,8 @@
 					ipAddress: uni.getStorageSync(sk.ipTerritory),
 					nickname: that.userInfo.nickName,
 				}, api.projectAddProject).then(res => {
+					uni.hideLoading();
 					if (res.code == 200) {
-
-						uni.showLoading({
-							title: '加载中...',
-						})
 						that.content = '';
 						that.price = '';
 						that.list = [];
@@ -306,8 +313,6 @@
 						uni.switchTab({
 							url: '/pages/release/release'
 						})
-					} else {
-						uni.hideLoading();
 					}
 					uni.showToast({
 						icon: 'none',
@@ -346,6 +351,16 @@
 </script>
 
 <style scoped>
+	.tips-background-style {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 28rpx;
+		font-size: 12px;
+		color: #bfbfbf;
+	}
+
 	.advertise-project-list {
 		width: 100%;
 		height: auto;

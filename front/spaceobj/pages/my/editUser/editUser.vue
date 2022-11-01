@@ -52,8 +52,8 @@
 				{{ipTerritory}}
 			</view>
 		</view>
-		
-		<view class="edit-background-style" >
+
+		<view class="edit-background-style">
 			<view class="change-tips">
 				<image src="/static/wechat.png" mode=""></image>
 			</view>
@@ -69,16 +69,16 @@
 				</view>
 			</view>
 		</view>
-		
+
 		<view class="edit-background-style">
 			<view class="change-tips">
 				设备
 			</view>
 			<view class="change-input-style">
-				{{deviceModel.model}}
+				{{deviceModel.deviceModel}}
 			</view>
 		</view>
-		
+
 		<!-- <view class="edit-background-style">
 			<view class="change-tips">
 				IP
@@ -104,7 +104,7 @@
 			</view>
 		</view>
 		<view class="space-line-style">
-			
+
 		</view>
 
 
@@ -142,20 +142,20 @@
 				account: "未知",
 				realNameStatus: '未实名',
 				email: '未设置',
-				openId :null,
-				userId:'',
-				deviceModel:'',
-				ip:"",
-				userInfo:""
+				openId: null,
+				userId: '',
+				deviceModel: '',
+				ip: "",
+				userInfo: ""
 			}
 		},
 		onShow() {
 			that.deviceModel = uni.getStorageSync(sk.deviceModel);
 			that.loadUserInfo();
 			// this.timer = setTimeout(() => {
-				
+
 			// 	// 加载设备信息
-				
+
 			// }, 200)
 
 		},
@@ -163,10 +163,10 @@
 			that = this;
 		},
 		methods: {
-			loadUserInfo(){
+			loadUserInfo() {
 				var userInfo = uni.getStorageSync(sk.userInfo);
-				
-				that.userInfo= userInfo;
+
+				that.userInfo = userInfo;
 				console.log(that.userInfo);
 				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
@@ -180,17 +180,17 @@
 				that.userId = userInfo.userId;
 				console.log(that.openId);
 			},
-			bindWechat(){
+			bindWechat() {
 				uni.login({
 					provider: 'weixin',
 					success: function(res) {
-						
+
 						api.post({
 							code: res.code,
-							userId:that.userId
+							userId: that.userId
 						}, api.bindWechat).then(res2 => {
 							// 修改缓存信息
-							if(res2.code==200){
+							if (res2.code == 200) {
 								uni.setStorage({
 									key: sk.userInfo,
 									data: res2.data,
@@ -200,16 +200,14 @@
 									}
 								})
 							}
-							
+							uni.hideLoading();
 							uni.showToast({
 								icon: 'none',
 								title: res2.msg
 							})
-							
-							uni.hideLoading();
 						})
-				
-				
+
+
 					}
 				});
 			},
@@ -303,7 +301,7 @@
 					photoUrl: that.photoUrl,
 					ipTerritory: that.ipTerritory,
 					email: that.email,
-					openId:that.openId
+					openId: that.openId
 				}, api.customerUpdateUserInfo).then(res => {
 					uni.hideLoading();
 					if (res.code == 200) {
@@ -325,10 +323,11 @@
 </script>
 
 <style scoped>
-	.space-line-style{
+	.space-line-style {
 		width: 100%;
 		height: 200rpx;
 	}
+
 	.container {
 		width: 100%;
 		height: 100%;
@@ -389,7 +388,8 @@
 		justify-content: left;
 		align-items: center;
 	}
-	.change-tips image{
+
+	.change-tips image {
 		width: 60rpx;
 		height: 60rpx;
 	}
@@ -402,25 +402,28 @@
 		align-items: center;
 		margin-left: 2%;
 	}
-	.tips-info-style{
+
+	.tips-info-style {
 		width: 90%;
 		display: flex;
 		justify-content: left;
 		align-items: center;
 	}
-	.arrow-image-background{
+
+	.arrow-image-background {
 		width: 10%;
 		height: 100%;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 	}
-	.arrow-image-background image{
+
+	.arrow-image-background image {
 		width: 80rpx;
 		height: 60rpx;
 	}
-	
-	
+
+
 
 	.change-input-style input {
 		width: 100%;
