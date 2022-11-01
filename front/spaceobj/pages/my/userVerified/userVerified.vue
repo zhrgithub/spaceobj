@@ -96,7 +96,7 @@
 				if(su.isBlank(idCardPic)){
 					uni.showToast({
 						icon:'none',
-						title:'请上传图片'
+						title:'请上传图片'  
 					})
 					return;
 				}

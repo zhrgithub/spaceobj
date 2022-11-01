@@ -47,4 +47,13 @@ public class ExceptionUtil {
     log.error("异常内容:" + content);
     log.error("============end=============");
   }
+
+  public static void main(String[] args) {
+    try {
+      int[] arr = {1, 3, 2, 4};
+      System.out.println(arr[6]);
+    } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
+    }
+  }
 }

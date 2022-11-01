@@ -115,6 +115,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         sysUser.setIpTerritory(loginByWeChatBo.getIpTerritory());
         StpUtil.login(openId);
         sysUser.setToken(StpUtil.getTokenValue());
+        sysUser.setNickName(loginByWeChatBo.getNickName());
         int result = sysUserMapper.insert(sysUser);
         if (result == 0) {
           return SaResult.error("服务器繁忙");

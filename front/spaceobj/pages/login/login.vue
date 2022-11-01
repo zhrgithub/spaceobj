@@ -73,6 +73,8 @@
 	import rgx from '@/utils/Regexs.js'
 	import JSEncrypt from '@/utils/jsencrypt.min.js'
 	import su from '@/utils/StringUtils.js'
+	import nick_Name from '@/utils/nickName.js'
+import nickName from '@/utils/nickName.js'
 	var that;
 	export default {
 		data() {
@@ -106,14 +108,17 @@
 				uni.showLoading({
 					title: '登录中...'
 				})
+				var nick_name = nick_Name.getNickName();
 				uni.login({
 					provider: 'weixin',
 					success: function(res) {
+						console.log("微信信息：",res)
 						api.post({
 							code: res.code,
 							ipTerritory: uni.getStorageSync(sk.ipTerritory),
 							deviceType: uni.getStorageSync(sk.deviceModel).model,
-							inviteUserId: uni.getStorageSync(sk.inviteUserId)
+							inviteUserId: uni.getStorageSync(sk.inviteUserId),
+							nickName:nick_name
 						}, api.loginByWechat).then(res2 => {
 							if (res2.code == 200) {
 								// 缓存用户基本信息
@@ -134,6 +139,7 @@
 				var email = that.email;
 				var password = that.password;
 				var phoneNumber = that.phoneNumber;
+				var nick_name = nick_Name.getNickName();
 				if (!rgx.checkEmail(email)) {
 					uni.showToast({
 						icon: 'none',
@@ -166,7 +172,8 @@
 					ipTerritory: uni.getStorageSync(sk.ipTerritory),
 					deviceType: uni.getStorageSync(sk.deviceModel).model,
 					phoneNumber: phoneNumber,
-					inviteUserId: uni.getStorageSync(sk.inviteUserId)
+					inviteUserId: uni.getStorageSync(sk.inviteUserId),
+					nickName:nick_name
 				}, api.login).then(res => {
 					uni.hideLoading();
 					if (res.code == 200) {

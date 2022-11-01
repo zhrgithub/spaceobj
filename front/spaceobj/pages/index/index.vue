@@ -9,6 +9,7 @@
 	import sk from "@/common/StoryKeys.js"
 	import api from "@/common/api.js"
 	import su from "@/utils/StringUtils.js"
+	
 	export default {
 		data() {
 			return {
@@ -16,6 +17,7 @@
 			}
 		},
 		onLoad(e) {
+			
 			if (!su.isBlank(e)) {
 				// 设置邀请人id
 				if (!su.isUndefined(e.inviteUserId)) {

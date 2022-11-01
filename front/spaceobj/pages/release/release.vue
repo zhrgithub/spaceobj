@@ -63,7 +63,7 @@
 		</view>
 		
 		<!-- 提示下拉刷新~ -->
-		<view class="tips-background-style" v-if="list.length>0&&list.length<10">
+		<view class="tips-background-style" v-if="list.length>0&&list.length<10"> 
 			下 拉 刷 新 ~ ~ ~
 		</view>
 		<!-- 提示上滑加载更多~ -->

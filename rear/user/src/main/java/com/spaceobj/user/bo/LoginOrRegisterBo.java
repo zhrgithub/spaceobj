@@ -41,4 +41,7 @@ public class LoginOrRegisterBo {
 
   /** 邀请人账号id */
   private String inviteUserId;
+
+  /** 昵称 */
+  private String nickName;
 }
