@@ -21,6 +21,7 @@ import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.pojo.SysUser;
 import com.spaceobj.project.service.ProjectHelpService;
 import com.spaceobj.project.service.SysProjectService;
+import com.spaceobj.project.util.ExceptionUtil;
 import com.spaceobj.project.util.RsaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
   @Value("${privateKey}")
   private String privateKey;
-
 
   Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
 
@@ -106,9 +106,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       redisService.setCacheMapValue(RedisKey.PROJECT_LIST, uuid, sysProject);
       return SaResult.ok("提交成功");
     } catch (Exception e) {
-      // LOG.error(e.printStackTrace());
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
-      LOG.error("project add error", e.getMessage());
       return SaResult.error("服务器异常");
     }
   }
@@ -124,7 +123,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           return SaResult.error("项目不存在");
         }
         if (project.getStatus() == 0) {
-          return SaResult.error("审核中");
+          return SaResult.error("审核中禁止修改");
         }
         String loginId = StpUtil.getLoginId().toString();
         SysUser sysUser = getSysUser(loginId);
@@ -147,8 +146,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
       return SaResult.error("请求错误");
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
-      LOG.error("update project exception", e.getMessage());
       return SaResult.error("服务器异常");
     }
   }
@@ -168,6 +167,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       }
       return SaResult.ok("审核成功");
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("审核失败,服务器异常");
     }
@@ -226,9 +226,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
       return SaResult.ok().setData(list);
     } catch (NotLoginException e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error(e.getMessage());
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("项目列表查询结果异常");
     }
@@ -267,6 +269,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         }
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -281,14 +284,16 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (!StringUtils.isEmpty(projectSearchBo.getContent())) {
         queryWrapper.like("p_content", projectSearchBo.getContent());
         queryWrapper.or().like("p_id", projectSearchBo.getContent());
+        queryWrapper.or().like("p_nick_name",projectSearchBo.getContent());
+        queryWrapper.or().like("p_release_user_id",projectSearchBo.getContent());
       }
-      System.out.println(projectSearchBo.getCurrentPage() + ";;;" + projectSearchBo.getPageSize());
       Page<SysProject> page =
           new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
       IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
       list = iPage.getRecords();
       return SaResult.ok().setData(list);
     } catch (RuntimeException e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("服务器异常");
     }
@@ -307,6 +312,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         LOG.error("项目UUID：{}" + sysProject.getUuid() + "浏览次数添加失败");
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("add Page view error", e.getMessage());
     }
@@ -328,7 +334,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 查询最新的数据，然后再次修改
       QueryWrapper<SysProject> wrapper = new QueryWrapper<>();
       wrapper.eq("p_id", sysProject.getPId());
-      System.out.println("sysproject: " + sysProject);
       SysProject sysProjectTwo = sysProjectMapper.selectOne(wrapper);
       wrapper.eq("version", sysProjectTwo.getVersion());
       sysProject.setVersion(sysProjectTwo.getVersion() + 1);
@@ -345,7 +350,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       String loginId = (String) StpUtil.getLoginId();
       SysUser sysUser = getSysUser(loginId);
       getPhoneNumberBo.setUserId(sysUser.getUserId());
-      System.out.println("uuid:" + getPhoneNumberBo.getUuid());
       SysProject sysProject = this.getProjectByUUID(getPhoneNumberBo.getUuid());
       if (ObjectUtils.isEmpty(sysProject)) {
         return SaResult.error("项目不存在");
@@ -363,7 +367,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 判断是否已经获取到该项目联系人
       ProjectHelp helpBo =
           this.getProjectHelpLink(getPhoneNumberBo.getUuid(), getPhoneNumberBo.getUserId());
-      System.out.println("helpBo:" + helpBo);
       if (!ObjectUtils.isEmpty(helpBo)) {
         if (helpBo.getHpStatus() == 1 || helpBo.getHpNumber() >= 10) {
           // 获取项目发布者id的联系方式,后期此处修改成根据账户获取用户信息，项目中的userId设置成email,数据进行脱敏
@@ -398,6 +401,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                   .pPrice(sysProject.getPrice())
                   .pReleaseUserId(sysProject.getReleaseUserId())
                   .hpStatus(1)
+                  .projectId(sysProject.getPId())
                   .build();
           // 通知项目助力服务该用户新增一条获取成功的项目助力信息
           kafkaSender.send(helpBo, KafKaTopics.ADD_HELP_PROJECT);
@@ -415,6 +419,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 需要获取助力链接
       return SaResult.error("好友助力获取").setCode(202);
     } catch (Exception e) {
+
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("服务器异常");
     }
@@ -465,6 +471,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         }
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -492,6 +499,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       Object res = userClient.getUserInfoByAccount(account);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -519,6 +527,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       Object res = userClient.getSysUserByUserId(userId);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -530,6 +539,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       projectHelp = projectHelpService.getProjectHelpLink(pUUID, userId);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }

@@ -1,4 +1,4 @@
-package com.spaceobj.project.util;
+package com.spaceobj.user.utils;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -25,6 +25,7 @@ public class PassWordUtils {
           SaSecureUtil.rsaDecryptByPrivate(privateKey, Base64Util.decode(password));
       md5Password = SaSecureUtil.md5(rsaDecryptPassword);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }

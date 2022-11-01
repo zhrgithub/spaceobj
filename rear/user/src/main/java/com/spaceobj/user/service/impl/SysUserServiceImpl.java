@@ -20,6 +20,7 @@ import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.SysUserService;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
+import com.spaceobj.user.utils.ExceptionUtil;
 import com.spaceobj.user.utils.RsaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       list = iPage.getRecords();
       return SaResult.ok().setData(list);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("system user find list failed ", e.getMessage());
       return SaResult.error("查询失败");
@@ -101,6 +103,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 更新缓存
       redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("update sysUser failed", e.getMessage());
       return SaResult.error("用户更新失败");
@@ -127,6 +130,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
 
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       LOG.error("update all system user failed");
     }
   }
@@ -213,6 +217,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       rsaEncryptSysUser = RsaUtils.encryptByPublicKey(sysUser, publicKey);
       return rsaEncryptSysUser;
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }

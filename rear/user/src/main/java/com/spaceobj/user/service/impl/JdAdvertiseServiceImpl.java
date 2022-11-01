@@ -11,6 +11,7 @@ import com.spaceobj.user.mapper.JdAdvertiseMapper;
 import com.spaceobj.user.pojo.JdAdvertise;
 import com.spaceobj.user.service.JdAdvertiseService;
 import com.spaceobj.user.utils.BeanConvertToTargetUtils;
+import com.spaceobj.user.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
         }
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -79,6 +81,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
       }
       return SaResult.ok().setData(list);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("search advertise list error", e.getMessage());
       return SaResult.error("广告列表查询异常");
@@ -103,6 +106,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
       }
       return SaResult.ok("新增成功");
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("add advertise error", e.getMessage());
       return SaResult.error("新增广告失败,服务器异常！");
@@ -123,6 +127,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
       }
       return SaResult.ok("删除成功！");
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("delete advertise error !", e.getMessage());
       return SaResult.error("删除广告失败，服务器异常！");
@@ -146,6 +151,7 @@ public class JdAdvertiseServiceImpl extends ServiceImpl<JdAdvertiseMapper, JdAdv
       }
       return SaResult.ok("更新成功");
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("Logic update advertise error !", e.getMessage());
       return SaResult.error("广告更新失败！服务器异常！");

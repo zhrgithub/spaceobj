@@ -68,4 +68,6 @@ public class ProjectHelp {
   private String projectCreateNickName;
 
 
+  @TableField(value = "project_id")
+  private long projectId;
 }

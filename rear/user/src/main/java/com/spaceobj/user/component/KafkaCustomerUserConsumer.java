@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.CustomerUserService;
+import com.spaceobj.user.utils.ExceptionUtil;
 import com.spaceobj.user.utils.KafKaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -50,6 +51,7 @@ public class KafkaCustomerUserConsumer {
                   }
                 }
               } catch (Exception e) {
+                ExceptionUtil.exceptionToString(e);
                 LOG.error("update info update to mysql failed!failed info {}", e.getMessage());
               }
             });
@@ -69,11 +71,9 @@ public class KafkaCustomerUserConsumer {
               try {
                 SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
                 int result = customerUserService.updateUser(sysUser);
-                if (result == 0) {
-                  LOG.error("user info update to mysql failed!");
-                }
+                if (result == 0) {}
               } catch (Exception e) {
-                LOG.error("update info update to mysql failed!failed info {}", e.getMessage());
+                ExceptionUtil.exceptionToString(e);
               }
             });
   }

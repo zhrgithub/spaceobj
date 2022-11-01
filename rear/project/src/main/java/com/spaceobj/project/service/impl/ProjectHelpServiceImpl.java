@@ -19,6 +19,7 @@ import com.spaceobj.project.pojo.SysProject;
 import com.spaceobj.project.pojo.SysUser;
 import com.spaceobj.project.service.ProjectHelpService;
 import com.spaceobj.project.service.SysProjectService;
+import com.spaceobj.project.util.ExceptionUtil;
 import com.spaceobj.project.util.RsaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,6 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
   @Resource private UserClient userClient;
 
-
   @Autowired private SysProjectService sysProjectService;
 
   /**
@@ -70,16 +70,16 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     SysUser sysUser = null;
     try {
       boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
-      if(flag){
-        sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST,account,SysUser.class);
-        if(!ObjectUtils.isEmpty(sysUser)){
+      if (flag) {
+        sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
+        if (!ObjectUtils.isEmpty(sysUser)) {
           return sysUser;
         }
       }
       Object res = userClient.getUserInfoByAccount(account);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtil.exceptionToString(e);
       return null;
     }
     return sysUser;
@@ -89,24 +89,29 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     SysUser sysUser = null;
     try {
       boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
-      if(flag){
-        List<SysUser> sysUserList = redisService.getCacheList(RedisKey.SYS_USER_LIST,SysUser.class);
-        List<SysUser> resultSysUserList = sysUserList.stream().filter(u->{
-          return  !ObjectUtils.isEmpty(u)&&u.getUserId().equals(userId);
-        }).collect(Collectors.toList());
-        if(resultSysUserList.size()>0){
+      if (flag) {
+        List<SysUser> sysUserList =
+            redisService.getCacheList(RedisKey.SYS_USER_LIST, SysUser.class);
+        List<SysUser> resultSysUserList =
+            sysUserList.stream()
+                .filter(
+                    u -> {
+                      return !ObjectUtils.isEmpty(u) && u.getUserId().equals(userId);
+                    })
+                .collect(Collectors.toList());
+        if (resultSysUserList.size() > 0) {
           return resultSysUserList.get(0);
         }
       }
       Object res = userClient.getSysUserByUserId(userId);
       sysUser = RsaUtils.decryptByPrivateKey(res, SysUser.class, privateKey);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
     return sysUser;
   }
-
 
   /**
    * 同步数据到Redis缓存，并返回查询到的数据
@@ -136,7 +141,6 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
           QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper<>();
           queryWrapper.orderByDesc("create_time");
           resultList = projectHelpMapper.selectList(queryWrapper);
-          System.out.println("list:" + resultList);
           // 缓存同步
           for (ProjectHelp p : resultList) {
             redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, p.getHpId(), p);
@@ -145,6 +149,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
         }
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -208,6 +213,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
               .hpCreateNickName(sysUser.getNickName())
               .ipTerritory(sysUser.getIpTerritory())
               .projectCreateNickName(sysProject.getNickname())
+              .projectId(sysProject.getPId())
               .build();
       // 创建项目助力信息，并同步到缓存
       int insertResult = projectHelpMapper.insert(projectHelp);
@@ -222,8 +228,8 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
       return SaResult.ok().setData(projectHelp);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
-      logger.error("create project help link failed", e.getMessage());
       return SaResult.error("服务器异常");
     }
   }
@@ -271,8 +277,8 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       }
       return SaResult.ok("助力成功");
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
-      logger.error("project help failed", e.getMessage());
       return SaResult.error("服务器异常");
     }
   }
@@ -303,7 +309,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
   @Override
   public ProjectHelp getProjectHelpLink(String pUUID, String userId) {
-    ProjectHelp projectHelp =null;
+    ProjectHelp projectHelp = null;
     try {
       List<ProjectHelp> projectHelpList = getProjectHelpList();
       List<ProjectHelp> resultProjectHelp = null;
@@ -324,8 +330,9 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
         //  数据不存在
         return null;
       }
-       projectHelp = resultProjectHelp.get(0);
+      projectHelp = resultProjectHelp.get(0);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       //  程序异常
       return null;
@@ -366,6 +373,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
       return SaResult.ok().setData(list);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("服务器异常");
     }

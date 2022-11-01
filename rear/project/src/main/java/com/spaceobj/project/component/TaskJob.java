@@ -3,6 +3,7 @@ package com.spaceobj.project.component;
 import com.spaceobj.project.bo.ReceiveEmailBo;
 import com.spaceobj.project.constant.KafKaTopics;
 import com.spaceobj.project.service.SysProjectService;
+import com.spaceobj.project.util.ExceptionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,6 +36,7 @@ public class TaskJob {
         kafkaSender.send(receiveEmailBo, KafKaTopics.PENDING_REVIEW_PROJECT);
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       log.error("get pending review failed !", e.getMessage());
     }
   }

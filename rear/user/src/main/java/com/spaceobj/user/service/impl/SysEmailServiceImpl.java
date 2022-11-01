@@ -7,6 +7,7 @@ import com.redis.common.service.RedisService;
 import com.spaceobj.user.mapper.SysEmailMapper;
 import com.spaceobj.user.pojo.SysEmail;
 import com.spaceobj.user.service.SysEmailService;
+import com.spaceobj.user.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class SysEmailServiceImpl extends ServiceImpl<SysEmailMapper, SysEmail>
         list = redisService.getCacheList(SYS_EMAIL_LIST, SysEmail.class);
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("查询邮箱数据异常");
       return SaResult.error("发件箱列表异常").setData(list);

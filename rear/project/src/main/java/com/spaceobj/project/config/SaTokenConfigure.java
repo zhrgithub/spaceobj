@@ -31,6 +31,7 @@ public class SaTokenConfigure implements WebMvcConfigurer {
             String token = SaHolder.getRequest().getHeader(SaIdUtil.ID_TOKEN);
             SaIdUtil.checkToken(token);
         }).setError(e -> {
+
             return SaResult.error(e.getMessage());
         });
     }

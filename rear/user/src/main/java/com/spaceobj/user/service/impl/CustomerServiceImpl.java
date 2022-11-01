@@ -23,10 +23,7 @@ import com.spaceobj.user.constant.Resource;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.CustomerUserService;
-import com.spaceobj.user.utils.BeanConvertToTargetUtils;
-import com.spaceobj.user.utils.EmailVerifyCode;
-import com.spaceobj.user.utils.FileUtil;
-import com.spaceobj.user.utils.PassWordUtils;
+import com.spaceobj.user.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +81,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return 0;
     }
@@ -142,6 +140,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.ok("登录成功").setData(sysUser);
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("服务器繁忙");
     }
@@ -174,6 +173,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       return SaResult.ok("绑定成功").setData(sysUser);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("服务器繁忙");
     }
@@ -259,11 +259,12 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       return SaResult.error("请求参数错误");
     } catch (SaTokenException e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("密码格式不正确");
     } catch (RuntimeException e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
-      LOG.error("loginOrRegister failed", e.getMessage());
       return SaResult.error("服务器异常");
     }
   }
@@ -329,13 +330,13 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
           queryWrapper.eq("account", account);
           sysUser = sysUserMapper.selectOne(queryWrapper);
-          System.out.println(sysUser);
           if (!ObjectUtils.isEmpty(sysUser)) {
             redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
           }
         }
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -360,7 +361,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       return SaResult.ok("登出成功");
     } catch (Exception e) {
-      LOG.error("login out error", e.getMessage());
+      ExceptionUtil.exceptionToString(e);
       return SaResult.error("登出失败！服务器异常!");
     }
   }
@@ -377,7 +378,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       return SaResult.ok("提交成功").setData(sysUser);
     } catch (Exception e) {
-      LOG.error("getUserInfo failed", e.getMessage());
+      ExceptionUtil.exceptionToString(e);
       return SaResult.error("服务器异常");
     }
   }
@@ -393,7 +394,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       if (ObjectUtils.isEmpty(sysUser)) {
         return SaResult.error("用户不存在");
       }
-      System.out.println("sysUser:" + sysUser);
       if (sysUser.getDisableStatus() == 1) {
         return SaResult.error("账号已被封禁，禁止操作！");
       }
@@ -430,8 +430,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       return SaResult.ok("修改成功").setData(sysUser);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
-      LOG.error("updateUserInfo failed", e.getMessage());
       return SaResult.error("服务器异常，修改失败");
     }
   }
@@ -472,7 +472,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       return SaResult.ok("发送成功");
     } catch (Exception e) {
-      LOG.error("Error send failed", e.getMessage());
+      ExceptionUtil.exceptionToString(e);
       return SaResult.error("发送失败");
     }
   }
@@ -511,9 +511,10 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       return SaResult.error("验证码错误");
     } catch (SaTokenException e) {
+      ExceptionUtil.exceptionToString(e);
       return SaResult.error("密码格式错误");
     } catch (RuntimeException e) {
-      LOG.error("resetPassword failed", e.getMessage());
+      ExceptionUtil.exceptionToString(e);
       return SaResult.error("服务器异常");
     }
   }
@@ -548,7 +549,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       }
       return SaResult.ok("提交成功,待审核").setData(sysUser);
     } catch (RuntimeException e) {
-      LOG.error("realName failed", e.getMessage());
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("提交失败，服务器异常");
     }

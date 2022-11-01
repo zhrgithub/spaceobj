@@ -11,6 +11,7 @@ import com.spaceobj.user.constant.RedisKey;
 import com.spaceobj.user.mapper.SysPhotoMapper;
 import com.spaceobj.user.pojo.SysPhoto;
 import com.spaceobj.user.service.PhotoService;
+import com.spaceobj.user.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -70,6 +71,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
       }
 
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       LOG.error("Photo addOrUpdate failed", e.getMessage());
       return SaResult.error("数据操作失败，服务器异常");
@@ -91,6 +93,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
         return SaResult.error("删除失败");
       }
     } catch (RuntimeException e) {
+      ExceptionUtil.exceptionToString(e);
       LOG.error("Photo delete failed", e.getMessage());
       return SaResult.error("删除失败");
     }
@@ -127,6 +130,7 @@ public class PhotoServiceImpl extends ServiceImpl<SysPhotoMapper, SysPhoto>
         }
       }
     } catch (RuntimeException e) {
+      ExceptionUtil.exceptionToString(e);
       LOG.error("Photo list failed", e.getMessage());
       return SaResult.error(e.getMessage()).setData(list);
     }

@@ -25,6 +25,7 @@ public class Base64Util {
       byte[] bytes = str.getBytes();
       decodeStr = bytesToHexString(Base64Utils.decode(bytes));
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }

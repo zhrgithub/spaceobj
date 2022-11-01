@@ -9,6 +9,7 @@ import com.spaceobj.user.pojo.Email;
 import com.spaceobj.user.pojo.SysEmail;
 import com.spaceobj.user.service.SysEmailService;
 import com.spaceobj.user.utils.CommonStringUtils;
+import com.spaceobj.user.utils.ExceptionUtil;
 import com.spaceobj.user.utils.Message;
 import com.spaceobj.user.utils.SendMail;
 import lombok.extern.slf4j.Slf4j;
@@ -104,7 +105,8 @@ public class KafkaEmailConsumer {
       SecureRandom random = new SecureRandom();
       num = random.nextInt(emailList.size());
     } catch (Exception e) {
-      log.error("空指针异常");
+      ExceptionUtil.exceptionToString(e);
+
       return new SysEmail();
     }
     return emailList.get(num);

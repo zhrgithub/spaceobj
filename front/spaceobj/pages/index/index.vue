@@ -32,8 +32,7 @@
 						key: sk.projectHelpShare,
 						data: projectHelpShare
 					})
-					// 如果已经登录，那么直接用当前登录用户给他助力
-					that.doUpdateProjectHelp();
+
 				}
 			}
 		},
@@ -69,24 +68,24 @@
 			}
 		},
 		methods: {
-			doUpdateProjectHelp() {
-				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
-				if (!su.isUndefined(projectHelpShare)&&!su.isBlank(projectHelpShare)) {
-					api.post({
-						hpId: projectHelpShare.hpId,
-					}, api.updateProjectHelpNumber).then(res => {
-						if (res.code == 200) {
-							uni.removeStorage({
-								key: sk.projectHelpShare
-							})
-						}
-						uni.showToast({
-							title: res.msg,
-							icon: "none"
-						})
-					});
-				}
-			}
+			// doUpdateProjectHelp() {
+			// 	var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
+			// 	if (!su.isUndefined(projectHelpShare)&&!su.isBlank(projectHelpShare)) {
+			// 		api.post({
+			// 			hpId: projectHelpShare.hpId,
+			// 		}, api.updateProjectHelpNumber).then(res => {
+			// 			if (res.code == 200) {
+			// 				uni.removeStorage({
+			// 					key: sk.projectHelpShare
+			// 				})
+			// 			}
+			// 			uni.showToast({
+			// 				title: res.msg,
+			// 				icon: "none"
+			// 			})
+			// 		});
+			// 	}
+			// }
 		}
 	}
 </script>

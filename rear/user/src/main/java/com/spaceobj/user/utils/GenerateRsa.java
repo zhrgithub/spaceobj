@@ -22,6 +22,7 @@ public class GenerateRsa {
     try {
       rsa = SaSecureUtil.rsaGenerateKeyPair();
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       rsa = new HashMap<>();
       rsa.put("msg", "rsa初始化失败");

@@ -6,6 +6,7 @@ import com.redis.common.service.RedisService;
 import com.spaceobj.user.constant.RestData;
 import com.spaceobj.user.pojo.Other;
 import com.spaceobj.user.service.OtherService;
+import com.spaceobj.user.utils.ExceptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -27,6 +28,7 @@ public class OtherServiceImpl implements OtherService {
     try {
       redisService.setCacheObject(OTHER_INFO, other);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("修改失败");
     }

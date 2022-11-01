@@ -1,8 +1,6 @@
 package com.spaceobj.user.utils;
 
 import com.spaceobj.user.pojo.Email;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.mail.Message;
 import javax.mail.Session;
@@ -18,8 +16,6 @@ import java.util.Properties;
  */
 public class SendMail {
   public static void sendMails(Email email) {
-    Logger logger = LoggerFactory.getLogger(SendMail.class);
-    logger.info("开始发送邮件！");
 
     try {
       // 创建邮件对象
@@ -51,8 +47,8 @@ public class SendMail {
       transport.sendMessage(message, message.getAllRecipients());
       transport.close();
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
-      logger.error(e.getMessage());
     }
   }
 }

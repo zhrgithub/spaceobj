@@ -6,6 +6,7 @@ import com.spaceobj.project.constant.RedisKey;
 import com.spaceobj.project.mapper.ProjectHelpMapper;
 import com.spaceobj.project.pojo.ProjectHelp;
 import com.spaceobj.project.service.ProjectHelpService;
+import com.spaceobj.project.util.ExceptionUtil;
 import com.spaceobj.project.util.KafkaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -55,6 +56,7 @@ public class KafkaProjectHelpConsumer {
                       RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
                 }
               } catch (Exception e) {
+                  ExceptionUtil.exceptionToString(e);
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
               }
             });
@@ -77,6 +79,7 @@ public class KafkaProjectHelpConsumer {
                   LOG.error("project help info update to mysql failed !");
                 }
               } catch (Exception e) {
+                  ExceptionUtil.exceptionToString(e);
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
               }
             });

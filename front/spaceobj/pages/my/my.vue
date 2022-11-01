@@ -154,7 +154,7 @@
 			if (res.from === 'button') { // 来自页面内分享按钮
 			}
 			return {
-				title: '欢迎体验spaceObj，项目外包入口',
+				title: '欢迎体验spaceObj，项目大厅入口',
 				path: 'pages/index/index?inviteUserId=' + that.userId
 			}
 		},

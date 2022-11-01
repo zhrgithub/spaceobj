@@ -1,9 +1,8 @@
 package com.spaceobj.user.utils;
 
 import cn.dev33.satoken.util.SaResult;
-
+import com.spaceobj.user.constant.Resource;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -42,9 +41,11 @@ public class FileUtil {
         dest.createNewFile();
       }
       coverFile.transferTo(dest);
-      String url = fileDirectory + fileName;
+      // 返回域名+文件名
+      String url = Resource.DOMAIN_NAME + fileName;
       return url;
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
     }
     return null;

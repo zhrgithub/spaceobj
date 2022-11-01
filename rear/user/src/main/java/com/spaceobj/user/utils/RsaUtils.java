@@ -201,6 +201,7 @@ public class RsaUtils {
       byte[] objByte = gson.toJson(obj, obj.getClass()).getBytes("UTF-8");
       result = encryptByPublicKey(objByte, publicKey);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -226,6 +227,7 @@ public class RsaUtils {
       String res = new String(decodeBytes, "UTF-8");
       return new Gson().fromJson(res, (Type) target.getClass());
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }

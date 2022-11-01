@@ -1,12 +1,12 @@
 <template>
 	<view class="release-background-style">
-		<view v-if="list.length==0" class="content-null-style">
+		<view v-if="list.length==0" class="content-null-style" @click="touchLoad">
 			<view class="image-title-background-style">
 				<view class="not-release-image-style-background">
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					下拉刷新项目信息~
+					点我加载项目信息~
 				</view>
 			</view>
 		</view>
@@ -58,7 +58,7 @@
 				</view>
 			</view>
 			<view class="brief-information-style">
-				项目描述：{{item.content}}
+				项目预算：{{item.price}}元；项目描述：{{item.content}}
 			</view>
 		</view>
 		
@@ -144,6 +144,15 @@
 		},
 		methods: {
 			
+			touchLoad(){
+				uni.showLoading({
+					title: "加载中..."
+				})
+				that.currentPage = 1;
+				that.list = [];
+				that.loadList();
+			},
+			
 			setPrice(e) {
 				that.price = e.detail.value;
 			},
@@ -186,6 +195,7 @@
 						currentPage: that.currentPage,
 						pageSize: that.pageSize
 					}, api.projectFindList).then(res => {
+						uni.hideLoading();
 						if (res.code == 200) {
 							if (res.data.length > 0) {
 								that.list = that.list.concat(res.data);
@@ -197,7 +207,6 @@
 								title: res.msg
 							})
 						}
-						uni.hideLoading();
 					});
 				}else{
 					uni.hideLoading();
@@ -258,7 +267,7 @@
 						title: res.msg
 					})
 				});
-			},
+			}, 
 			cancelSubmit() {
 				this.$refs.popup.close();
 			},

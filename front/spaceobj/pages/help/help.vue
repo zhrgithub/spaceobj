@@ -1,12 +1,12 @@
 <template>
 	<view class="release-background-style">
-		<view v-if="list.length==0" class="content-null-style">
+		<view v-if="list.length==0" class="content-null-style" @click="touchLoad">
 			<view class="image-title-background-style">
 				<view class="not-release-image-style-background">
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					下拉刷新项目信息~
+					点我加载项目信息~
 				</view>
 			</view>
 		</view>
@@ -36,7 +36,7 @@
 				</view>
 			</view>
 			<view class="brief-information-style">
-				项目描述：{{item.pcontent}}
+				项目预算：{{item.pprice}}元；项目描述：{{item.pcontent}}
 			</view>
 			<view class="slider-style">
 				<slider :value="item.hpNumber" activeColor="green" backgroundColor="darkgray" block-color="#49A8E7"
@@ -104,6 +104,14 @@
 
 		},
 		methods: {
+			touchLoad(){
+				uni.showLoading({
+					title: "加载中..."
+				})
+				that.currentPage = 1;
+				that.list = [];
+				that.loadList();
+			},
 			timeStampTurnTime(str) {
 				var date = new Date(str); // 参数需要毫秒数，所以这里将秒数乘于 1000
 				var Y = date.getFullYear() + '-';
@@ -119,6 +127,7 @@
 						currentPage: that.currentPage,
 						pageSize: that.pageSize
 					}, api.projectHelpList).then(res => {
+						uni.hideLoading();
 						if (res.code == 200) {
 							if (res.data.length > 0) {
 								that.list = that.list.concat(res.data);
@@ -130,7 +139,6 @@
 								title: res.msg
 							})
 						}
-						uni.hideLoading();
 					});
 				}else{
 					uni.hideLoading();

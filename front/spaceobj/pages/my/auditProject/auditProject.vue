@@ -8,7 +8,7 @@
 					<image src="/static/searchInput.png" mode=""></image>
 				</view>
 				<view class="input-background-style">
-					<input :value="seachText" type="text" maxlength="15" placeholder="项目编号、发布人昵称、邮箱、联系方式"
+					<input :value="seachText" type="text" maxlength="15" placeholder="项目编号、项目内容、发布人昵称、用户id"
 						placeholder-style="font-size:14px" confirm-type="search" @confirm="doSearch" @input="inputText">
 					<image src="/static/deleteSearch.png" @click="clearInput">
 				</view>

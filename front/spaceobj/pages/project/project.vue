@@ -14,13 +14,13 @@
 				</view>
 			</view>
 		</view>
-		<view v-if="list.length==0" class="content-null-style">
+		<view v-if="list.length==0" class="content-null-style" @click="touchLoad">
 			<view class="image-title-background-style">
 				<view class="not-release-image-style-background">
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					下拉刷新项目信息~
+					点我加载项目信息~
 				</view>
 			</view>
 		</view>
@@ -64,7 +64,7 @@
 					</view>
 				</view>
 				<view class="brief-information-style">
-					项目描述：{{item.content}}
+					项目预算：{{item.price}}元；项目描述：{{item.content}}
 				</view>
 			</view>
 
@@ -162,15 +162,18 @@
 			that.pageSize = 10;
 			that.loadList();
 
-			// 登录成功，帮助好友更新项目助力信息
-			that.doUpdateProjectHelp();
+
 		},
 		onShow() {
 			that.shopList = uni.getStorageSync(sk.shopList);
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
-
-
+			// 校验用户是否登录
+			var loginStatus = uni.getStorageSync(sk.loginStatus);
+			if (loginStatus) {
+				// 登录成功，帮助好友更新项目助力信息
+				that.doUpdateProjectHelp();
+			}
 		},
 		// 触底加载更多
 		onReachBottom() {
@@ -192,11 +195,26 @@
 
 		},
 		methods: {
+			
+			touchLoad(){
+				uni.showLoading({
+					title: "加载中..."
+				})
+				that.currentPage = 1;
+				that.list = [];
+				that.loadList();
+			},
 
 			doUpdateProjectHelp() {
 				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
-				var loginStatus = uni.getStorageSync(sk.loginStatus);
-				if (!su.isUndefined(projectHelpShare) && !su.isBlank(projectHelpShare) && loginStatus) {
+				var createUserId = projectHelpShare.createUserId;
+				var userInfo = that.userInfo;
+				if(userInfo.userId == createUserId){
+					return;
+				}
+				
+				console.log(projectHelpShare);
+				if (!su.isUndefined(projectHelpShare) && !su.isBlank(projectHelpShare)) {
 					api.post({
 						hpId: projectHelpShare.hpId,
 					}, api.updateProjectHelpNumber).then(res => {
@@ -249,6 +267,7 @@
 					currentPage: that.currentPage,
 					pageSize: that.pageSize
 				}, api.projectFindList).then(res => {
+					uni.hideLoading();
 					if (res.code == 200) {
 						if (res.data.length > 0) {
 							that.list = that.list.concat(res.data);
@@ -260,7 +279,6 @@
 							title: res.msg
 						})
 					}
-					uni.hideLoading();
 				});
 			},
 			releaseProject(type) {

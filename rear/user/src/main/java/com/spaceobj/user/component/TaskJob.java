@@ -2,6 +2,7 @@ package com.spaceobj.user.component;
 
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.service.SysUserService;
+import com.spaceobj.user.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class TaskJob {
               .build();
       sysUserService.updateAll(sysUserBo);
     } catch (Exception e) {
-      LOG.error("job of update user info failed of every day", e.getMessage());
+      ExceptionUtil.exceptionToString(e);
     }
   }
 
@@ -43,7 +44,7 @@ public class TaskJob {
       SysUserBo sysUserBo = SysUserBo.builder().editInfoTimes(3).build();
       sysUserService.updateAll(sysUserBo);
     } catch (Exception e) {
-      LOG.error("update user info times failed of every month", e.getMessage());
+      ExceptionUtil.exceptionToString(e);
     }
   }
 
@@ -53,7 +54,7 @@ public class TaskJob {
     try {
       sysUserService.noticeAuditUserRealNameInfo();
     } catch (Exception e) {
-      LOG.error("update user info times failed of every month", e.getMessage());
+      ExceptionUtil.exceptionToString(e);
     }
   }
 }
