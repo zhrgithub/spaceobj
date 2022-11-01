@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson2.JSON;
+import com.redis.common.utils.ExceptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.HashOperations;
@@ -124,6 +125,7 @@ public class RedisService {
     try{
       flag =redisTemplate.hasKey(key);
     }catch (Exception e){
+      ExceptionUtil.exceptionToString(e);
       return false;
     }
     return flag;
@@ -144,6 +146,7 @@ public class RedisService {
       }
       return getTargetObject(obj, clazz);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -194,6 +197,7 @@ public class RedisService {
       }
       return getTargetListObj(obj, clazz);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -287,6 +291,7 @@ public class RedisService {
       }
       return getTargetObject(obj, clazz);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }
@@ -339,6 +344,7 @@ public class RedisService {
       }
       return getTargetListObj(obj, clazz);
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return null;
     }

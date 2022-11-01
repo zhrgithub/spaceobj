@@ -1,5 +1,6 @@
 package com.redis.common.service;
 
+import com.redis.common.utils.ExceptionUtil;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ public class RedissonService {
         return Boolean.TRUE;
       }
     } catch (InterruptedException e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return Boolean.FALSE;
     }
@@ -47,6 +49,7 @@ public class RedissonService {
         return Boolean.TRUE;
       }
     } catch (InterruptedException e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return Boolean.FALSE;
     }
@@ -67,6 +70,7 @@ public class RedissonService {
         return Boolean.TRUE;
       }
     } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return Boolean.FALSE;
     }
