@@ -74,7 +74,6 @@
 	import JSEncrypt from '@/utils/jsencrypt.min.js'
 	import su from '@/utils/StringUtils.js'
 	import nick_Name from '@/utils/nickName.js'
-import nickName from '@/utils/nickName.js'
 	var that;
 	export default {
 		data() {
@@ -108,7 +107,7 @@ import nickName from '@/utils/nickName.js'
 				uni.showLoading({
 					title: '登录中...'
 				})
-				var nick_name = nick_Name.getNickName();
+				var nickName = nick_Name.getNickName();
 				uni.login({
 					provider: 'weixin',
 					success: function(res) {
@@ -118,7 +117,7 @@ import nickName from '@/utils/nickName.js'
 							ipTerritory: uni.getStorageSync(sk.ipTerritory),
 							deviceType: uni.getStorageSync(sk.deviceModel).model,
 							inviteUserId: uni.getStorageSync(sk.inviteUserId),
-							nickName:nick_name
+							nickName:nickName
 						}, api.loginByWechat).then(res2 => {
 							if (res2.code == 200) {
 								// 缓存用户基本信息
@@ -139,7 +138,7 @@ import nickName from '@/utils/nickName.js'
 				var email = that.email;
 				var password = that.password;
 				var phoneNumber = that.phoneNumber;
-				var nick_name = nick_Name.getNickName();
+				var nickName = nick_Name.getNickName();
 				if (!rgx.checkEmail(email)) {
 					uni.showToast({
 						icon: 'none',
@@ -173,7 +172,7 @@ import nickName from '@/utils/nickName.js'
 					deviceType: uni.getStorageSync(sk.deviceModel).model,
 					phoneNumber: phoneNumber,
 					inviteUserId: uni.getStorageSync(sk.inviteUserId),
-					nickName:nick_name
+					nickName:nickName
 				}, api.login).then(res => {
 					uni.hideLoading();
 					if (res.code == 200) {
@@ -462,6 +461,7 @@ import nickName from '@/utils/nickName.js'
 
 	.phone-style input {
 		width: 90%;
+		height: 100%;
 	}
 
 	.verifiction-style {
@@ -476,6 +476,7 @@ import nickName from '@/utils/nickName.js'
 
 	.verifiction-style input {
 		width: 90%;
+		height: 100%;
 	}
 
 	.count-down-background-style {

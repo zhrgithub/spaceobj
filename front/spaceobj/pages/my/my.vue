@@ -194,7 +194,7 @@
 					}
 					if (userInfo != '') {
 						that.userType = strigUtils.isBlank(userInfo.userType)?'':userInfo.userType;
-						that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
+						that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? "/static/photo.png": userInfo.photoUrl;
 						that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
 						that.invitationValue = userInfo.invitationValue;
 						that.realNameStatus = userInfo.realNameStatus;

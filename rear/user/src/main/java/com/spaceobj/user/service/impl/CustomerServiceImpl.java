@@ -210,6 +210,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         } else {
           SysUser sysUser = getUser;
           // 校验密码
+          if (ObjectUtils.isNull(sysUser.getPassword())) {
+            return SaResult.error("用户未设置密码");
+          }
           if (sysUser.getPassword().equals(md5Password)) {
             sysUser.setOnlineStatus(1);
             sysUser.setToken(StpUtil.getTokenValue());

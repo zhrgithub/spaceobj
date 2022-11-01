@@ -54,6 +54,10 @@
 					})
 				}
 				uni.hideLoading();
+				// 上线后关闭该注解
+				uni.switchTab({
+					url: '/pages/project/project'
+				})
 			})
 		},
 		created() {

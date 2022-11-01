@@ -31,6 +31,7 @@
 	import sk from '@/common/StoryKeys.js'
 	import api from '@/common/api.js'
 	import strigUtils from '@/utils/StringUtils.js'
+	import nick_Name from '@/utils/nickName.js'
 	export default {
 		data() {
 			return {
@@ -66,6 +67,7 @@
 
 
 			saveUserInfo() {
+				var nickName = nick_Name.getNickName();
 
 				uni.showLoading({
 					title: '修改中...',
@@ -95,6 +97,7 @@
 							email: that.email,
 							phoneNumber: that.phoneNumber,
 							ipTerritory: uni.getStorageSync(sk.ipTerritory),
+							nickName:nickName
 						}, api.customerUpdateUserInfo).then(res => {
 							uni.hideLoading();
 							if (res.code == 200) {
@@ -211,6 +214,8 @@
 
 	.change-input-style input {
 		width: 100%;
+		height: 100%;
+		border: solid 1rpx #e6e6e6;
 	}
 
 	.save-btn-style {
