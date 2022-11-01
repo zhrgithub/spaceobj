@@ -26,11 +26,11 @@
 					<textarea maxlength="1000" cols="30" rows="2" placeholder="请输入您的需求信息" :value="content"
 						@input="setContent"></textarea>
 				</view>
-				<view class="button-style">  
-					<button @click="cancelSubmit">取消</button>   
+				<view class="button-style">
+					<button @click="cancelSubmit">取消</button>
 					<view class="button-space"></view>
 					<button @click="submit">确认发布</button>
-				</view>  
+				</view>
 			</view>
 		</uni-popup>
 
@@ -105,15 +105,16 @@
 			that.screenHeight = deviceModel.screenHeight;
 			console.log(that.screenHeight)
 
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
 		},
 		onShow() {
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
 
-			that.list = [];
-			that.currentPage = 1;
-			that.pageSize = 10;
-			that.loadList();
+
 		},
 		// 触底加载更多
 		onReachBottom() {
@@ -386,10 +387,10 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		
+
 		position: fixed;
 		bottom: 10rpx;
-		
+
 	}
 
 	.button-style button {

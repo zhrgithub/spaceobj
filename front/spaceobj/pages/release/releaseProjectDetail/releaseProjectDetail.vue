@@ -185,7 +185,7 @@
 
 	.description-doller-style {
 		width: 100%;
-		height: 950rpx;
+		height: 1100rpx;
 	}
 
 	.doller-num-style {

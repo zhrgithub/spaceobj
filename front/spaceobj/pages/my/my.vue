@@ -166,28 +166,34 @@
 
 				// 第一步：加载用户基本信息
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
+				var userInfo = uni.getStorageSync({
+					key: sk.userInfo
+				})
 				if (that.loginStatus) {
-					that.getUserInfo();
+					that.getUserInfo(userInfo);
 				}
 				// 第二步加载其它信息
 				var otherInfo = uni.getStorageSync(sk.otherInfo);
 
 				that.downloadUrl = otherInfo.downloadUrl;
 				that.wechat = otherInfo.wechat;
-			}, 200)
+			}, 200)  
 		},
 		methods: {
 			// 根据用户登录账户刷新用户基本信息
-			getUserInfo() {
+			getUserInfo(userInfo) {
 				api.post({}, api.getUserInfo).then(res => {
-					// 刷新缓存
-					uni.setStorage({
-						key:sk.userInfo,
-						data:res.data
-					})
-					var userInfo = res.data;
+					userInfo = res.data;
+					if (res.code == 200) {
+						// 刷新缓存
+						uni.setStorage({
+							key: sk.userInfo,
+							data: res.data
+						})
+						userInfo = res.data;
+					}
 					if (userInfo != '') {
-						that.userType = userInfo.userType;
+						that.userType = strigUtils.isBlank(userInfo.userType)?'':userInfo.userType;
 						that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 						that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
 						that.invitationValue = userInfo.invitationValue;
@@ -195,7 +201,6 @@
 						that.ipTerritory = userInfo.ipTerritory;
 						that.userId = userInfo.userId;
 					}
-
 				});
 			},
 			toLogin() {

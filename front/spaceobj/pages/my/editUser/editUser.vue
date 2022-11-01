@@ -57,10 +57,10 @@
 			<view class="change-tips">
 				<image src="/static/wechat.png" mode=""></image>
 			</view>
-			<view class="change-input-style" v-if="openId.length>0">
+			<view class="change-input-style" v-if="openId.length>0&&openId!='null'&&openId!=null">
 				已绑定
 			</view>
-			<view class="change-input-style" v-if="openId.length==0" @click="bindWechat">
+			<view class="change-input-style" v-if="openId.length==0||openId=='null'||openId==null" @click="bindWechat">
 				<view class="tips-info-style">
 					绑定微信
 				</view>
@@ -142,7 +142,7 @@
 				account: "未知",
 				realNameStatus: '未实名',
 				email: '未设置',
-				openId :'',
+				openId :null,
 				userId:'',
 				deviceModel:'',
 				ip:"",
@@ -165,7 +165,9 @@
 		methods: {
 			loadUserInfo(){
 				var userInfo = uni.getStorageSync(sk.userInfo);
+				
 				that.userInfo= userInfo;
+				console.log(that.userInfo);
 				that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? that.photoUrl : userInfo.photoUrl;
 				that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
 				that.phoneNumber = strigUtils.isBlank(userInfo.phoneNumber) ? that.phoneNumber : userInfo
@@ -176,6 +178,7 @@
 				that.ipTerritory = userInfo.ipTerritory;
 				that.openId = userInfo.openId;
 				that.userId = userInfo.userId;
+				console.log(that.openId);
 			},
 			bindWechat(){
 				uni.login({

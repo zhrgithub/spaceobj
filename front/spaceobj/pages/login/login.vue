@@ -101,24 +101,7 @@
 
 		},
 		methods: {
-			doUpdateProjectHelp() {
-				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
-				if (!su.isUndefined(projectHelpShare) && !su.isBlank(projectHelpShare)) {
-					api.post({
-						hpId: projectHelpShare.hpId,
-					}, api.updateProjectHelpNumber).then(res => {
-						if (res.code == 200) {
-							uni.removeStorage({
-								key: sk.projectHelpShare
-							})
-						}
-						uni.showToast({
-							title: res.msg,
-							icon: "none"
-						})
-					});
-				}
-			},
+
 			loginByWechat() {
 				uni.showLoading({
 					title: '登录中...'
@@ -133,14 +116,17 @@
 							inviteUserId: uni.getStorageSync(sk.inviteUserId)
 						}, api.loginByWechat).then(res2 => {
 							if (res2.code == 200) {
-
-								that.loginResetUserinFo(res2.data, res2.data.token, res2.msg);
-
+								// 缓存用户基本信息
+								uni.setStorage({
+									key: sk.userInfo,
+									data: res2.data,
+									success() {
+										that.loginResetUserinFo( res2.data,res2.data.token, res2.msg);
+									}
+								})
 							}
 							uni.hideLoading();
 						})
-
-
 					}
 				});
 			},
@@ -184,17 +170,18 @@
 				}, api.login).then(res => {
 					uni.hideLoading();
 					if (res.code == 200) {
-						that.loginResetUserinFo(res.data, res.data.token, res.msg);
+						// 缓存用户基本信息
+						uni.setStorage({
+							key: sk.userInfo,
+							data: res.data,
+							success() {
+								that.loginResetUserinFo( res.data,res.data.token, res.msg);
+							}
+						})
 					}
 				})
 			},
-			loginResetUserinFo(userInfo, token, msg) {
-
-				// 缓存用户基本信息
-				uni.setStorage({
-					key: sk.userInfo,
-					data: userInfo
-				})
+			loginResetUserinFo(userInfo,token, msg) {
 
 				if (su.isBlank(userInfo.email) || su.isBlank(userInfo.phoneNumber)) {
 					uni.navigateTo({
@@ -203,29 +190,30 @@
 					return;
 				}
 
-				//缓存token
-				uni.setStorage({
-					key: sk.token,
-					data: token
-				})
-
 				// 缓存登录状态
 				uni.setStorage({
 					key: sk.loginStatus,
 					data: true
 				})
 
-				// 登录成功，帮助好友更新项目助力信息
-				that.doUpdateProjectHelp();
-				uni.showToast({
-					icon: 'none',
-					title: msg,
+				//缓存token
+				uni.setStorage({
+					key: sk.token,
+					data: token,
 					success() {
-						uni.switchTab({
-							url: '/pages/project/project'
+						// 转到项目大厅
+						uni.showToast({
+							icon: 'none',
+							title: msg,
+							success() {
+								uni.switchTab({
+									url: '/pages/project/project'
+								})
+							}
 						})
 					}
 				})
+
 			},
 			doResetPassword() {
 				var email = that.email;
@@ -323,7 +311,14 @@
 					deviceType: deviceModel.model
 				}, api.login).then(res => {
 					if (res.code == 200) {
-						that.loginResetUserinFo(res.data, res.data.token, res.msg);
+						// 缓存用户基本信息
+						uni.setStorage({
+							key: sk.userInfo,
+							data: res.data,
+							success() {
+								that.loginResetUserinFo( res.data,res.data.token, res.msg);
+							}
+						})
 					}
 				})
 			},

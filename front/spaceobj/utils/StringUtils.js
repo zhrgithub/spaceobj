@@ -3,7 +3,7 @@
  * @param {Object} str
  */
 function isBlank(str) {
-	if (str == null || str == "" || str.length == 0) {
+	if (str == null || str == "" || str.length == 0||str=='null') {
 		return true;
 	} else {
 		return false;

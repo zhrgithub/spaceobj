@@ -148,17 +148,20 @@
 			uni.showLoading({
 				title: '加载中...',
 			})
-
+			that.list = [];
+			that.currentPage = 1;
+			that.pageSize = 10;
+			that.loadList();
+			
+			// 登录成功，帮助好友更新项目助力信息
+			that.doUpdateProjectHelp();
 		},
 		onShow() {
 			that.shopList = uni.getStorageSync(sk.shopList);
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
 
-			that.list = [];
-			that.currentPage = 1;
-			that.pageSize = 10;
-			that.loadList();
+
 		},
 		// 触底加载更多
 		onReachBottom() {
@@ -180,6 +183,25 @@
 
 		},
 		methods: {
+			
+			doUpdateProjectHelp() {
+				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
+				if (!su.isUndefined(projectHelpShare) && !su.isBlank(projectHelpShare)) {
+					api.post({
+						hpId: projectHelpShare.hpId,
+					}, api.updateProjectHelpNumber).then(res => {
+						if (res.code == 200) {
+							uni.removeStorage({
+								key: sk.projectHelpShare
+							})
+						}
+						uni.showToast({
+							title: res.msg,
+							icon: "none"
+						})
+					});
+				}
+			},
 			copyAdLink(e) {
 				uni.setClipboardData({
 					data: e,
@@ -282,7 +304,7 @@
 						that.loadList();
 						that.$refs.popup.close();
 						uni.switchTab({
-							url:'/pages/release/release'
+							url: '/pages/release/release'
 						})
 					} else {
 						uni.hideLoading();
@@ -591,7 +613,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		
+
 		position: fixed;
 		bottom: 10rpx;
 	}

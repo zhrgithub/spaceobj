@@ -90,6 +90,7 @@
 					key: sk.token,
 					data: uni.getStorageSync(sk.userInfo).token,
 					success() {
+						// 设置用户的邮箱和手机号
 						api.post({
 							email: that.email,
 							phoneNumber: that.phoneNumber,
@@ -121,6 +122,10 @@
 								// 修改失败移除token缓存
 								uni.removeStorage({
 									key:sk.token
+								});
+								uni.showToast({
+									icon:'none',
+									title:res.msg
 								})
 							}
 						});

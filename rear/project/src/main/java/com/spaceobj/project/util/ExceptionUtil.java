@@ -1,5 +1,6 @@
 package com.spaceobj.project.util;
 
+import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.PrintWriter;
@@ -36,14 +37,7 @@ public class ExceptionUtil {
     String fileName = ste.getFileName();
     // 创建时间
     Date createTime = new Date();
-
-
-
-
-
-
-
-
-
+    //  异常用户id
+    String loginId = StpUtil.getLoginId().toString();
   }
 }

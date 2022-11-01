@@ -306,36 +306,40 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
    */
   private SysUser getUser(String account) {
     SysUser sysUser = null;
-    boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
-    // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
-    if (hasKey) {
-      sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
-      return sysUser;
-    } else {
-      // 添加分布式锁
-      boolean flag = redissonService.tryLock(account);
-      if (!flag) {
-        return null;
-      } else {
-        //  成功获取到锁，再次从缓存中查询一遍
-        hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
-        // 如果缓存中不存在这个hash key，从数据库中查找，数据库中如果也不存在，那么设置成null
-        if (hasKey) {
-          // 缓存中存在这个hashKey,则返回对应的Value
-          sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
-          return sysUser;
-        }
-        QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-        queryWrapper.eq("account", account);
-        sysUser = sysUserMapper.selectOne(queryWrapper);
-        if (ObjectUtils.isEmpty(sysUser)) {
-          redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
-        } else {
-          redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
-        }
+
+    try {
+      boolean hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+      // 如果缓存中存在这个hash key，直接返回
+      if (hasKey) {
+        sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
         return sysUser;
+      } else {
+        // 添加分布式锁
+        boolean flag = redissonService.tryLock(account);
+        if (!flag) {
+          return null;
+        } else {
+          //  成功获取到锁，再次从缓存中查询一遍，如果缓存中存在这个hash key，直接返回
+          hasKey = redisService.HExists(RedisKey.SYS_USER_LIST, account);
+          if (hasKey) {
+            sysUser = redisService.getCacheMapValue(RedisKey.SYS_USER_LIST, account, SysUser.class);
+            return sysUser;
+          }
+          // 如果缓存中不存在这个hash key，从数据库中查找
+          QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+          queryWrapper.eq("account", account);
+          sysUser = sysUserMapper.selectOne(queryWrapper);
+          System.out.println(sysUser);
+          if (!ObjectUtils.isEmpty(sysUser)) {
+            redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
+          }
+        }
       }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
+    return sysUser;
   }
 
   @Override
@@ -372,7 +376,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("用户不存在");
       }
       return SaResult.ok("提交成功").setData(sysUser);
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
       LOG.error("getUserInfo failed", e.getMessage());
       return SaResult.error("服务器异常");
     }
