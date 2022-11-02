@@ -20,13 +20,17 @@
 				<text class="nick-name-style">{{nickName}}</text>
 				<text class="address-background-style">IP属地：{{ipTerritory}}</text>
 			</view>
+			<!-- 设置空白区域 -->
+			<!-- <view class="userinfo-background-style" v-if="online==0">
+				
+			</view> -->
 			<view class="to-perso-certer">
 				<image src="/static/toPersonCerter.png" mode=""></image>
 			</view>
 		</view>
 
 		<!-- 实名认证 -->
-		<view class="invite-value-background-style" v-if="loginStatus">
+		<view class="invite-value-background-style" v-if="loginStatus&&online==1">
 			<view class="link-us-style">
 				实名状态：
 				<text v-if="realNameStatus==0">未实名</text>
@@ -47,7 +51,7 @@
 		</view>
 
 		<!-- 邀请链接 -->
-		<view class="invite-value-background-style" v-if="loginStatus">
+		<view class="invite-value-background-style" v-if="loginStatus&&online==1">
 			<view class="invite-tips-style">
 				邀请值：
 			</view>
@@ -74,16 +78,36 @@
 		<!-- 下载 -->
 		<view class="invite-value-background-style">
 			<view class="link-us-style">
-				安卓APP
+				APP
 			</view>
 
 			<view class="invite-btn-stye" @click="downloadFunction">
 				下载
 			</view>
 		</view>
+
+		<!-- 好友助力 -->
+		<view class="invite-value-background-style" @click="friendHelp" v-if="online==1">
+			<view class="friend_help">
+				好友助力
+			</view>
+
+			<view class="to-perso-certer">
+				<image src="/static/toPersonCerter.png" mode=""></image>
+			</view>
+		</view>
+		
+		<!-- 我的发布 -->
+		<view class="invite-value-background-style" @click="myRelease" v-if="online==1">
+			<view class="friend_help">
+				我的发布
+			</view>
+		
+			<view class="to-perso-certer">
+				<image src="/static/toPersonCerter.png" mode=""></image>
+			</view>
+		</view>
 		<view v-if="userType=='root'&&loginStatus">
-
-
 			<!-- 管理 -->
 			<view class="invite-value-background-style">
 
@@ -145,6 +169,7 @@
 				invitationValue: 0,
 				realNameStatus: 0,
 				userId: null,
+				online: 0,
 			}
 		},
 		created() {
@@ -177,9 +202,20 @@
 
 				that.downloadUrl = otherInfo.downloadUrl;
 				that.wechat = otherInfo.wechat;
-			}, 200)  
+				that.online = otherInfo.online;
+			}, 200)
 		},
 		methods: {
+			friendHelp(){
+				uni.navigateTo({
+					url:'/pages/help/help'
+				})
+			},
+			myRelease(){
+			uni.navigateTo({
+				url:'/pages/release/release'
+			})	
+			},
 			// 根据用户登录账户刷新用户基本信息
 			getUserInfo(userInfo) {
 				api.post({}, api.getUserInfo).then(res => {
@@ -193,8 +229,9 @@
 						userInfo = res.data;
 					}
 					if (userInfo != '') {
-						that.userType = strigUtils.isBlank(userInfo.userType)?'':userInfo.userType;
-						that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? "/static/photo.png": userInfo.photoUrl;
+						that.userType = strigUtils.isBlank(userInfo.userType) ? '' : userInfo.userType;
+						that.photoUrl = strigUtils.isBlank(userInfo.photoUrl) ? "/static/photo.png" : userInfo
+							.photoUrl;
 						that.nickName = strigUtils.isBlank(userInfo.nickName) ? that.nickName : userInfo.nickName;
 						that.invitationValue = userInfo.invitationValue;
 						that.realNameStatus = userInfo.realNameStatus;
@@ -342,6 +379,7 @@
 		height: 50%;
 	}
 
+
 	.nick-name-style {
 		width: 30%;
 		display: block;
@@ -399,6 +437,12 @@
 
 	.link-us-style {
 		width: 70%;
+		margin-left: 20rpx;
+		margin-right: 20rpx;
+	}
+
+	.friend_help {
+		width: 80%;
 		margin-left: 20rpx;
 		margin-right: 20rpx;
 	}

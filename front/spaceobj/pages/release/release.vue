@@ -6,12 +6,12 @@
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					点我加载项目信息~
+					点我加载信息~
 				</view>
 			</view>
 		</view>
 
-		<view class="click-release-style" @click="releaseProject('bottom')">发需求</view>
+		<view v-if="online==1" class="click-release-style" @click="releaseProject('bottom')">发需求</view>
 
 		<uni-popup ref="popup" background-color="#fff">
 			<view class="need-description-budget-style">
@@ -61,9 +61,9 @@
 				项目预算：{{item.price}}元；项目描述：{{item.content}}
 			</view>
 		</view>
-		
+
 		<!-- 提示下拉刷新~ -->
-		<view class="tips-background-style" v-if="list.length>0&&list.length<10"> 
+		<view class="tips-background-style" v-if="list.length>0&&list.length<10">
 			下 拉 刷 新 ~ ~ ~
 		</view>
 		<!-- 提示上滑加载更多~ -->
@@ -99,6 +99,7 @@
 				userInfo: "",
 				// 根据屏幕高度显示输入框
 				screenHeight: "0px",
+				online: 0,
 			}
 		},
 		created() {
@@ -123,7 +124,8 @@
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
 
-
+			var otherInfo = uni.getStorageSync(sk.otherInfo);
+			that.online = otherInfo.online;
 		},
 		// 触底加载更多
 		onReachBottom() {
@@ -143,8 +145,8 @@
 			uni.stopPullDownRefresh();
 		},
 		methods: {
-			
-			touchLoad(){
+
+			touchLoad() {
 				uni.showLoading({
 					title: "加载中..."
 				})
@@ -152,7 +154,7 @@
 				that.list = [];
 				that.loadList();
 			},
-			
+
 			setPrice(e) {
 				that.price = e.detail.value;
 			},
@@ -187,9 +189,9 @@
 			},
 
 			loadList() {
-				
-				var loginSataus =  uni.getStorageSync(sk.loginStatus);
-				if(loginSataus){
+
+				var loginSataus = uni.getStorageSync(sk.loginStatus);
+				if (loginSataus) {
 					api.post({
 						projectType: 1,
 						currentPage: that.currentPage,
@@ -208,11 +210,11 @@
 							})
 						}
 					});
-				}else{
+				} else {
 					uni.hideLoading();
 				}
 
-				
+
 			},
 			releaseProject(type) {
 				this.type = type;
@@ -261,13 +263,13 @@
 						that.pageSize = 10;
 						that.loadList();
 						this.$refs.popup.close();
-					} 
+					}
 					uni.showToast({
 						icon: 'none',
 						title: res.msg
 					})
 				});
-			}, 
+			},
 			cancelSubmit() {
 				this.$refs.popup.close();
 			},
@@ -293,6 +295,7 @@
 		margin-top: 20rpx;
 		margin-bottom: 20rpx;
 	}
+
 	.space-line-style {
 		width: 100%;
 		height: 200rpx;

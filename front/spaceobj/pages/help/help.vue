@@ -6,7 +6,7 @@
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					点我加载项目信息~
+					点我加载信息~
 				</view>
 			</view>
 		</view>

@@ -8,7 +8,7 @@
 		<view class="phone-email-background-style">
 			<view class="phone-background-style" v-if="operationType==1">
 				<view class="phone-style">
-					<input type="number" maxlength="11" placeholder="请输入手机号" @input="getphoneNumber">
+					<input type="text" maxlength="11" placeholder="设置联系方式" @input="getphoneNumber">
 				</view>
 			</view>
 
@@ -153,7 +153,7 @@
 					})
 					return;
 				}
-				if (!rgx.checkMobile(phoneNumber)) {
+				if (phoneNumber.length>11) {
 					uni.showToast({
 						icon: 'none',
 						title: "手机格式不正确"

@@ -7,8 +7,13 @@
 				<view class="image-background-style">
 					<image src="/static/searchInput.png" mode=""></image>
 				</view>
-				<view class="input-background-style">
+				<view class="input-background-style" v-if="online==1">
 					<input :value="seachText" type="text" maxlength="15" placeholder="元宇宙、商城、聊天、APP、网站"
+						placeholder-style="font-size:14px" confirm-type="search" @confirm="doSearch" @input="inputText">
+					<image src="/static/deleteSearch.png" @click="clearInput">
+				</view>
+				<view class="input-background-style" v-if="online==0">
+					<input :value="seachText" type="text" maxlength="15" placeholder="名人传,拿破仑,秦孝公..."
 						placeholder-style="font-size:14px" confirm-type="search" @confirm="doSearch" @input="inputText">
 					<image src="/static/deleteSearch.png" @click="clearInput">
 				</view>
@@ -20,12 +25,12 @@
 					<image src="/static/notAnything.png" mode=""></image>
 				</view>
 				<view class="title-context">
-					点我加载项目信息~
+					点我加载信息~
 				</view>
 			</view>
 		</view>
 		<view class="top-space-line-style"></view>
-		<view class="click-release-style" @click="releaseProject('bottom')">发需求</view>
+		<view v-if="online==1" class="click-release-style" @click="releaseProject('bottom')">发需求</view>
 		<uni-popup ref="popup" background-color="#fff">
 			<view class="need-description-budget-style">
 				项目描述和预算
@@ -52,7 +57,7 @@
 
 			<!-- 发布的列表 -->
 			<view class="project-list-style" @click="toProjecDetail(item)">
-				<view class="date-status-style">
+				<view class="date-status-style" v-if="online==1">
 					<view class="date-style">
 						{{timeStampTurnTime(item.createTime)}}
 					</view>
@@ -63,13 +68,19 @@
 						查看详情
 					</view>
 				</view>
+				<view class="date-status-style" v-if="online==0">
+					
+					<view class="status-style" style="width: 100%;">
+						查看详情
+					</view>
+				</view>
 				<view class="brief-information-style">
-					项目预算：{{item.price}}元；项目描述：{{item.content}}
+					<text  v-if="online==1"> 项目预算：{{item.price}}元；项目描述：</text>{{item.content}}
 				</view>
 			</view>
 
 
-			<view class="shop-list-style" v-if="idx==0">
+			<view class="shop-list-style" v-if="idx==0&&online==1">
 				<swiper class="swiper" @change="getItem" :current="act" autoplay="true" interval="3000" circular="true">
 					<swiper-item v-for="(shopItem,ids) in shopList" :key="ids"
 						@click="copyAdLink(shopItem.jdAdHyperlink)">
@@ -148,6 +159,8 @@
 				price: "",
 				content: "",
 				userInfo: "",
+				online:0,
+				
 			}
 		},
 		created() {
@@ -165,6 +178,10 @@
 
 		},
 		onShow() {
+			var otherInfo = uni.getStorageSync(sk.otherInfo);
+			that.online = otherInfo.online;
+			
+			
 			that.shopList = uni.getStorageSync(sk.shopList);
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
@@ -328,7 +345,7 @@
 						that.pageSize = 10;
 						that.loadList();
 						that.$refs.popup.close();
-						uni.switchTab({
+						uni.navigateTo({
 							url: '/pages/release/release'
 						})
 					}
@@ -693,6 +710,7 @@
 
 	.doller-num-style input {
 		width: 90%;
+		height: 100%;
 	}
 
 	.description-doller-style {

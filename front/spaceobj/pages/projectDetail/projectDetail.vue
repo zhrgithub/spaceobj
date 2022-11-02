@@ -2,7 +2,7 @@
 	<view class="project-detail-background-style">
 
 
-		<view class="base-info-panel-style" @click="copyPid(projectObj.pid)">
+		<view class="base-info-panel-style" @click="copyPid(projectObj.pid)"  v-if="online==1">
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
 					项目编号：{{projectObj.pid}}
@@ -30,12 +30,12 @@
 
 		<view class="description-requirement-style">
 			<view class="description-content-style">
-				项目描述：{{projectObj.content}}
+				<text v-if="online==1">项目描述：</text> {{projectObj.content}}
 			</view>
 		</view>
 		<view class="space-line-style">
 		</view>
-		<view class="btn-background-style">
+		<view class="btn-background-style" v-if="online==1">
 			<button @click="getUserInfo">立即联系</button>
 
 		</view>
@@ -65,12 +65,16 @@
 				shareContent: '',
 				shareTitle: '',
 				shareCancelText: '',
-				shareConfirmText: ''
+				shareConfirmText: '',
+				online:0,
 
 			}
 		},
 		created() {
 			that = this;
+		},
+		onShow() {
+			that.online = uni.getStorageSync(sk.otherInfo).online;
 		},
 		onLoad(e) {
 			var str = decodeURIComponent(e.obj);

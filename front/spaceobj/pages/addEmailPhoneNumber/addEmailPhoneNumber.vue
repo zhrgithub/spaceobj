@@ -2,10 +2,10 @@
 	<view class="container">
 		<view class="edit-background-style">
 			<view class="change-tips">
-				手机号
+				联系方式
 			</view>
 			<view class="change-input-style">
-				<input type="number" maxlength="11" placeholder="请设置手机号" :value="phoneNumber" @input="setPhoneNumber">
+				<input type="text" maxlength="11" placeholder="设置QQ/微信/手机号" :value="phoneNumber" @input="setPhoneNumber">
 			</view>
 		</view>
 
@@ -72,7 +72,7 @@
 				uni.showLoading({
 					title: '修改中...',
 				})
-				if (that.phoneNumber.length < 11) {
+				if (that.phoneNumber.length > 11) {
 					uni.showToast({
 						icon: 'none',
 						title: "手机号不正确"

@@ -39,21 +39,21 @@
 		}, {
 			"path": "pages/projectDetail/projectDetail",
 			"style": {
-				"navigationBarTitleText": "项目详情",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/release/releaseProjectDetail/releaseProjectDetail",
 			"style": {
-				"navigationBarTitleText": "项目详情",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/help/helpProjectDetail/helpProjectDetail",
 			"style": {
-				"navigationBarTitleText": "项目详情",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
@@ -74,70 +74,70 @@
 		}, {
 			"path": "pages/my/auditProject/auditProject",
 			"style": {
-				"navigationBarTitleText": "项目管理",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": true
 			}
 
 		}, {
 			"path": "pages/my/logManagement/logManagement",
 			"style": {
-				"navigationBarTitleText": "日志管理",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/my/userManageMent/userManageMent",
 			"style": {
-				"navigationBarTitleText": "用户管理",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": true
 			}
 
 		}, {
 			"path": "pages/my/userVerified/userVerified",
 			"style": {
-				"navigationBarTitleText": "实名认证",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/my/photoManagement/photoManagement",
 			"style": {
-				"navigationBarTitleText": "头像管理",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/my/advertiseManagement/advertiseManagement",
 			"style": {
-				"navigationBarTitleText": "广告投放",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/my/userVerifiedMangeMent/userVerifiedMangeMent",
 			"style": {
-				"navigationBarTitleText": "实名管理",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/my/auditProject/auditProjectDetail/auditProjectDetail",
 			"style": {
-				"navigationBarTitleText": "项目详情",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/my/otherManagement/otherManagement",
 			"style": {
-				"navigationBarTitleText": "其它管理",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/my/logManagement/logDetail/logDetail",
 			"style": {
-				"navigationBarTitleText": "日志详情",
+				"navigationBarTitleText": "SpaceObj",
 				"enablePullDownRefresh": false
 			}
 
@@ -176,20 +176,20 @@
 				"pagePath": "pages/project/project",
 				"iconPath": "static/project.png",
 				"selectedIconPath": "static/selectProject.png",
-				"text": "项目大厅"
+				"text": "内容信息"
 			},
-			{
-				"pagePath": "pages/help/help",
-				"iconPath": "static/help.png",
-				"selectedIconPath": "static/selectHelp.png",
-				"text": "好友助力"
-			},
-			{
-				"pagePath": "pages/release/release",
-				"iconPath": "static/release.png",
-				"selectedIconPath": "static/selectRelease.png",
-				"text": "我的发布"
-			},
+			// {
+			// 	"pagePath": "pages/help/help",
+			// 	"iconPath": "static/help.png",
+			// 	"selectedIconPath": "static/selectHelp.png",
+			// 	"text": "好友助力"
+			// },
+			// {
+			// 	"pagePath": "pages/release/release",
+			// 	"iconPath": "static/release.png",
+			// 	"selectedIconPath": "static/selectRelease.png",
+			// 	"text": "我的发布"
+			// },
 
 			{
 				"pagePath": "pages/my/my",

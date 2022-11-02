@@ -32,6 +32,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -65,18 +66,18 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
     try {
       // 校验内容是否重复
-      List<SysProject> sysProjectList = getSysProjectList();
-      List<SysProject> resultSysProjectList =
-          sysProjectList.stream()
-              .filter(
-                  p -> {
-                    return !ObjectUtils.isEmpty(p)
-                        && p.getContent().equals(sysProject.getContent());
-                  })
-              .collect(Collectors.toList());
-      if (resultSysProjectList.size() > 0) {
-        return SaResult.error("请勿重复提交");
-      }
+      // List<SysProject> sysProjectList = getSysProjectList();
+      // List<SysProject> resultSysProjectList =
+      //     sysProjectList.stream()
+      //         .filter(
+      //             p -> {
+      //               return !ObjectUtils.isEmpty(p)
+      //                   && p.getContent().equals(sysProject.getContent());
+      //             })
+      //         .collect(Collectors.toList());
+      // if (resultSysProjectList.size() > 0) {
+      //   return SaResult.error("请勿重复提交");
+      // }
 
       // 校验当前提交次数是否超过最大次数
       String loginId = (String) StpUtil.getLoginId();
@@ -246,7 +247,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
       if (hasKey) {
-        list = redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class);
+        list = redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class).stream().sorted(Comparator.comparing(SysProject::getPId).reversed()).collect(Collectors.toList());
         return list;
       } else {
         boolean flag = redissonService.tryLock(RedisKey.REDIS_PROJECT_SYNC_STATUS);
@@ -406,14 +407,15 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           // 通知项目助力服务该用户新增一条获取成功的项目助力信息
           kafkaSender.send(helpBo, KafKaTopics.ADD_HELP_PROJECT);
         }
-        // 通知用户服务更新该用户的基本信息
-        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
-        String releaseId = sysProject.getReleaseUserId();
-        SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
         //  判断当前用户是否已经实名认证
         if (sysUser.getRealNameStatus() != 1) {
           return SaResult.error("请实名认证后再来获取");
         }
+        // 通知用户服务更新该用户的基本信息
+        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+        String releaseId = sysProject.getReleaseUserId();
+        SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
+
         return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
       }
       // 需要获取助力链接

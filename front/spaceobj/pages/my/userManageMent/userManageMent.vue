@@ -187,6 +187,7 @@
 					currentPage: that.currentPage,
 					pageSize: that.pageSize
 				}, api.findSysUserList).then(res => {
+					console.log(res.data)
 					if (res.code == 200) {
 						if (res.data.length > 0) {
 							that.list = that.list.concat(res.data);

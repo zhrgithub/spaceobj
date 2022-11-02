@@ -116,6 +116,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         StpUtil.login(openId);
         sysUser.setToken(StpUtil.getTokenValue());
         sysUser.setNickName(loginByWeChatBo.getNickName());
+        sysUser.setOnlineStatus(1);
         int result = sysUserMapper.insert(sysUser);
         if (result == 0) {
           return SaResult.error("服务器繁忙");
@@ -132,6 +133,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         sysUser.setIp(loginByWeChatBo.getIp());
         StpUtil.login(sysUser.getAccount());
         sysUser.setToken(StpUtil.getTokenValue());
+        sysUser.setOnlineStatus(1);
         // 更新用户登录位置
         int updateResult = this.updateUser(sysUser);
         if (updateResult == 0) {
@@ -240,8 +242,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (StringUtils.isEmpty(loginOrRegisterBo.getPhoneNumber())) {
           return SaResult.error("手机号不为空");
         }
-        // 校验电话号码
-        if (!Pattern.matches(RegexPool.MOBILE, loginOrRegisterBo.getPhoneNumber())) {
+        // 校验联系电话
+        if (loginOrRegisterBo.getPhoneNumber().length() > 11) {
           return SaResult.error("电话格式错误");
         }
         // 创建一个新的用户对象信息
@@ -409,7 +411,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
       // 昵称、手机号、邮箱不为空，其余设置为空
       // 校验电话号码
-      if (!Pattern.matches(RegexPool.MOBILE, user.getPhoneNumber())) {
+      if (user.getPhoneNumber().length() > 11) {
         return SaResult.error("电话格式错误");
       }
 

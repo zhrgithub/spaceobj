@@ -48,16 +48,12 @@
 					key: sk.otherInfo,
 					data: data
 				})
-				if (data.online == 1) {
+				// if (data.online == 1) {
 					uni.switchTab({
 						url: '/pages/project/project'
 					})
-				}
+				// }
 				uni.hideLoading();
-				// 上线后关闭该注解
-				uni.switchTab({
-					url: '/pages/project/project'
-				})
 			})
 		},
 		created() {

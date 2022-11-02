@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container" v-if="online==1">
 		<view class="base-infos">
 			<view class="base-infos-style">
 				<input placeholder="请输入您的真实姓名(必填)" :value="username" maxlength="15" @input="setUserName"></input>
@@ -38,14 +38,26 @@
 				idCardPic: '',
 				username: '',
 				idCardNum: '',
-
+				online:0,
 			}
 		},
 		created() {
 			that = this;
 		},
 		onLoad(){
+			
+		},
+		onShow() {
+			
+			
+			
 			this.timer = setTimeout(() => {
+				// 第二步加载其它信息
+				var otherInfo = uni.getStorageSync(sk.otherInfo);
+				
+				that.online = otherInfo.online;
+				
+				
 				// 第一步：加载用户基本信息
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
 				var userInfo = uni.getStorageSync(sk.userInfo);
@@ -63,8 +75,6 @@
 					}
 				}
 			})
-		},
-		onShow() {
 			
 		},
 		methods: {

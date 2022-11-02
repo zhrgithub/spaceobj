@@ -216,6 +216,7 @@
 
 	.doller-num-style input {
 		width: 90%;
+		height: 100%;
 	}
 
 	.description-style {

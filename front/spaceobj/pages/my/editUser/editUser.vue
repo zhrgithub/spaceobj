@@ -14,29 +14,29 @@
 				昵称
 			</view>
 			<view class="change-input-style">
-				<input type="text" maxlength="8" :value="nickName" @input="setNickName">
+				<input type="text" maxlength="8" :value="nickName" @input="setNickName" placeholder="未设置">
 			</view>
 		</view>
 
-		<view class="edit-background-style">
+		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				手机号
 			</view>
 			<view class="change-input-style">
-				<input type="number" maxlength="11" :value="phoneNumber" @input="setPhoneNumber">
+				<input type="number" maxlength="11" :value="phoneNumber" @input="setPhoneNumber" placeholder="未设置">
 			</view>
 		</view>
 
-		<view class="edit-background-style">
+		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				邮箱
 			</view>
 			<view class="change-input-style">
-				<input type="text" maxlength="20" :value="email" @input="setEmail">
+				<input type="text" maxlength="20" :value="email" @input="setEmail" placeholder="未设置">
 			</view>
 
 		</view>
-		<view class="edit-background-style">
+		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				实名状态
 			</view>
@@ -44,7 +44,7 @@
 				{{realNameStatus}}
 			</view>
 		</view>
-		<view class="edit-background-style">
+		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				位置
 			</view>
@@ -53,7 +53,7 @@
 			</view>
 		</view>
 
-		<view class="edit-background-style">
+		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				<image src="/static/wechat.png" mode=""></image>
 			</view>
@@ -70,7 +70,7 @@
 			</view>
 		</view>
 
-		<view class="edit-background-style">
+		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				设备
 			</view>
@@ -87,7 +87,7 @@
 				{{userInfo.ip}}
 			</view>
 		</view> -->
-		<view class="edit-background-style">
+		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				操作系统
 			</view>
@@ -95,7 +95,7 @@
 				{{deviceModel.system}}
 			</view>
 		</view>
-		<view class="edit-background-style">
+		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				电池电量
 			</view>
@@ -146,17 +146,16 @@
 				userId: '',
 				deviceModel: '',
 				ip: "",
-				userInfo: ""
+				userInfo: "",
+				online: 0,
 			}
 		},
 		onShow() {
 			that.deviceModel = uni.getStorageSync(sk.deviceModel);
 			that.loadUserInfo();
-			// this.timer = setTimeout(() => {
-
-			// 	// 加载设备信息
-
-			// }, 200)
+			// 加载是否上线信息
+			that.online = uni.getStorageSync(sk.otherInfo).online;
+			
 
 		},
 		created() {
@@ -427,6 +426,9 @@
 
 	.change-input-style input {
 		width: 100%;
+		height: 100%;
+		border: solid #6e6e6e 1rpx;
+		border-radius: 10rpx;
 	}
 
 	.save-btn-style {
