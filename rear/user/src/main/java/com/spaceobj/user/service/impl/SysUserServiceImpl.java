@@ -162,7 +162,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       queryWrapper.eq("account", account);
       sysUser = sysUserMapper.selectOne(queryWrapper);
       if (ObjectUtils.isEmpty(sysUser)) {
-        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
+        return null;
       } else {
         redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
       }
@@ -187,7 +187,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       queryWrapper.eq("account", account);
       sysUser = sysUserMapper.selectOne(queryWrapper);
       if (ObjectUtils.isEmpty(sysUser)) {
-        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, null);
+        return null;
       } else {
         redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
       }

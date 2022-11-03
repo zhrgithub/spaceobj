@@ -2,7 +2,7 @@
 	<view class="project-detail-background-style">
 
 
-		<view class="base-info-panel-style" @click="copyPid(projectObj.pid)"  v-if="online==1">
+		<view class="base-info-panel-style" @click="copyPid(projectObj.pid)" v-if="online==1">
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
 					项目编号：{{projectObj.pid}}
@@ -28,11 +28,22 @@
 			</view>
 		</view>
 
-		<view class="description-requirement-style">
+		<view class="description-requirement-style" v-if="online==1">
 			<view class="description-content-style">
-				<text v-if="online==1">项目描述：</text> {{projectObj.content}}
+				<text>项目描述：</text> {{projectObj.content}}
 			</view>
 		</view>
+
+		<view class="description-requirement-style" v-if="online==0">
+			<view class="description-content-style">
+				　田忌经常与齐国诸公子赛马，设重金作为赌注。孙膑发现比赛的马可分为上、中、下三等，于是建议田忌增加赌注，并且向他保证必能取胜。田忌于是与齐威王和诸公子设每场千金作为赌注，比试赛马。孙膑叫田忌用下等马，与齐威王的上等马比赛，首场大败；随后孙膑又叫田忌用上等马、中等马，分别与齐威王的中等马及下等马比赛，结果田忌两胜一负，最终赢得齐威王的千金赌注，孙膑由此名声大振。田忌将孙膑推荐给齐威王，齐威王向他请教兵法并让他担任自己的兵法教师。
+			</view>
+		</view>
+
+		
+
+		
+
 		<view class="space-line-style">
 		</view>
 		<view class="btn-background-style" v-if="online==1">
@@ -66,7 +77,7 @@
 				shareTitle: '',
 				shareCancelText: '',
 				shareConfirmText: '',
-				online:0,
+				online: 0,
 
 			}
 		},
@@ -182,6 +193,12 @@
 						that.shareConfirmText = '立即分享';
 						that.dialogToggle('info');
 						return;
+					}
+					if (res.code == 500) {
+						uni.showToast({
+							title: res.msg,
+							icon: 'none'
+						})
 					}
 				});
 			},

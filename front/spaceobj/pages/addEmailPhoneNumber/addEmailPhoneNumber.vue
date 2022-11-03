@@ -1,11 +1,12 @@
 <template>
-	<view class="container">
+	<view class="container" v-if="online==1">
 		<view class="edit-background-style">
 			<view class="change-tips">
 				联系方式
 			</view>
 			<view class="change-input-style">
-				<input type="text" maxlength="11" placeholder="设置QQ/微信/手机号" :value="phoneNumber" @input="setPhoneNumber">
+				<input type="text" maxlength="11" placeholder="设置QQ/微信/手机号" :value="phoneNumber"
+					@input="setPhoneNumber">
 			</view>
 		</view>
 
@@ -43,14 +44,27 @@
 				account: "未知",
 				realNameStatus: '未实名',
 				email: '',
+				online:0,
 			}
 		},
 		onShow() {
+			
+			
+			var otherInfo = uni.getStorageSync(sk.otherInfo);
+			
+			that.online = otherInfo.online;
+			if(that.online==0){
+				uni.switchTab({
+					url: '/pages/project/project'
+				})
+			}
 			this.timer = setTimeout(() => {
 				var userInfo = uni.getStorageSync(sk.userInfo);
 				that.email = strigUtils.isBlank(userInfo.email) ? that.email : userInfo.email;
 				that.phoneNumber = strigUtils.isBlank(userInfo.phoneNumber) ? that.phoneNumber : userInfo
 					.phoneNumber;
+					
+					
 			}, 200)
 
 		},
@@ -72,10 +86,10 @@
 				uni.showLoading({
 					title: '修改中...',
 				})
-				if (that.phoneNumber.length > 11) {
+				if (that.phoneNumber.length ==0) {
 					uni.showToast({
 						icon: 'none',
-						title: "手机号不正确"
+						title: "设置QQ/微信/手机号"
 					})
 					return;
 				}
@@ -87,54 +101,29 @@
 					})
 					return;
 				}
-				//缓存token
-				uni.setStorage({
-					key: sk.token,
-					data: uni.getStorageSync(sk.userInfo).token,
-					success() {
-						// 设置用户的邮箱和手机号
-						api.post({
-							email: that.email,
-							phoneNumber: that.phoneNumber,
-							ipTerritory: uni.getStorageSync(sk.ipTerritory),
-							nickName:nickName
-						}, api.customerUpdateUserInfo).then(res => {
-							uni.hideLoading();
-							if (res.code == 200) {
-								// 设置用户信息
-								uni.setStorage({
-									key: sk.userInfo,
-									data: res.data
-								})
-								// 缓存登录状态
-								uni.setStorage({
-									key: sk.loginStatus,
-									data: true
-								})
-								// 转到首页
-								uni.showToast({
-									icon: 'none',
-									title: res.msg,
-									success() {
-										uni.switchTab({
-											url: '/pages/project/project'
-										})
-									}
-								})
-							}else{
-								// 修改失败移除token缓存
-								uni.removeStorage({
-									key:sk.token
-								});
-								uni.showToast({
-									icon:'none',
-									title:res.msg
-								})
-							}
-						});
+				// 设置用户的邮箱和手机号
+				api.post({
+					email: that.email,
+					phoneNumber: that.phoneNumber,
+					ipTerritory: uni.getStorageSync(sk.ipTerritory),
+					nickName: nickName
+				}, api.customerUpdateUserInfo).then(res => {
+					uni.hideLoading();
+					if (res.code == 200) {
+						// 设置用户信息
+						uni.setStorage({
+							key: sk.userInfo,
+							data: res.data
+						})
+						// 转到上一页
+						uni.navigateBack();
+					} else {
+						uni.showToast({
+							icon: 'none',
+							title: res.msg
+						})
 					}
-				})
-				
+				});
 			}
 
 		}

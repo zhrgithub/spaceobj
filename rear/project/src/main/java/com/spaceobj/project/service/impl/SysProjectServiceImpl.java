@@ -66,18 +66,18 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
     try {
       // 校验内容是否重复
-      // List<SysProject> sysProjectList = getSysProjectList();
-      // List<SysProject> resultSysProjectList =
-      //     sysProjectList.stream()
-      //         .filter(
-      //             p -> {
-      //               return !ObjectUtils.isEmpty(p)
-      //                   && p.getContent().equals(sysProject.getContent());
-      //             })
-      //         .collect(Collectors.toList());
-      // if (resultSysProjectList.size() > 0) {
-      //   return SaResult.error("请勿重复提交");
-      // }
+      List<SysProject> sysProjectList = getSysProjectList();
+      List<SysProject> resultSysProjectList =
+          sysProjectList.stream()
+              .filter(
+                  p -> {
+                    return !ObjectUtils.isEmpty(p)
+                        && p.getContent().equals(sysProject.getContent());
+                  })
+              .collect(Collectors.toList());
+      if (resultSysProjectList.size() > 0) {
+        return SaResult.error("请勿重复提交");
+      }
 
       // 校验当前提交次数是否超过最大次数
       String loginId = (String) StpUtil.getLoginId();
@@ -373,6 +373,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           // 获取项目发布者id的联系方式,后期此处修改成根据账户获取用户信息，项目中的userId设置成email,数据进行脱敏
           String releaseId = sysProject.getReleaseUserId();
           SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
+          System.out.println(releaseProjectUser);
           //  判断当前用户是否已经实名认证
           if (sysUser.getRealNameStatus() != 1) {
             return SaResult.error("请实名认证后再来获取");
@@ -514,7 +515,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
       if (flag) {
         List<SysUser> sysUserList =
-            redisService.getCacheList(RedisKey.SYS_USER_LIST, SysUser.class);
+            redisService.getHashMapValues(RedisKey.SYS_USER_LIST, SysUser.class);
         List<SysUser> resultSysUserList =
             sysUserList.stream()
                 .filter(

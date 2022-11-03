@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.redis.common.service.RedisService;
 import com.redis.common.service.RedissonService;
 import com.spaceobj.project.bo.ProjectHelpBo;
-import com.spaceobj.project.bo.ReceiveEmailBo;
 import com.spaceobj.project.component.KafkaSender;
 import com.spaceobj.project.component.UserClient;
 import com.spaceobj.project.constant.KafKaTopics;
@@ -265,16 +264,16 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
         return SaResult.error("服务器繁忙");
       }
       // 如果项目助力值大于等于10，邮件通知
-      if (projectHelp.getHpNumber() >= 10) {
-        SysUser createSysUser = this.getSysUserByUserId(projectHelp.getCreateUserId());
-        ReceiveEmailBo receiveEmailBo =
-            ReceiveEmailBo.builder()
-                .receiverEmail(createSysUser.getEmail())
-                .title("spaceObj")
-                .content("项目：" + projectHelp.getPContent().substring(0, 10) + "... 助力成功！快去联系吧！")
-                .build();
-        kafkaSender.send(receiveEmailBo, KafKaTopics.HELP_PROJECT_SUCCESSFUL);
-      }
+      // if (projectHelp.getHpNumber() >= 10) {
+      //   SysUser createSysUser = this.getSysUserByUserId(projectHelp.getCreateUserId());
+      //   ReceiveEmailBo receiveEmailBo =
+      //       ReceiveEmailBo.builder()
+      //           .receiverEmail(createSysUser.getEmail())
+      //           .title("spaceObj")
+      //           .content("项目：" + projectHelp.getPContent().substring(0, 10) + "... 助力成功！快去联系吧！")
+      //           .build();
+      //   kafkaSender.send(receiveEmailBo, KafKaTopics.HELP_PROJECT_SUCCESSFUL);
+      // }
       return SaResult.ok("助力成功");
     } catch (Exception e) {
       ExceptionUtil.exceptionToString(e);

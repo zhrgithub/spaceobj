@@ -9,8 +9,6 @@ public class RedisKey {
   /** 系统用户列表 */
   public static final String SYS_USER_LIST = "sys_user_list";
 
-  public static final String SYS_USER_SYNC_STATUS = "sys_user_sync_status";
-
   /** 系统图片列表 */
   public static final String SYS_PHOTO_LIST = "sys_photo_list";
 

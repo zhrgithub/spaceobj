@@ -8,7 +8,7 @@
 		<view class="phone-email-background-style">
 			<view class="phone-background-style" v-if="operationType==1">
 				<view class="phone-style">
-					<input type="text" maxlength="11" placeholder="设置联系方式" @input="getphoneNumber">
+					<input type="text" maxlength="11" placeholder="设置QQ/微信/手机号" @input="getphoneNumber">
 				</view>
 			</view>
 
@@ -153,7 +153,7 @@
 					})
 					return;
 				}
-				if (phoneNumber.length>11) {
+				if (phoneNumber.length==0) {
 					uni.showToast({
 						icon: 'none',
 						title: "手机格式不正确"
@@ -189,12 +189,12 @@
 			},
 			loginResetUserinFo(userInfo,token, msg) {
 
-				if (su.isBlank(userInfo.email) || su.isBlank(userInfo.phoneNumber)) {
-					uni.navigateTo({
-						url: '/pages/addEmailPhoneNumber/addEmailPhoneNumber'
-					})
-					return;
-				}
+				// if (su.isBlank(userInfo.email) || su.isBlank(userInfo.phoneNumber)) {
+				// 	uni.navigateTo({
+				// 		url: '/pages/addEmailPhoneNumber/addEmailPhoneNumber'
+				// 	})
+				// 	return;
+				// }
 
 				// 缓存登录状态
 				uni.setStorage({

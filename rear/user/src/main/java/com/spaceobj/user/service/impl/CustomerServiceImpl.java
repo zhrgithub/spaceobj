@@ -121,6 +121,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (result == 0) {
           return SaResult.error("服务器繁忙");
         }
+        this.updateCacheByAccount(sysUser.getAccount());
         return SaResult.ok("提交成功").setData(sysUser);
       } else {
         // 账号登录
@@ -255,6 +256,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         if (result == 0) {
           return SaResult.error("注册失败");
         }
+        // 刷新缓存
+        this.updateCacheByAccount(sysUser.getAccount());
         // 如果邀请人信息不为空，那么给邀请人的邀请值加一
         if (!StringUtils.isEmpty(sysUser.getInviteUserId())) {
           SysUser inviteUser = new SysUser();
@@ -272,6 +275,16 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
       return SaResult.error("服务器异常");
+    }
+  }
+
+  /** 根据账户刷新缓存信息 */
+  private void updateCacheByAccount(String account) {
+    QueryWrapper<SysUser> sysUserQueryWrapper = new QueryWrapper<>();
+    sysUserQueryWrapper.eq("account", account);
+    SysUser sysUser = sysUserMapper.selectOne(sysUserQueryWrapper);
+    if (ObjectUtils.isNotEmpty(sysUser)) {
+      redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
     }
   }
 
@@ -545,6 +558,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       // 设置为审核中
       sysUser.setRealNameStatus(2);
       // 设置身份证号码与身份证图片名称
+      sysUser.setUsername(user.getUsername());
       sysUser.setIdCardNum(user.getIdCardNum());
       sysUser.setIdCardPic(user.getIdCardPic());
       // 修改用户实名状态

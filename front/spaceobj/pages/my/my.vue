@@ -62,9 +62,32 @@
 				<button data-name="shareBtn" open-type="share">邀请好友</button>
 			</view>
 		</view>
-		<view class="invite-hint-background" v-if="loginStatus">
+		<view class="invite-hint-background" v-if="loginStatus&&online==1">
 			提示：邀请值可以用来获取用户联系方式，每获取一次用户联系方式，邀请值会减少 1 ，邀请好友注册一次邀请值会增加 1
 		</view>
+
+		<!-- 好友助力 -->
+		<view class="invite-value-background-style" @click="friendHelp" v-if="online==1">
+			<view class="friend_help">
+				我分享的项目
+			</view>
+
+			<view class="to-perso-certer">
+				<image src="/static/toPersonCerter.png" mode=""></image>
+			</view>
+		</view>
+
+		<!-- 我的发布 -->
+		<view class="invite-value-background-style" @click="myRelease" v-if="online==1">
+			<view class="friend_help">
+				我发布的项目
+			</view>
+
+			<view class="to-perso-certer">
+				<image src="/static/toPersonCerter.png" mode=""></image>
+			</view>
+		</view>
+
 		<!-- 联系客服 -->
 		<view class="invite-value-background-style">
 			<view class="link-us-style">
@@ -86,27 +109,7 @@
 			</view>
 		</view>
 
-		<!-- 好友助力 -->
-		<view class="invite-value-background-style" @click="friendHelp" v-if="online==1">
-			<view class="friend_help">
-				好友助力
-			</view>
 
-			<view class="to-perso-certer">
-				<image src="/static/toPersonCerter.png" mode=""></image>
-			</view>
-		</view>
-		
-		<!-- 我的发布 -->
-		<view class="invite-value-background-style" @click="myRelease" v-if="online==1">
-			<view class="friend_help">
-				我的发布
-			</view>
-		
-			<view class="to-perso-certer">
-				<image src="/static/toPersonCerter.png" mode=""></image>
-			</view>
-		</view>
 		<view v-if="userType=='root'&&loginStatus">
 			<!-- 管理 -->
 			<view class="invite-value-background-style">
@@ -144,9 +147,6 @@
 
 			</view>
 		</view>
-
-
-
 	</view>
 </template>
 
@@ -206,15 +206,15 @@
 			}, 200)
 		},
 		methods: {
-			friendHelp(){
+			friendHelp() {
 				uni.navigateTo({
-					url:'/pages/help/help'
+					url: '/pages/help/help'
 				})
 			},
-			myRelease(){
-			uni.navigateTo({
-				url:'/pages/release/release'
-			})	
+			myRelease() {
+				uni.navigateTo({
+					url: '/pages/release/release'
+				})
 			},
 			// 根据用户登录账户刷新用户基本信息
 			getUserInfo(userInfo) {

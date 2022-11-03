@@ -30,7 +30,7 @@
 			</view>
 		</view>
 		<view class="top-space-line-style"></view>
-		<view v-if="online==1" class="click-release-style" @click="releaseProject('bottom')">发需求</view>
+		<view v-if="online==1" class="click-release-style" @click="releaseProject('bottom')">发项目</view>
 		<uni-popup ref="popup" background-color="#fff">
 			<view class="need-description-budget-style">
 				项目描述和预算
@@ -52,12 +52,28 @@
 			</view>
 		</uni-popup>
 
-		<view class="advertise-project-list" v-for="(item,idx) in list" :key="idx">
+
+		<view class="advertise-project-list" v-if="online==0">
+			<view class="project-list-style" style="height: 100%;" @click="toProjecDetail(item)">
+				<view class="date-status-style" v-if="online==0">
+					<view class="status-style"
+						style="width: 100%;height: 80rpx; margin-top: 20rpx;margin-bottom: 20rpx;">
+
+						田忌赛马
+					</view>
+				</view>
+				<view style="width: 96%;height: 95%;margin-left: 2%;margin-top: 10rpx;margin-bottom: 20rpx;">
+					　田忌经常与齐国诸公子赛马，设重金作为赌注。孙膑发现比赛的马可分为上、中、下三等，于是建议田忌增加赌注，并且向他保证必能取胜。田忌于是与齐威王和诸公子设每场千金作为赌注，比试赛马。孙膑叫田忌用下等马，与齐威王的上等马比赛...
+				</view>
+			</view>
+		</view>
+
+		<view class="advertise-project-list" v-for="(item,idx) in list" :key="idx" v-if="online==1">
 
 
 			<!-- 发布的列表 -->
 			<view class="project-list-style" @click="toProjecDetail(item)">
-				<view class="date-status-style" v-if="online==1">
+				<view class="date-status-style">
 					<view class="date-style">
 						{{timeStampTurnTime(item.createTime)}}
 					</view>
@@ -68,14 +84,9 @@
 						查看详情
 					</view>
 				</view>
-				<view class="date-status-style" v-if="online==0">
-					
-					<view class="status-style" style="width: 100%;">
-						查看详情
-					</view>
-				</view>
+
 				<view class="brief-information-style">
-					<text  v-if="online==1"> 项目预算：{{item.price}}元；项目描述：</text>{{item.content}}
+					<text> 项目预算：{{item.price}}元；项目描述：</text>{{item.content}}
 				</view>
 			</view>
 
@@ -159,8 +170,8 @@
 				price: "",
 				content: "",
 				userInfo: "",
-				online:0,
-				
+				online: 0,
+
 			}
 		},
 		created() {
@@ -180,8 +191,8 @@
 		onShow() {
 			var otherInfo = uni.getStorageSync(sk.otherInfo);
 			that.online = otherInfo.online;
-			
-			
+
+
 			that.shopList = uni.getStorageSync(sk.shopList);
 			var userInfo = uni.getStorageSync(sk.userInfo);
 			that.userInfo = userInfo;
@@ -212,8 +223,8 @@
 
 		},
 		methods: {
-			
-			touchLoad(){
+
+			touchLoad() {
 				uni.showLoading({
 					title: "加载中..."
 				})
@@ -226,10 +237,10 @@
 				var projectHelpShare = uni.getStorageSync(sk.projectHelpShare);
 				var createUserId = projectHelpShare.createUserId;
 				var userInfo = that.userInfo;
-				if(userInfo.userId == createUserId){
+				if (userInfo.userId == createUserId) {
 					return;
 				}
-				
+
 				console.log(projectHelpShare);
 				if (!su.isUndefined(projectHelpShare) && !su.isBlank(projectHelpShare)) {
 					api.post({
@@ -299,6 +310,30 @@
 				});
 			},
 			releaseProject(type) {
+				var token = uni.getStorageSync(sk.token);
+				if (su.isBlank(token)) {
+					uni.navigateTo({
+						url: '/pages/login/login'
+					})
+					return;
+				}
+				var userInfo = uni.getStorageSync(sk.userInfo);
+				if (su.isBlank(userInfo.email) || su.isBlank(userInfo.phoneNumber)) {
+					uni.showModal({
+						title: '温馨提示',
+						content: '设置邮箱和电话方便乙方联系您',
+						cancelText: '不去',
+						confirmText: '去啊',
+						success(e) {
+							if (e.confirm) {
+								uni.navigateTo({
+									url: '/pages/addEmailPhoneNumber/addEmailPhoneNumber'
+								})
+							}
+						}
+					})
+					return;
+				}
 				that.type = type;
 				// open 方法传入参数 等同在 uni-popup 组件上绑定 type属性
 				that.$refs.popup.open(type);

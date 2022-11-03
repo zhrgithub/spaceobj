@@ -64,8 +64,8 @@
 				if (userInfo != '') {
 					that.realNameStatus = userInfo.realNameStatus;
 					that.idCardPic = userInfo.idCardPic;
-					that.username = userInfo.username;
-					that.idCardNum = userInfo.idCardNum;
+					that.username = su.isBlank(userInfo.username)?'':userInfo.username;
+					that.idCardNum = su.isBlank(userInfo.idCardNum)?'':userInfo.idCardNum;
 					if (that.realNameStatus == 3) {
 						uni.showModal({
 							showCancel: false,
