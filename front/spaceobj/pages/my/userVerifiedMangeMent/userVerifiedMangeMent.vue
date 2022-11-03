@@ -38,11 +38,7 @@
 				</view>
 
 				<view class="id-card-style">
-					<view class="image-background-one" v-if="userObj.idCardPic==''||userObj.idCardPic=='null'">
-						<image src="/static/camera.png"></image>
-						<view class="image-title">本人手举身份证正面(必填)</view>
-					</view>
-					<block class="image-background-two" v-if="imageUrl!=''&&userObj.idCardPic!='null'">
+					<block class="image-background-two">
 						<image :src="userObj.idCardPic" style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
 					</block>
 				</view>

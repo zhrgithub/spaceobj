@@ -217,6 +217,32 @@
 
 			},
 			releaseProject(type) {
+				var token = uni.getStorageSync(sk.token);
+				if (su.isBlank(token)) {
+					uni.navigateTo({
+						url: '/pages/login/login'
+					})
+					return;
+				}
+				var userInfo = uni.getStorageSync(sk.userInfo);
+				if (su.isBlank(userInfo.email) || su.isBlank(userInfo.phoneNumber)) {
+					uni.showModal({
+						title: '温馨提示',
+						content: '设置邮箱和电话方便乙方联系您',
+						cancelText: '不去',
+						confirmText: '去啊',
+						success(e) {
+							if (e.confirm) {
+								uni.navigateTo({
+									url: '/pages/addEmailPhoneNumber/addEmailPhoneNumber'
+								})
+							}
+						}
+					})
+					return;
+				}
+
+
 				this.type = type;
 				// open 方法传入参数 等同在 uni-popup 组件上绑定 type属性
 				this.$refs.popup.open(type);

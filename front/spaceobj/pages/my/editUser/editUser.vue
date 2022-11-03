@@ -20,10 +20,10 @@
 
 		<view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
-				手机号
+				联系方式
 			</view>
 			<view class="change-input-style">
-				<input type="number" maxlength="11" :value="phoneNumber" @input="setPhoneNumber" placeholder="未设置">
+				<input type="text" maxlength="11" :value="phoneNumber" @input="setPhoneNumber" placeholder="未设置">
 			</view>
 		</view>
 
@@ -273,21 +273,21 @@
 				uni.showLoading({
 					title: '修改中...',
 				})
-				if (that.phoneNumber.length < 11) {
+				if (strigUtils.isBlank(that.phoneNumber)) {
 					uni.showToast({
 						icon: 'none',
-						title: "手机号不正确"
+						title: "联系方式不正确"
 					})
 					return;
 				}
-				if (that.nickName.length == 0) {
+				if (strigUtils.isBlank(that.nickName)) {
 					uni.showToast({
 						icon: 'none',
 						title: '未设置昵称'
 					})
 					return;
 				}
-				if (that.email.length == 0 || that.email == '未设置') {
+				if (strigUtils.isBlank(that.email)) {
 					uni.showToast({
 						icon: 'none',
 						title: '未设置邮箱'

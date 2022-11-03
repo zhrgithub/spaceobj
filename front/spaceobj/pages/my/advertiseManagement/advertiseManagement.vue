@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container" v-if="online==1">
 		<view class="shop-list-style" @click="editAdvertise(item)" v-for="(item,idx) in list" :key="idx">
 			<view class="commodity-image-description-background-style">
 				<view class="commodity-image-background-style">
@@ -112,12 +112,22 @@
 				jdAdPrice: null, //商品价格
 				jdAdStoreName: null, //商家名称
 				operationType: null, //操作类型：0表示修改，1表示新增，默认为null
+				online:0,
 			}
 		},
 		created() {
 			that = this;
 		},
 		onShow() {
+			
+			var otherInfo = uni.getStorageSync(sk.otherInfo);
+			
+			that.online = otherInfo.online;
+			if(that.online==0){
+				uni.switchTab({
+					url: '/pages/project/project'
+				})
+			}
 			uni.showLoading({
 				title: '加载中...',
 			})
