@@ -39,7 +39,8 @@
 
 				<view class="id-card-style">
 					<block class="image-background-two">
-						<image :src="userObj.idCardPic" style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
+						<image :src="userObj.idCardPic"
+							style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
 					</block>
 				</view>
 
@@ -76,9 +77,6 @@
 			that = this;
 		},
 		onShow() {
-			uni.showLoading({
-				title: '加载中...',
-			})
 			that.loadList();
 		},
 		// 触底加载更多
@@ -95,7 +93,6 @@
 
 		methods: {
 			loadList() {
-				uni.showLoading();
 				api.post({
 					currentPage: that.currentPage,
 					pageSize: that.pageSize,
@@ -112,7 +109,7 @@
 							title: res.msg
 						})
 					}
-					uni.hideLoading();
+
 				});
 			},
 			auditUser(e) {
@@ -145,7 +142,7 @@
 			},
 			save(userObj) {
 				api.post(userObj, api.updateSysUser).then(res => {
-					uni.hideLoading();
+
 					if (res.code == 200) {
 						uni.showToast({
 							icon: 'none',

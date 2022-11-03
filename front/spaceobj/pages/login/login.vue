@@ -104,20 +104,18 @@
 		methods: {
 
 			loginByWechat() {
-				uni.showLoading({
-					title: '登录中...'
-				})
+
 				var nickName = nick_Name.getNickName();
 				uni.login({
 					provider: 'weixin',
 					success: function(res) {
-						console.log("微信信息：",res)
+						console.log("微信信息：", res)
 						api.post({
 							code: res.code,
 							ipTerritory: uni.getStorageSync(sk.ipTerritory),
 							deviceType: uni.getStorageSync(sk.deviceModel).model,
 							inviteUserId: uni.getStorageSync(sk.inviteUserId),
-							nickName:nickName
+							nickName: nickName
 						}, api.loginByWechat).then(res2 => {
 							if (res2.code == 200) {
 								// 缓存用户基本信息
@@ -125,11 +123,12 @@
 									key: sk.userInfo,
 									data: res2.data,
 									success() {
-										that.loginResetUserinFo( res2.data,res2.data.token, res2.msg);
+										that.loginResetUserinFo(res2.data, res2.data.token,
+											res2.msg);
 									}
 								})
 							}
-							uni.hideLoading();
+
 						})
 					}
 				});
@@ -153,14 +152,13 @@
 					})
 					return;
 				}
-				if (phoneNumber.length==0) {
+				if (phoneNumber.length == 0) {
 					uni.showToast({
 						icon: 'none',
 						title: "手机格式不正确"
 					})
 					return;
 				}
-				uni.showLoading();
 				// 密码加密
 				var en = new JSEncrypt();
 				en.setPublicKey(api.publicKey);
@@ -172,22 +170,22 @@
 					deviceType: uni.getStorageSync(sk.deviceModel).model,
 					phoneNumber: phoneNumber,
 					inviteUserId: uni.getStorageSync(sk.inviteUserId),
-					nickName:nickName
+					nickName: nickName
 				}, api.login).then(res => {
-					uni.hideLoading();
+
 					if (res.code == 200) {
 						// 缓存用户基本信息
 						uni.setStorage({
 							key: sk.userInfo,
 							data: res.data,
 							success() {
-								that.loginResetUserinFo( res.data,res.data.token, res.msg);
+								that.loginResetUserinFo(res.data, res.data.token, res.msg);
 							}
 						})
 					}
 				})
 			},
-			loginResetUserinFo(userInfo,token, msg) {
+			loginResetUserinFo(userInfo, token, msg) {
 
 				// if (su.isBlank(userInfo.email) || su.isBlank(userInfo.phoneNumber)) {
 				// 	uni.navigateTo({
@@ -246,7 +244,6 @@
 					})
 					return;
 				}
-				uni.showLoading();
 				// 密码加密
 				var en = new JSEncrypt();
 				en.setPublicKey(api.publicKey);
@@ -256,7 +253,7 @@
 					emailCode: that.verificatioin,
 					newPassword: en.encrypt(that.password),
 				}, api.resetPassword).then(res => {
-					uni.hideLoading();
+
 					uni.showToast({
 						icon: 'none',
 						title: res.msg,
@@ -322,7 +319,7 @@
 							key: sk.userInfo,
 							data: res.data,
 							success() {
-								that.loginResetUserinFo( res.data,res.data.token, res.msg);
+								that.loginResetUserinFo(res.data, res.data.token, res.msg);
 							}
 						})
 					}

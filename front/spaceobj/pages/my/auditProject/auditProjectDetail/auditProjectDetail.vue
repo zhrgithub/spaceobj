@@ -68,12 +68,12 @@
 			that = this;
 		},
 		onLoad(e) {
-			
+
 			var str = decodeURIComponent(e.obj);
 			var obj = JSON.parse(str);
 			that.projectObj = obj;
 		},
-		
+
 		methods: {
 			getAuditStatus(e) {
 				if (e == 0) {
@@ -98,7 +98,6 @@
 					editable: true,
 					success(e) {
 						if (e.confirm) {
-							uni.showLoading();
 							that.updateProject(2, e.content);
 						}
 					}
@@ -109,7 +108,6 @@
 					content: '确认通过',
 					success(e) {
 						if (e.confirm) {
-							uni.showLoading();
 							that.updateProject(1, "");
 						}
 					}
@@ -122,7 +120,7 @@
 					status: status,
 					message: message,
 				}, api.auditProject).then(res => {
-					uni.hideLoading();
+
 					uni.showToast({
 						title: res.msg,
 						icon: 'none',

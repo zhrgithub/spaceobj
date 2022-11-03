@@ -40,7 +40,7 @@
 
 				}, api.sysPhotoList).then(res => {
 					that.photoList = res.data;
-					uni.hideLoading();
+					
 				});
 			},
 			addPhoto() {

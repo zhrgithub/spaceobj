@@ -94,7 +94,7 @@
 				api.post({
 					wechat: that.wechat,
 					downloadUrl: that.downloadUrl,
-					online:that.online
+					online: that.online
 				}, api.updateOther).then(res => {
 					if (res.code == 200) {
 						uni.showToast({

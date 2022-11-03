@@ -9,7 +9,7 @@
 	import sk from "@/common/StoryKeys.js"
 	import api from "@/common/api.js"
 	import su from "@/utils/StringUtils.js"
-	
+
 	export default {
 		data() {
 			return {
@@ -17,7 +17,7 @@
 			}
 		},
 		onLoad(e) {
-			
+
 			if (!su.isBlank(e)) {
 				// 设置邀请人id
 				if (!su.isUndefined(e.inviteUserId)) {
@@ -39,28 +39,23 @@
 			}
 		},
 		onShow() {
-			uni.showLoading({
-				title: "加载中..."
-			})
 			api.post({}, api.getOther).then(res => {
 				var data = res.data;
 				uni.setStorage({
 					key: sk.otherInfo,
 					data: data
 				})
-				// if (data.online == 1) {
-					uni.switchTab({
-						url: '/pages/project/project'
-					})
-				// }
-				uni.hideLoading();
+				uni.switchTab({
+					url: '/pages/project/project'
+				})
+
 			})
 		},
 		created() {
 			that = this;
 
 			const res = uni.getSystemInfoSync();
-			console.log("设备信息：",res)
+			console.log("设备信息：", res)
 			uni.setStorage({
 				key: sk.deviceModel,
 				data: res

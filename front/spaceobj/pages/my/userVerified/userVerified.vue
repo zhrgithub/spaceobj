@@ -5,19 +5,22 @@
 				<input placeholder="请输入您的真实姓名(必填)" :value="username" maxlength="15" @input="setUserName"></input>
 			</view>
 			<view class="base-infos-style-two">
-				<input placeholder="请输入您的身份证号码(必填)" :value="idCardNum" maxlength="18" type="number" @input="setIdCardNumber"></input>
+				<input placeholder="请输入您的身份证号码(必填)" :value="idCardNum" maxlength="18" type="number"
+					@input="setIdCardNumber"></input>
 			</view>
 		</view>
 
 		<view class="id-card-style" @click="uploadImageItem">
-			<view class="image-background-one" v-if="idCardPic==''||idCardPic==null||idCardPic=='null'||idCardPic.length==0">
+			<view class="image-background-one"
+				v-if="idCardPic==''||idCardPic==null||idCardPic=='null'||idCardPic.length==0">
 				<image src="/static/camera.png"></image>
 				<view class="image-title">身份证正面(必填)</view>
 			</view>
-			<block class="image-background-two" v-if="idCardPic!=''&&idCardPic!=null&&idCardPic!='null'&&idCardPic.length!=0">
+			<block class="image-background-two"
+				v-if="idCardPic!=''&&idCardPic!=null&&idCardPic!='null'&&idCardPic.length!=0">
 				<img :src="idCardPic" style="width:100%;height:100%;margin-left:0%;border-radius: 20rpx;" />
 			</block>
-		</view> 
+		</view>
 
 		<view class="button-background" v-if="realNameStatus==0||realNameStatus==3">
 			<button @click="submit">提交</button>
@@ -38,34 +41,34 @@
 				idCardPic: '',
 				username: '',
 				idCardNum: '',
-				online:0,
+				online: 0,
 			}
 		},
 		created() {
 			that = this;
 		},
-		onLoad(){
-			
+		onLoad() {
+
 		},
 		onShow() {
-			
-			
-			
+
+
+
 			this.timer = setTimeout(() => {
 				// 第二步加载其它信息
 				var otherInfo = uni.getStorageSync(sk.otherInfo);
-				
+
 				that.online = otherInfo.online;
-				
-				
+
+
 				// 第一步：加载用户基本信息
 				that.loginStatus = uni.getStorageSync(sk.loginStatus);
 				var userInfo = uni.getStorageSync(sk.userInfo);
 				if (userInfo != '') {
 					that.realNameStatus = userInfo.realNameStatus;
 					that.idCardPic = userInfo.idCardPic;
-					that.username = su.isBlank(userInfo.username)?'':userInfo.username;
-					that.idCardNum = su.isBlank(userInfo.idCardNum)?'':userInfo.idCardNum;
+					that.username = su.isBlank(userInfo.username) ? '' : userInfo.username;
+					that.idCardNum = su.isBlank(userInfo.idCardNum) ? '' : userInfo.idCardNum;
 					if (that.realNameStatus == 3) {
 						uni.showModal({
 							showCancel: false,
@@ -75,48 +78,48 @@
 					}
 				}
 			})
-			
+
 		},
 		methods: {
-			setUserName(e){
+			setUserName(e) {
 				that.username = e.detail.value;
 			},
-			setIdCardNumber(e){
+			setIdCardNumber(e) {
 				that.idCardNum = e.detail.value;
 			},
-			submit(){
+			submit() {
 				var username = that.username;
 				var userInfo = uni.getStorageSync(sk.userInfo);
 				var idCardNum = that.idCardNum;
 				var idCardPic = that.idCardPic;
-				if(su.isBlank(username)){
+				if (su.isBlank(username)) {
 					uni.showToast({
-						icon:'none',
-						title:'用户名不为空'
+						icon: 'none',
+						title: '用户名不为空'
 					})
 					return;
 				}
-				if(su.isBlank(idCardNum)||idCardNum.length!=18){
+				if (su.isBlank(idCardNum) || idCardNum.length != 18) {
 					uni.showToast({
-						icon:'none',
-						title:'身份证号格式不正确'
+						icon: 'none',
+						title: '身份证号格式不正确'
 					})
 					return;
 				}
-				if(su.isBlank(idCardPic)){
+				if (su.isBlank(idCardPic)) {
 					uni.showToast({
-						icon:'none',
-						title:'请上传图片'  
+						icon: 'none',
+						title: '请上传图片'
 					})
 					return;
 				}
 				userInfo.username = username;
 				userInfo.idCardNum = idCardNum;
 				userInfo.idCardPic = idCardPic;
-				
-				
+
+
 				api.post(userInfo, api.realName).then(res => {
-					uni.hideLoading();  
+
 					if (res.code == 200) {
 						uni.setStorage({
 							key: sk.userInfo,
@@ -127,7 +130,7 @@
 							title: res.msg
 						})
 					}
-				
+
 				});
 			},
 			uploadImageItem() {
@@ -148,19 +151,19 @@
 							},
 							success: (uploadFileRes) => {
 								var data = JSON.parse(uploadFileRes.data);
-								if(data.code==200){
+								if (data.code == 200) {
 									that.idCardPic = data.data;
 								}
 								uni.showToast({
-									title:data.msg,
-									icon:'none'
+									title: data.msg,
+									icon: 'none'
 								})
 							}
 						});
 					}
 				});
 			}
-			
+
 		}
 	}
 </script>

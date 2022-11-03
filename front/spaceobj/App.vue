@@ -29,7 +29,7 @@
 					ip: ip
 				}, api.ipTerritory).then(res => {
 					console.log("ip属地", res);
-					if (res.code == 200) {
+					if (!su.isBlank(res)&&res.code == 200) {
 						var ip_Territory = res.country + res.province + res.city + res.isp;
 						uni.setStorage({
 							key: sk.ipTerritory,

@@ -95,14 +95,14 @@
 				{{deviceModel.system}}
 			</view>
 		</view>
-		<view class="edit-background-style" v-if="online==1">
+		<!-- <view class="edit-background-style" v-if="online==1">
 			<view class="change-tips">
 				电池电量
 			</view>
 			<view class="change-input-style">
 				{{deviceModel.batteryLevel}}%
 			</view>
-		</view>
+		</view> -->
 		<view class="space-line-style">
 
 		</view>
@@ -155,7 +155,7 @@
 			that.loadUserInfo();
 			// 加载是否上线信息
 			that.online = uni.getStorageSync(sk.otherInfo).online;
-			
+
 
 		},
 		created() {
@@ -199,7 +199,7 @@
 									}
 								})
 							}
-							uni.hideLoading();
+
 							uni.showToast({
 								icon: 'none',
 								title: res2.msg
@@ -221,15 +221,12 @@
 			},
 
 			editPhoto() {
-				uni.showLoading({
-					title: '加载中...',
-				})
 				this.$refs.popup.open('bottom');
 				api.post({
 
 				}, api.sysPhotoList).then(res => {
 					that.selectPhotoList = res.data;
-					uni.hideLoading();
+
 				});
 
 			},
@@ -238,14 +235,10 @@
 				this.$refs.popup.close();
 			},
 			logout() {
-
-				uni.showLoading({
-					title: '加载中...',
-				})
 				api.post({
 
 				}, api.loginOut).then(res => {
-					uni.hideLoading();
+
 					// 设置登录状态为退出
 					uni.setStorage({
 						key: "loginStatus",
@@ -269,10 +262,6 @@
 
 			},
 			saveUserInfo() {
-
-				uni.showLoading({
-					title: '修改中...',
-				})
 				if (strigUtils.isBlank(that.phoneNumber)) {
 					uni.showToast({
 						icon: 'none',
@@ -302,17 +291,17 @@
 					email: that.email,
 					openId: that.openId
 				}, api.customerUpdateUserInfo).then(res => {
-					uni.hideLoading();
+
 					if (res.code == 200) {
 						uni.setStorage({
 							key: sk.userInfo,
 							data: res.data
 						})
-						uni.showToast({
-							icon: 'none',
-							title: res.msg
-						})
 					}
+					uni.showToast({
+						icon: 'none',
+						title: res.msg
+					})
 
 				});
 			}

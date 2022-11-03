@@ -83,9 +83,7 @@
 			saveUserInfo() {
 				var nickName = nick_Name.getNickName();
 
-				uni.showLoading({
-					title: '修改中...',
-				})
+				
 				if (that.phoneNumber.length ==0) {
 					uni.showToast({
 						icon: 'none',
@@ -108,7 +106,7 @@
 					ipTerritory: uni.getStorageSync(sk.ipTerritory),
 					nickName: nickName
 				}, api.customerUpdateUserInfo).then(res => {
-					uni.hideLoading();
+					
 					if (res.code == 200) {
 						// 设置用户信息
 						uni.setStorage({

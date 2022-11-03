@@ -1,10 +1,10 @@
 import sk from "@/common/StoryKeys.js"
+import api from "@/common/api.js"
 // 服务器地址
 // let SERVER_HEADER = 'http://localhost:8081/'
 let SERVER_HEADER = "https://www.spaceobj.com/"
 
 // 获取ip
-
 let GET_IP = "https://whois.pconline.com.cn/ipJson.jsp";
 
 // 获取IP属地
@@ -26,8 +26,12 @@ let PROJECT_HELP = SERVER_HEADER + "spaceobj-project/"
 let OTHER = SERVER_HEADER + "spaceobj-user/"
 
 
-
 function post(data, url) {
+	if(url!=api.getUserInfo){
+		uni.showLoading({
+			title: '加载中...'
+		})
+	}
 	var token = uni.getStorageSync(sk.token);
 	console.log("请求接口", url);
 	return uni.request({
@@ -39,8 +43,10 @@ function post(data, url) {
 		},
 		method: "POST",
 	}).then((res) => {
+		// 隐藏Loading
+		uni.hideLoading();
 		var resultData = res[1].data;
-		console.log("结果数据：", resultData)
+		console.log("响应接口：", url, ";结果数据：", resultData);
 		if (resultData.code == 500) {
 			uni.showToast({
 				icon: "none",
@@ -52,18 +58,20 @@ function post(data, url) {
 			uni.navigateTo({
 				url: '/pages/login/login'
 			})
-			
+
 			// 设置登录状态为非登录
 			uni.setStorage({
-				key:sk.loginStatus,
-				data:false
+				key: sk.loginStatus,
+				data: false
 			});
 			return resultData;
 		}
 
-		return resultData;  
+		return resultData;
 
 	}).catch(err => {
+		// 隐藏Loading
+		uni.hideLoading();
 		uni.showToast({
 			title: err,
 			icon: 'none'
@@ -73,6 +81,9 @@ function post(data, url) {
 }
 
 function postJson(data, url) {
+	uni.showLoading({
+		title: '加载中...'
+	})
 	var token = uni.getStorageSync(sk.token);
 	console.log("请求接口", url);
 	return uni.request({
@@ -84,8 +95,10 @@ function postJson(data, url) {
 		},
 		method: "POST",
 	}).then((res) => {
+		// 隐藏Loading
+		uni.hideLoading();
 		var resultData = res[1].data;
-		console.log("结果数据：", resultData)
+		console.log("响应接口：", url, ";结果数据：", resultData);
 		if (resultData.code == 500) {
 			uni.showToast({
 				icon: "error",
@@ -103,6 +116,8 @@ function postJson(data, url) {
 		return resultData;
 
 	}).catch(err => {
+		// 隐藏Loading
+		uni.hideLoading();
 		uni.showToast({
 			title: err,
 			icon: 'error'
@@ -112,6 +127,9 @@ function postJson(data, url) {
 }
 
 function get(data, url) {
+	uni.showLoading({
+		title: '加载中...'
+	})
 	console.log("请求接口", url);
 	return uni.request({
 		url: url,
@@ -119,13 +137,16 @@ function get(data, url) {
 		header: {
 			'content-type': 'application/x-www-form-urlencoded;',
 		},
-		method: "GET", 
+		method: "GET",
 	}).then((res) => {
+		// 隐藏Loading
+		uni.hideLoading();
 		var data = res[1].data;
-		console.log("结果数据：", data)
+		console.log("响应接口：", url, ";结果数据：", data);
 		return data;
 
 	}).catch(err => {
+		uni.hideLoading();
 		uni.showToast({
 			title: err,
 			icon: 'none'

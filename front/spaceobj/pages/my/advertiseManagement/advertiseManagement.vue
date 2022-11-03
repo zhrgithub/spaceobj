@@ -128,9 +128,7 @@
 					url: '/pages/project/project'
 				})
 			}
-			uni.showLoading({
-				title: '加载中...',
-			})
+			
 			that.loadList();
 		},
 		methods: {
@@ -156,12 +154,11 @@
 				that.jdAdCommentNum = e.detail.value;
 			},
 			loadList() {
-				uni.showLoading();
 				api.post({
 
 				}, api.jdList).then(res => {
 					that.list = res.data;
-					uni.hideLoading();
+					
 				});
 			},
 			editAdvertise(e) {

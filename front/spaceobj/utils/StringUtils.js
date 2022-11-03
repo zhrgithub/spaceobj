@@ -3,7 +3,7 @@
  * @param {Object} str
  */
 function isBlank(str) {
-	if (str == null || str == "" || str.length == 0||str=='null') {
+	if (str == null || str == "" || str.length == 0||str=='null'||str=='undefined'||str==undefined) {
 		return true;
 	} else {
 		return false;
@@ -28,7 +28,11 @@ function timeStampTurnTime(str) {
 }
 
 function getIp(res){
+	console.log(res)
 	var ip = null;
+	if(res=='undefined'||res==undefined){
+		return null;
+	}
 	// 去除空格
 	var remove_blank_space_str = res.replace(/[\r\n]/g, "");
 	// 设置剪切ip的正则

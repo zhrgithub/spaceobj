@@ -40,9 +40,9 @@
 			</view>
 		</view>
 
-		
 
-		
+
+
 
 		<view class="space-line-style">
 		</view>
@@ -172,13 +172,11 @@
 				})
 			},
 			getUserInfo() {
-				uni.showLoading({
-					title: '加载中...'
-				})
+
 				api.post({
 					uuid: that.projectObj.uuid,
 				}, api.getPhoneNumberByProjectId).then(res => {
-					uni.hideLoading();
+
 					if (res.code == 200) {
 						that.copyPhoneNumber(res.data);
 					}
@@ -203,13 +201,11 @@
 				});
 			},
 			getShareProjectHelp() {
-				uni.showLoading({
-					title: "加载中"
-				})
+
 				api.post({
 					pUUID: that.projectObj.uuid,
 				}, api.createProjectHelpLink).then(res => {
-					uni.hideLoading();
+
 					if (res.code == 200) {
 						that.projectHelp = res.data;
 					}

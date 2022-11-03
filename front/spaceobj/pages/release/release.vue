@@ -106,9 +106,7 @@
 			that = this;
 		},
 		onLoad() {
-			uni.showLoading({
-				title: '加载中...',
-			})
+
 
 			// 获取设备信息
 			var deviceModel = uni.getStorageSync(sk.deviceModel);
@@ -129,16 +127,12 @@
 		},
 		// 触底加载更多
 		onReachBottom() {
-			uni.showLoading({
-				title: "加载中..."
-			})
+
 			that.loadList();
 		},
 		// 下拉刷新
 		onPullDownRefresh() {
-			uni.showLoading({
-				title: "加载中..."
-			})
+
 			that.currentPage = 1;
 			that.list = [];
 			that.loadList();
@@ -147,9 +141,7 @@
 		methods: {
 
 			touchLoad() {
-				uni.showLoading({
-					title: "加载中..."
-				})
+
 				that.currentPage = 1;
 				that.list = [];
 				that.loadList();
@@ -197,7 +189,7 @@
 						currentPage: that.currentPage,
 						pageSize: that.pageSize
 					}, api.projectFindList).then(res => {
-						uni.hideLoading();
+
 						if (res.code == 200) {
 							if (res.data.length > 0) {
 								that.list = that.list.concat(res.data);
@@ -211,7 +203,7 @@
 						}
 					});
 				} else {
-					uni.hideLoading();
+
 				}
 
 
@@ -271,16 +263,14 @@
 					return;
 				}
 
-				uni.showLoading({
-					title: "加载中..."
-				});
+
 				api.post({
 					content: that.content,
 					price: that.price,
 					ipAddress: uni.getStorageSync(sk.ipTerritory),
 					nickname: that.userInfo.nickName,
 				}, api.projectAddProject).then(res => {
-					uni.hideLoading();
+
 					if (res.code == 200) {
 						that.content = '';
 						that.price = '';

@@ -176,7 +176,7 @@
 				"pagePath": "pages/project/project",
 				"iconPath": "static/project.png",
 				"selectedIconPath": "static/selectProject.png",
-				"text": "内容信息"
+				"text": "首页"
 			},
 			// {
 			// 	"pagePath": "pages/help/help",

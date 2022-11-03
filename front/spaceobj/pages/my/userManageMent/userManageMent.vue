@@ -8,7 +8,7 @@
 					<image src="/static/searchInput.png" mode=""></image>
 				</view>
 				<view class="input-background-style">
-					<input :value="seachText" type="text" maxlength="15" placeholder="电话、昵称、邮箱、名称、身份证"
+					<input :value="seachText" type="text" maxlength="15" placeholder="电话、昵称、邮箱、名称、身份证、属地"
 						placeholder-style="font-size:14px" confirm-type="search" @confirm="doSearch" @input="inputText">
 					<image src="/static/deleteSearch.png" @click="clearInput">
 				</view>
@@ -19,16 +19,17 @@
 
 		<view class="photo-image-btn-background-style" v-for="(item,idx) in list" :key="idx">
 			<view class="photo-image-background-style">
-				<view :class="item.onlineStatus==1?'online-status':'un-online-status'">
-
-				</view>
-				<image :src="item.photoUrl" mode=""></image>
+				<image :src="item.photoUrl==null?'/static/photo.png':item.photoUrl" mode=""></image>
 				<view class="base-info-panel-style">
 					<view class="phone-background-style">
-						状态： <text v-if="item.disableStatus==0">正常</text> <text v-if="item.disableStatus==1">冻结</text>
+						<text>{{item.nickName}}</text> 
+						<text v-if="item.disableStatus==0" style="margin-left: 20rpx;color: #49A8E7;">正常</text> 
+						<text v-if="item.disableStatus==1" style="margin-left: 20rpx;color: gray;">冻结</text>
+						<text v-if="item.onlineStatus==1" style="margin-left: 20rpx;color: seagreen;">已登录</text>
+						<text v-if="item.onlineStatus==0" style="margin-left: 20rpx;color: gray;">未登录</text>
 					</view>
 					<view class="phone-background-style">
-						账号：{{item.account}}
+					 {{item.ipTerritory}}
 					</view>
 				</view>
 			</view>
@@ -148,9 +149,6 @@
 			that = this;
 		},
 		onShow() {
-			uni.showLoading({
-				title: '加载中...',
-			})
 			that.loadList();
 		},
 		// 触底加载更多
@@ -181,7 +179,6 @@
 				that.userObj.invitationValue = e.detail.value;
 			},
 			loadList() {
-				uni.showLoading();
 				api.post({
 					content: that.seachText,
 					currentPage: that.currentPage,
@@ -199,7 +196,7 @@
 							title: res.msg
 						})
 					}
-					uni.hideLoading();
+
 				});
 			},
 			editUser(e) {
@@ -215,10 +212,9 @@
 				}
 			},
 			save() {
-				uni.showLoading();
 				var userObj = that.userObj;
 				api.post(userObj, api.updateSysUser).then(res => {
-					uni.hideLoading();
+
 					if (res.code == 200) {
 						uni.showToast({
 							icon: 'none',

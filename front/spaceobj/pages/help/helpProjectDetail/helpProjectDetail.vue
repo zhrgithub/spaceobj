@@ -1,7 +1,7 @@
 <template>
 	<view class="project-detail-background-style">
 
-		<view class="base-info-panel-style" >
+		<view class="base-info-panel-style">
 			<view class="project-num-status-style">
 				<view class="project-numer-style">
 					项目编号：{{projectHelp.projectId}}
@@ -159,14 +159,10 @@
 				})
 			},
 			getUserInfo() {
-				uni.showLoading({
-					title: '加载中...'
-				})
-
 				api.post({
 					uuid: that.projectHelp.puuid,
 				}, api.getPhoneNumberByProjectId).then(res => {
-					uni.hideLoading();
+
 					if (res.code == 200) {
 						that.copyPhoneNumber(res.data);
 					}
@@ -250,7 +246,7 @@
 		align-items: center;
 		background-color: #fff;
 	}
-	
+
 	.btn-background-style button {
 		width: 96%;
 		margin-left: 2%;
@@ -261,8 +257,8 @@
 		align-items: center;
 		justify-content: center;
 	}
-	
-	.space-line-style{
+
+	.space-line-style {
 		width: 100%;
 		height: 200rpx;
 	}

@@ -87,9 +87,6 @@
 			that = this;
 		},
 		onLoad() {
-			uni.showLoading({
-				title: '加载中...',
-			})
 
 			that.list = [];
 			that.currentPage = 1;
@@ -105,9 +102,6 @@
 		},
 		methods: {
 			touchLoad(){
-				uni.showLoading({
-					title: "加载中..."
-				})
 				that.currentPage = 1;
 				that.list = [];
 				that.loadList();
@@ -127,7 +121,7 @@
 						currentPage: that.currentPage,
 						pageSize: that.pageSize
 					}, api.projectHelpList).then(res => {
-						uni.hideLoading();
+						
 						if (res.code == 200) {
 							if (res.data.length > 0) {
 								that.list = that.list.concat(res.data);
@@ -141,7 +135,7 @@
 						}
 					});
 				}else{
-					uni.hideLoading();
+					
 				}
 
 			},

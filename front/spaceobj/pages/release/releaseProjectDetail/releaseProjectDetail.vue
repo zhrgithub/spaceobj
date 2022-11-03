@@ -176,7 +176,7 @@
 			updateProject() {
 				var obj = that.projectObj;
 				api.postJson(obj, api.projectUpdateProject).then(res => {
-					uni.hideLoading();
+
 					uni.showToast({
 						title: res.msg,
 						icon: 'none',

@@ -61,9 +61,7 @@
 			that = this;
 		},
 		onShow() {
-			uni.showLoading({
-				title: '加载中...',
-			})
+
 			that.list = [];
 			that.currentPage = 1;
 			that.pageSize = 10;
@@ -107,7 +105,6 @@
 				}
 			},
 			loadList() {
-				uni.showLoading();
 				api.post({
 					content: that.seachText,
 					currentPage: that.currentPage,
@@ -119,7 +116,7 @@
 							that.currentPage++;
 						}
 					}
-					uni.hideLoading();
+
 					uni.showToast({
 						icon: 'none',
 						title: res.msg
@@ -128,7 +125,8 @@
 			},
 			toAuditProjectDetail(e) {
 				uni.navigateTo({
-					url: '/pages/my/auditProject/auditProjectDetail/auditProjectDetail?obj=' + encodeURIComponent(JSON.stringify(e))
+					url: '/pages/my/auditProject/auditProjectDetail/auditProjectDetail?obj=' + encodeURIComponent(
+						JSON.stringify(e))
 				})
 			},
 			doSearch(e) {
