@@ -40,7 +40,7 @@ public class OtherServiceImpl implements OtherService {
   public SaResult getOther() {
 
     Other other = null;
-
+    //如果缓存中存在key，返回数据
     if (redisService.hasKey(OTHER_INFO)) {
       other = (Other) redisService.getCacheObject(OTHER_INFO, Other.class);
 
@@ -53,13 +53,19 @@ public class OtherServiceImpl implements OtherService {
       if (ObjectUtils.isEmpty(other.getOnline())) {
         other.setOnline(RestData.ONLINE);
       }
+
+      if (ObjectUtils.isEmpty(other.getVersion())) {
+        other.setVersion(RestData.version);
+      }
       return SaResult.ok().setData(other);
     }
+    //缓存中不存在数据，设置成静态资源数据
     other =
         Other.builder()
             .downloadUrl(RestData.DOWNLOAD_URL)
             .wechat(RestData.WECHAT)
             .online(RestData.ONLINE)
+            .version(RestData.version)
             .build();
     redisService.setCacheObject(OTHER_INFO, other);
     return SaResult.ok().setData(other);

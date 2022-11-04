@@ -29,4 +29,8 @@ public class Other implements Serializable {
   /** 上线开关 */
   @NotNull(message = "上线开关不为空")
   private Integer online;
+
+  /** 版本号,控制APP端审核版本是否通过，审核通过，并发布成功之后升级版本号 */
+  @NotNull(message = "上线版本号不为空")
+  private Integer version;
 }

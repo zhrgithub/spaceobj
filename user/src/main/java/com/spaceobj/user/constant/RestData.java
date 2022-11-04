@@ -14,4 +14,7 @@ public class RestData {
 
   /** 上线开关 */
   public static final Integer ONLINE = 0;
+
+  /** APP版本号 */
+  public static final Integer version = 1;
 }
