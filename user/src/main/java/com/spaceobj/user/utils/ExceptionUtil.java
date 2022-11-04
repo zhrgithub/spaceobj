@@ -38,9 +38,13 @@ public class ExceptionUtil {
             .build();
     log.error(
         "===start=====>\n"
-            + "---exceptionMessage:"
-            + JSON.toJSONString(exceptionMessage)
-            + "\n"
+            + "---exceptionMessage: \n"
+            + "---className: " + exceptionMessage.getClassName() + "\n"
+            + "---methodName: " + exceptionMessage.getMethodName() + "\n"
+            + "---linNumber: " + exceptionMessage.getLineNumber() + "\n"
+            + "---fileName: " + exceptionMessage.getFileName() + "\n"
+            + "---createTime: " + exceptionMessage.getCreateTime() + "\n"
+            + "---content: " + exceptionMessage.getContent() + "\n"
             + "===========end==>");
   }
 
