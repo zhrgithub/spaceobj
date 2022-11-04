@@ -374,10 +374,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           String releaseId = sysProject.getReleaseUserId();
           SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
           System.out.println(releaseProjectUser);
-          //  判断当前用户是否已经实名认证
-          if (sysUser.getRealNameStatus() != 1) {
-            return SaResult.error("请实名认证后再来获取");
-          }
+          // //  判断当前用户是否已经实名认证
+          // if (sysUser.getRealNameStatus() != 1) {
+          //   return SaResult.error("实名认证后获取");
+          // }
           return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
         }
       }
@@ -409,9 +409,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           kafkaSender.send(helpBo, KafKaTopics.ADD_HELP_PROJECT);
         }
         //  判断当前用户是否已经实名认证
-        if (sysUser.getRealNameStatus() != 1) {
-          return SaResult.error("请实名认证后再来获取");
-        }
+        // if (sysUser.getRealNameStatus() != 1) {
+        //   return SaResult.error("实名认证后获取");
+        // }
         // 通知用户服务更新该用户的基本信息
         kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
         String releaseId = sysProject.getReleaseUserId();
@@ -419,8 +419,14 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
         return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
       }
-      // 需要获取助力链接
-      return SaResult.error("好友助力获取").setCode(202);
+      //如果已经分享过，提示还差多少次分享
+      if (!ObjectUtils.isEmpty(helpBo)){
+        int num = (int) (10- helpBo.getHpNumber());
+        return SaResult.error("还差"+num+"个好友助力").setCode(202);
+      }
+
+        // 需要获取助力链接
+      return SaResult.error("分享好友后获取").setCode(202);
     } catch (Exception e) {
 
       ExceptionUtil.exceptionToString(e);

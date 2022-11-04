@@ -241,14 +241,14 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
       SysUser sysUser = getSysUser(loginId);
       ProjectHelp projectHelp = getProjectHelpByHpId(projectHelpBo.getHpId());
       if (ObjectUtils.isEmpty(projectHelp)) {
-        return SaResult.error("助力链接不存在");
+        return SaResult.error("分享链接不存在");
       }
       // 如果项目已经助力成功，那么直接返回好友已经成功
       if (projectHelp.getHpNumber() >= 10 || projectHelp.getHpStatus() == 1) {
         return SaResult.ok("助力成功");
       }
       if (projectHelp.getCreateUserId().equals(sysUser.getUserId())) {
-        return SaResult.error("请分享给好友助力");
+        return SaResult.error("请分享给好友");
       }
       if (sysUser.getProjectHelpTimes() <= 0) {
         return SaResult.error("今日助力次数上限");
