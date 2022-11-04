@@ -247,7 +247,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     try {
       boolean hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
       if (hasKey) {
-        list = redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class).stream().sorted(Comparator.comparing(SysProject::getPId).reversed()).collect(Collectors.toList());
+        list =
+            redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class).stream()
+                .sorted(Comparator.comparing(SysProject::getPId).reversed())
+                .collect(Collectors.toList());
         return list;
       } else {
         boolean flag = redissonService.tryLock(RedisKey.REDIS_PROJECT_SYNC_STATUS);
@@ -285,8 +288,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (!StringUtils.isEmpty(projectSearchBo.getContent())) {
         queryWrapper.like("p_content", projectSearchBo.getContent());
         queryWrapper.or().like("p_id", projectSearchBo.getContent());
-        queryWrapper.or().like("p_nick_name",projectSearchBo.getContent());
-        queryWrapper.or().like("p_release_user_id",projectSearchBo.getContent());
+        queryWrapper.or().like("p_nick_name", projectSearchBo.getContent());
+        queryWrapper.or().like("p_release_user_id", projectSearchBo.getContent());
       }
       Page<SysProject> page =
           new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
@@ -419,13 +422,13 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
         return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
       }
-      //如果已经分享过，提示还差多少次分享
-      if (!ObjectUtils.isEmpty(helpBo)){
-        int num = (int) (10- helpBo.getHpNumber());
-        return SaResult.error("还差"+num+"个好友助力").setCode(202);
+      // 如果已经分享过，提示还差多少次分享
+      if (!ObjectUtils.isEmpty(helpBo)) {
+        int num = (int) (10 - helpBo.getHpNumber());
+        return SaResult.error("还差" + num + "个好友助力").setCode(202);
       }
 
-        // 需要获取助力链接
+      // 需要获取助力链接
       return SaResult.error("分享好友后获取").setCode(202);
     } catch (Exception e) {
 
