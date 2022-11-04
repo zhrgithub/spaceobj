@@ -425,7 +425,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 如果已经分享过，提示还差多少次分享
       if (!ObjectUtils.isEmpty(helpBo)) {
         int num = (int) (10 - helpBo.getHpNumber());
-        return SaResult.error("还差" + num + "个好友助力").setCode(202);
+        return SaResult.error("还差" + num + "位好友助力").setCode(202);
       }
 
       // 需要获取助力链接
