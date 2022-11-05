@@ -1,8 +1,8 @@
 package com.spaceobj.user.component;
 
 import cn.hutool.json.JSONObject;
+import com.core.utils.HttpRequest;
 import com.spaceobj.user.constant.WechatConstant;
-import com.spaceobj.user.utils.HttpRequest;
 import org.springframework.stereotype.Component;
 
 /**

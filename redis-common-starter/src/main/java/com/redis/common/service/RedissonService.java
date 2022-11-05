@@ -1,6 +1,6 @@
 package com.redis.common.service;
 
-import com.redis.common.utils.ExceptionUtil;
+import com.core.utils.ExceptionUtil;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;

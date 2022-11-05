@@ -2,13 +2,13 @@ package com.spaceobj.user.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.core.utils.BeanConvertToTargetUtils;
 import com.spaceobj.user.bo.LoginByWechatBo;
 import com.spaceobj.user.bo.LoginOrRegisterBo;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.dto.CustomerUserDto;
 import com.spaceobj.user.group.customer.*;
 import com.spaceobj.user.service.CustomerUserService;
-import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import com.spaceobj.user.utils.HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;

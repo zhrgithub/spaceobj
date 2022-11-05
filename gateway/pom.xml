@@ -25,6 +25,13 @@
             <version>1.31.0</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.common</groupId>
+            <artifactId>common-starter</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>com</groupId>
             <artifactId>redis-common-starter</artifactId>
@@ -81,11 +88,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
@@ -96,8 +98,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
         </dependency>
-
-
 
     </dependencies>
 

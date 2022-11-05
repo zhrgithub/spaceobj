@@ -18,6 +18,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.common</groupId>
+            <artifactId>common-starter</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com</groupId>
             <artifactId>redis-common-starter</artifactId>
             <version>0.0.1-SNAPSHOT</version>
@@ -80,10 +85,7 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
+
         <!--    hutool工具库    -->
         <dependency>
             <groupId>cn.hutool</groupId>
@@ -118,18 +120,7 @@
             <version>5.2.0.Final</version>
         </dependency>
 
-        <!-- 邮箱验证 -->
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>1.4.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
+
 
     </dependencies>
 

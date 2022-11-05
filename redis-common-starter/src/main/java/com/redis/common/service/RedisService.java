@@ -1,6 +1,5 @@
 package com.redis.common.service;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -9,7 +8,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson2.JSON;
-import com.redis.common.utils.ExceptionUtil;
+import com.core.utils.ExceptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.HashOperations;

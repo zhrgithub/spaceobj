@@ -18,6 +18,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.common</groupId>
+            <artifactId>common-starter</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com</groupId>
             <artifactId>redis-common-starter</artifactId>
             <version>0.0.1-SNAPSHOT</version>
@@ -71,11 +76,6 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-
         <!--    mybatis-plus    -->
         <dependency>
             <groupId>com.baomidou</groupId>
@@ -125,10 +125,11 @@
 
 
         <!--        熔断-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.cloud</groupId>-->
-<!--            <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+            <version>2.2.10.RELEASE</version>
+        </dependency>
 
     </dependencies>
 

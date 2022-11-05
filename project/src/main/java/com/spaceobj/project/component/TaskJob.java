@@ -1,9 +1,9 @@
 package com.spaceobj.project.component;
 
-import com.spaceobj.project.bo.ReceiveEmailBo;
+import com.core.dto.ReceiveEmail;
+import com.core.utils.ExceptionUtil;
 import com.spaceobj.project.constant.KafKaTopics;
 import com.spaceobj.project.service.SysProjectService;
-import com.spaceobj.project.util.ExceptionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,11 +29,11 @@ public class TaskJob {
     try {
       Integer number = (Integer) sysProjectService.getPendingReview().getData();
       if (number > 0) {
-        ReceiveEmailBo receiveEmailBo = ReceiveEmailBo.builder().build();
-        receiveEmailBo.setTitle("项目待审核");
-        receiveEmailBo.setReceiverEmail("zhr_java@163.com");
-        receiveEmailBo.setContent("spaceObj提醒您，有" + number + "个项目待审核！");
-        kafkaSender.send(receiveEmailBo, KafKaTopics.PENDING_REVIEW_PROJECT);
+        ReceiveEmail ReceiveEmail = new ReceiveEmail();
+        ReceiveEmail.setTitle("项目待审核");
+        ReceiveEmail.setReceiverEmail("zhr_java@163.com");
+        ReceiveEmail.setContent("spaceObj提醒您，有" + number + "个项目待审核！");
+        kafkaSender.send(ReceiveEmail, KafKaTopics.PENDING_REVIEW_PROJECT);
       }
     } catch (Exception e) {
       ExceptionUtil.exceptionToString(e);

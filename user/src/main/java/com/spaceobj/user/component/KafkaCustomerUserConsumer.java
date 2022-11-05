@@ -1,10 +1,10 @@
 package com.spaceobj.user.component;
 
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.core.utils.ExceptionUtil;
 import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.CustomerUserService;
-import com.spaceobj.user.utils.ExceptionUtil;
 import com.spaceobj.user.utils.KafKaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

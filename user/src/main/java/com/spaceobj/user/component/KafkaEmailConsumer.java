@@ -1,17 +1,17 @@
 package com.spaceobj.user.component;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.core.dto.Email;
+import com.core.utils.CommonStringUtils;
+import com.core.utils.ExceptionUtil;
+import com.core.utils.SendMail;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.spaceobj.user.constant.KafKaTopics;
-import com.spaceobj.user.pojo.Email;
 import com.spaceobj.user.pojo.SysEmail;
 import com.spaceobj.user.service.SysEmailService;
-import com.spaceobj.user.utils.CommonStringUtils;
-import com.spaceobj.user.utils.ExceptionUtil;
 import com.spaceobj.user.utils.Message;
-import com.spaceobj.user.utils.SendMail;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;

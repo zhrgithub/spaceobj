@@ -1,6 +1,7 @@
 package com.spaceobj.user.utils;
 
 import cn.dev33.satoken.secure.SaSecureUtil;
+import com.core.utils.ExceptionUtil;
 
 import java.util.HashMap;
 
@@ -13,7 +14,7 @@ import java.util.HashMap;
 public class GenerateRsa {
 
   /**
-   * 初始化公钥秘钥
+   * 初始化公钥私钥
    *
    * @return
    */

@@ -1,12 +1,12 @@
 package com.spaceobj.user.controller;
 
 import cn.dev33.satoken.util.SaResult;
+import com.core.utils.BeanConvertToTargetUtils;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.dto.SysUserDto;
 import com.spaceobj.user.group.sysUser.FindListSysUserGroup;
 import com.spaceobj.user.group.sysUser.UpdateSysUserGroup;
 import com.spaceobj.user.service.SysUserService;
-import com.spaceobj.user.utils.BeanConvertToTargetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;

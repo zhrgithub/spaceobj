@@ -1,8 +1,8 @@
 package com.spaceobj.user.component;
 
+import com.core.utils.ExceptionUtil;
 import com.spaceobj.user.bo.SysUserBo;
 import com.spaceobj.user.service.SysUserService;
-import com.spaceobj.user.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
