@@ -1,9 +1,9 @@
-package com.spaceobj.project.util;
+package com.utils;
 
+import com.dto.KafkaMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.spaceobj.project.dto.KafkaMessage;
 
 /**
  * @author zhr_java@163.com

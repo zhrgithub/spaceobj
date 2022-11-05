@@ -1,11 +1,11 @@
 package com.spaceobj.user.component;
 
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.constant.KafKaTopics;
 import com.core.utils.ExceptionUtil;
-import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.CustomerUserService;
-import com.spaceobj.user.utils.KafKaSourceToTarget;
+import com.utils.KafkaSourceToTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class KafkaCustomerUserConsumer {
         .ifPresent(
             message -> {
               try {
-                SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
+                SysUser sysUser = KafkaSourceToTarget.getObject(message, SysUser.class);
                 if (ObjectUtils.isNotEmpty(sysUser)) {
                   sysUser = customerUserService.getUserInfoByUserId(sysUser.getUserId());
                   sysUser.setInvitationValue(sysUser.getInvitationValue() + 1);
@@ -69,7 +69,7 @@ public class KafkaCustomerUserConsumer {
         .ifPresent(
             message -> {
               try {
-                SysUser sysUser = KafKaSourceToTarget.getObject(message, SysUser.class);
+                SysUser sysUser = KafkaSourceToTarget.getObject(message, SysUser.class);
                 int result = customerUserService.updateUser(sysUser);
                 if (result == 0) {}
               } catch (Exception e) {

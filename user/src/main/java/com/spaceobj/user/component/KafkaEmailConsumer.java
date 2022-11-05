@@ -1,17 +1,17 @@
 package com.spaceobj.user.component;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.constant.KafKaTopics;
 import com.core.dto.Email;
 import com.core.utils.CommonStringUtils;
 import com.core.utils.ExceptionUtil;
 import com.core.utils.SendMail;
+import com.dto.KafkaMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.spaceobj.user.constant.KafKaTopics;
 import com.spaceobj.user.pojo.SysEmail;
 import com.spaceobj.user.service.SysEmailService;
-import com.spaceobj.user.utils.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,8 +87,8 @@ public class KafkaEmailConsumer {
     // 开启复杂处理Map方法
     Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
     // fromJson
-    Message messageResult =
-        gson.fromJson(message.toString(), new TypeToken<Message>() {}.getType());
+    KafkaMessage messageResult =
+        gson.fromJson(message.toString(), new TypeToken<KafkaMessage>() {}.getType());
     return new Gson().fromJson(messageResult.getMsg(), Email.class);
   }
 

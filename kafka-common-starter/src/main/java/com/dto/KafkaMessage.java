@@ -1,4 +1,4 @@
-package com.spaceobj.project.util;
+package com.dto;
 
 import lombok.Data;
 
