@@ -16,7 +16,7 @@
     <!--*****************************************************************************-->
 
     <!-- 定义日志文件 输出位置 -->
-    <property name="log.home_dir" value="/Users/zhr/study/github/spaceobj/rear/log/spaceobjGateway"/>
+    <property name="log.home_dir" value="../log"/>
     <property name="log.app_name" value="spaceobjGateway"/>
     <!-- 日志最大的历史 30天 -->
     <property name="log.maxHistory" value="30"/>
