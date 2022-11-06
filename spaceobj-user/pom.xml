@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com</groupId>
     <artifactId>spaceobj-user</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-release</version>
     <name>spaceobj-user</name>
     <description>spaceobj-user</description>
 
