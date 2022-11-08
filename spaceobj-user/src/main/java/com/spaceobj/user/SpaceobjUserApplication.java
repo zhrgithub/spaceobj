@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-@MapperScan(basePackages = "com.spaceobj.user.mapper")
 @EnableScheduling
 public class SpaceobjUserApplication {
 

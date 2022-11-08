@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @date 2022/10/8 14:27
  */
 @Component
-@FeignClient(contextId = "spaceobj-user", name = "spaceobjGateway",fallback = UserClientFallback.class)
+@FeignClient(contextId = "spaceobj-gateway", name = "spaceobjGateway",fallback = UserClientFallback.class)
 public interface UserClient {
 
   /**
