@@ -193,9 +193,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                         return !ObjectUtils.isEmpty(p)
                             && p.getStatus() == 1
                             && p.getContent().contains(projectSearchBo.getContent());
-                      } else {
-                        return !ObjectUtils.isEmpty(p) && p.getStatus() == 1;
                       }
+                      return p.getStatus() == 1;
                     })
                 .collect(Collectors.toList());
         int endNumber = 0;
@@ -211,7 +210,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           return SaResult.ok().setData(list);
         }
         list = list.subList(startNumber, endNumber);
-      } else if (projectSearchBo.getProjectType() == 1) {
+        return SaResult.ok().setData(list);
+      }
+      if (projectSearchBo.getProjectType() == 1) {
         // 查询自己发布的信息,根据项目创建人id查询项目
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
         queryWrapper
@@ -221,11 +222,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
         IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
         list = iPage.getRecords();
-      } else {
-        return SaResult.error("请求参数错误");
+        return SaResult.ok().setData(list);
       }
-
-      return SaResult.ok().setData(list);
+      return SaResult.error("请求参数错误");
     } catch (NotLoginException e) {
       ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
@@ -249,29 +248,32 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       if (hasKey) {
         list =
             redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class).stream()
-                .sorted(Comparator.comparing(SysProject::getPId).reversed())
+                .filter(p -> !ObjectUtils.isEmpty(p))
+                .sorted(Comparator.comparing(SysProject::getCreateTime))
                 .collect(Collectors.toList());
         return list;
-      } else {
-        boolean flag = redissonService.tryLock(RedisKey.REDIS_PROJECT_SYNC_STATUS);
-        if (!flag) {
-          return null;
-        } else {
-          // 再次判断是否存在该key
-          hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
-          if (hasKey) {
-            list = redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class);
-            return list;
-          }
-          QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
-          queryWrapper.orderByDesc("create_time");
-          list = sysProjectMapper.selectList(queryWrapper);
-          for (SysProject sysProject : list) {
-            redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), sysProject);
-          }
-          return list;
-        }
       }
+      boolean flag = redissonService.tryLock(RedisKey.REDIS_PROJECT_SYNC_STATUS);
+      if (!flag) {
+        return null;
+      }
+      // 再次判断是否存在该key
+      hasKey = redisService.hasKey(RedisKey.PROJECT_LIST);
+      if (hasKey) {
+        list =
+            redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class).stream()
+                .filter(p -> !ObjectUtils.isEmpty(p))
+                .sorted(Comparator.comparing(SysProject::getCreateTime))
+                .collect(Collectors.toList());
+        return list;
+      }
+      QueryWrapper<SysProject> queryWrapper = new QueryWrapper();
+      queryWrapper.orderByDesc("create_time");
+      list = sysProjectMapper.selectList(queryWrapper);
+      for (SysProject sysProject : list) {
+        redisService.setCacheMapValue(RedisKey.PROJECT_LIST, sysProject.getUuid(), sysProject);
+      }
+      return list;
     } catch (Exception e) {
       ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
@@ -475,7 +477,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
           sysProject = sysProjectMapper.selectOne(queryWrapper);
           // 如果MySQL中也没有查到那么设置成null
           if (ObjectUtils.isEmpty(sysProject)) {
-            redisService.setCacheMapValue(RedisKey.PROJECT_LIST, uuid, null);
+            redisService.setCacheMapValue(RedisKey.PROJECT_LIST, uuid, new SysProject());
             return sysProject;
           }
           // 同步到缓存中,并返回结果
