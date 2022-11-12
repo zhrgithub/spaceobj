@@ -22,7 +22,7 @@ public class CustomerUserDto {
   /** 用户登录凭证。开发者需要在开发者服务器后台，使用 code 换取 openid 和 session_key 等信息 */
   @NotBlank(
       message = "code不为空",
-      groups = {LoginByWechat.class, BindWechat.class})
+      groups = {LoginByWechat.class, BindWechat.class, LoginByQQ.class})
   private String code;
 
   /** 操作类型 */
@@ -67,13 +67,18 @@ public class CustomerUserDto {
   /** ip属地 */
   @NotBlank(
       message = "ip属地不为空",
-      groups = {LoginOrRegisterGroup.class, UpdateUserInfoGroup.class, LoginByWechat.class})
+      groups = {
+        LoginOrRegisterGroup.class,
+        UpdateUserInfoGroup.class,
+        LoginByWechat.class,
+        LoginByQQ.class
+      })
   private String ipTerritory;
 
   /** 设备类型 */
   @NotBlank(
       message = "登录设备类型不为空",
-      groups = {LoginOrRegisterGroup.class, LoginByWechat.class})
+      groups = {LoginOrRegisterGroup.class, LoginByWechat.class, LoginByQQ.class})
   private String deviceType;
 
   /** 邀请人账号id */

@@ -119,6 +119,10 @@ public class SysUser implements Serializable {
   @TableField(value = "audit_msg")
   private String auditMsg;
 
+  @TableField(value = "qq_open_id")
+  private String qqOpenId;
+
+
   @TableField(value = "create_time")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createTime;
@@ -126,4 +130,7 @@ public class SysUser implements Serializable {
   @TableField(value = "update_time")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime updateTime;
+
+
+
 }

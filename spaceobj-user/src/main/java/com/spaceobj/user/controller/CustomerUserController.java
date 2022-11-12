@@ -3,10 +3,9 @@ package com.spaceobj.user.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.core.utils.BeanConvertToTargetUtils;
-import com.spaceobj.user.bo.LoginByWechatBo;
-import com.spaceobj.user.bo.LoginOrRegisterBo;
-import com.spaceobj.user.bo.SysUserBo;
+import com.spaceobj.user.bo.*;
 import com.spaceobj.user.dto.CustomerUserDto;
+import com.spaceobj.user.dto.LoginByEmailDto;
 import com.spaceobj.user.group.customer.*;
 import com.spaceobj.user.service.CustomerUserService;
 import com.spaceobj.user.utils.HttpUtils;
@@ -32,19 +31,23 @@ public class CustomerUserController {
   @PostMapping("loginOrRegister")
   public SaResult loginOrRegister(
       @Validated(LoginOrRegisterGroup.class) CustomerUserDto customerUserDto) {
-    customerUserDto.setIp(HttpUtils.getIPAddress());
     LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
-    // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginOrRegisterBo);
     return customerUserService.loginOrRegister(loginOrRegisterBo);
   }
 
   @PostMapping("loginByWechat")
   public SaResult loginByWechat(@Validated(LoginByWechat.class) CustomerUserDto customerUserDto) {
-    customerUserDto.setIp(HttpUtils.getIPAddress());
     LoginByWechatBo loginByWechat = LoginByWechatBo.builder().build();
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginByWechat);
     return customerUserService.loginByWeChat(loginByWechat);
+  }
+
+  @PostMapping("loginByQQ")
+  public SaResult loginByQQ(@Validated(LoginByQQ.class) CustomerUserDto customerUserDto) {
+    LoginByQQBo loginByQQBo = LoginByQQBo.builder().build();
+    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginByQQBo);
+    return customerUserService.loginByQQ(loginByQQBo);
   }
 
   @PostMapping("bindWechat")
@@ -75,10 +78,8 @@ public class CustomerUserController {
   public SaResult updateUserInfo(
       @Validated(UpdateUserInfoGroup.class) CustomerUserDto customerUserDto) {
 
-    customerUserDto.setIp(HttpUtils.getIPAddress());
     customerUserDto.setLoginId(StpUtil.getLoginId().toString());
     SysUserBo sysUserBo = SysUserBo.builder().build();
-    // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
 
     return customerUserService.updateUserInfo(sysUserBo);
@@ -95,7 +96,6 @@ public class CustomerUserController {
       @Validated(ResetPassWordGroup.class) CustomerUserDto customerUserDto) {
 
     SysUserBo sysUserBo = SysUserBo.builder().build();
-    // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
 
     return customerUserService.resetPassword(sysUserBo);
@@ -106,10 +106,17 @@ public class CustomerUserController {
 
     customerUserDto.setLoginId(StpUtil.getLoginId().toString());
     SysUserBo sysUserBo = SysUserBo.builder().build();
-    // 将Dto转化成bo
     BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
 
     return customerUserService.realName(sysUserBo);
+  }
+
+  @PostMapping("loginByEmail")
+  public SaResult loginByEmail(
+      @Validated(LoginByEmailGroup.class) LoginByEmailDto loginByEmailDto) {
+    LoginByEmailBo loginByEmailBo = LoginByEmailBo.builder().build();
+    BeanConvertToTargetUtils.copyNotNullProperties(loginByEmailDto, loginByEmailBo);
+    return customerUserService.loginByEmail(loginByEmailBo);
   }
 
   @RequestMapping("upload")

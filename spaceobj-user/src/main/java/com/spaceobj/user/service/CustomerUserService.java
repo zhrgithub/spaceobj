@@ -2,9 +2,7 @@ package com.spaceobj.user.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.spaceobj.user.bo.LoginByWechatBo;
-import com.spaceobj.user.bo.LoginOrRegisterBo;
-import com.spaceobj.user.bo.SysUserBo;
+import com.spaceobj.user.bo.*;
 import com.spaceobj.user.pojo.SysUser;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -104,6 +102,24 @@ public interface CustomerUserService extends IService<SysUser> {
    * @return
    */
   SaResult loginByWeChat(LoginByWechatBo loginByWeChatBo);
+
+
+
+  /**
+   * QQ授权登录 根据openid判断用户是否已经注册,判断用户是否被封禁，邀请人id是否为空，用户登录的位置信息
+   *
+   * @param loginByQQBo 用户QQ登录实体类
+   * @return
+   */
+  SaResult loginByQQ(LoginByQQBo loginByQQBo);
+
+  /**
+   * 根据邮箱验证码登录或者注册
+   *
+   * @param loginByEmailBo
+   * @return
+   */
+  SaResult loginByEmail(LoginByEmailBo loginByEmailBo);
 
   /**
    * 用户绑定微信，开启第三方登录

@@ -1,0 +1,9 @@
+package com.spaceobj.user.group.customer;
+
+/**
+ * @author zhr_java@163.com
+ * @date 2022/11/12 23:39
+ */
+public interface LoginByQQ {
+
+}

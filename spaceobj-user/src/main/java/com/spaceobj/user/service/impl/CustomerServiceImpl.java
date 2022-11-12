@@ -17,10 +17,8 @@ import com.core.utils.ExceptionUtil;
 import com.redis.common.constant.RedisKey;
 import com.redis.common.service.RedisService;
 import com.redis.common.service.RedissonService;
-import com.spaceobj.user.bo.LoginByWechatBo;
-import com.spaceobj.user.bo.LoginOrRegisterBo;
-import com.spaceobj.user.bo.ReceiveEmailBo;
-import com.spaceobj.user.bo.SysUserBo;
+import com.spaceobj.user.bo.*;
+import com.spaceobj.user.component.QQService;
 import com.spaceobj.user.component.WeChatService;
 import com.spaceobj.user.constant.Resource;
 import com.spaceobj.user.mapper.SysUserMapper;
@@ -58,6 +56,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
   @Autowired private SysUserMapper sysUserMapper;
 
   @Autowired private WeChatService weChatService;
+
+  @Autowired private QQService qqService;
 
   public static final int USER_AUDIT_STATUS = 2;
 
@@ -114,7 +114,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
         sysUser.setAccount(openId);
         sysUser.setOpenId(openId);
-        sysUser.setIp(loginByWeChatBo.getIp());
         sysUser.setIpTerritory(loginByWeChatBo.getIpTerritory());
         StpUtil.login(openId);
         sysUser.setToken(StpUtil.getTokenValue());
@@ -134,7 +133,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           return SaResult.error("账号已被封禁！");
         }
         sysUser.setIpTerritory(loginByWeChatBo.getIpTerritory());
-        sysUser.setIp(loginByWeChatBo.getIp());
         StpUtil.login(sysUser.getAccount());
         sysUser.setToken(StpUtil.getTokenValue());
         sysUser.setOnlineStatus(1);
@@ -151,6 +149,106 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       e.printStackTrace();
       return SaResult.error("服务器繁忙");
     }
+  }
+
+  @Override
+  public SaResult loginByQQ(LoginByQQBo loginByQQBo) {
+    try {
+      String qqOpenId = qqService.getOpenIdByCode(loginByQQBo.getCode());
+      if (StringUtils.isEmpty(qqOpenId)) {
+        return SaResult.error("QQ授权失败");
+      }
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+      queryWrapper.eq("qq_open_id", qqOpenId);
+      SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
+      // 用户注册
+      if (ObjectUtils.isEmpty(sysUser)) {
+        //  注册
+        // 如果邀请用户id不为空，那么给邀请人的邀请值加一
+        if (!StringUtils.isEmpty(loginByQQBo.getInviteUserId())) {
+          SysUser inviteUser = new SysUser();
+          inviteUser.setUserId(loginByQQBo.getInviteUserId());
+          kafkaSender.send(inviteUser, KafKaTopics.INVITER_VALUE_ADD);
+        }
+        // 创建新用户
+        sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
+        sysUser.setAccount(qqOpenId);
+        sysUser.setQqOpenId(qqOpenId);
+        sysUser.setIpTerritory(loginByQQBo.getIpTerritory());
+        StpUtil.login(qqOpenId);
+        sysUser.setToken(StpUtil.getTokenValue());
+        sysUser.setNickName(loginByQQBo.getNickName());
+        sysUser.setOnlineStatus(1);
+        int result = sysUserMapper.insert(sysUser);
+        if (result == 0) {
+          return SaResult.error("服务器繁忙");
+        }
+        this.updateCacheByAccount(sysUser.getAccount());
+        return SaResult.ok("登录成功").setData(sysUser);
+      }
+      // 账号登录
+      //  判断用户是否被封禁
+      boolean isDisable = StpUtil.isDisable(sysUser.getAccount());
+      if (isDisable) {
+        return SaResult.error("账号已被封禁！");
+      }
+      sysUser.setIpTerritory(loginByQQBo.getIpTerritory());
+      StpUtil.login(sysUser.getAccount());
+      sysUser.setToken(StpUtil.getTokenValue());
+      sysUser.setOnlineStatus(1);
+      // 更新用户登录位置
+      int updateResult = this.updateUser(sysUser);
+      if (updateResult == 0) {
+        LOG.error("用户登录信息更新失败");
+        return SaResult.error("服务器繁忙");
+      }
+      return SaResult.ok("登录成功").setData(sysUser);
+    } catch (Exception e) {
+      ExceptionUtil.exceptionToString(e);
+      e.printStackTrace();
+      return SaResult.error("服务器繁忙");
+    }
+  }
+
+  @Override
+  public SaResult loginByEmail(LoginByEmailBo loginByEmailBo) {
+    // 校验验证码是否存在
+    if (!redisService.hasKey(loginByEmailBo.getEmail())) {
+      return SaResult.error("验证码已失效");
+    }
+    // 获取缓存中的验证码
+    String emailCodeFromRedis =
+        redisService.getCacheObject(loginByEmailBo.getEmail(), String.class);
+    if (!loginByEmailBo.getEmailCode().equals(emailCodeFromRedis)) {
+      return SaResult.error("验证码错误");
+    }
+    // 校验用户已经存在，直接登录
+    QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
+    wrapper.eq("email", loginByEmailBo.getEmail());
+    SysUser sysUser = sysUserMapper.selectOne(wrapper);
+
+    StpUtil.login(loginByEmailBo.getEmail());
+    String token = StpUtil.getTokenValue();
+
+    if (!ObjectUtils.isEmpty(sysUser)) {
+      BeanConvertToTargetUtils.copyNotNullProperties(loginByEmailBo, sysUser);
+      sysUser.setToken(token);
+      this.updateById(sysUser);
+      return SaResult.ok().setData(sysUser);
+    }
+
+    // 用户不存在注册新的用户
+    SysUser user = new SysUser();
+    user.setToken(token);
+    BeanConvertToTargetUtils.copyNotNullProperties(loginByEmailBo, user);
+    this.sysUserMapper.insert(sysUser);
+    // 如果邀请人id不为空，邀请人的邀请值+1
+    if (!StringUtils.isEmpty(loginByEmailBo.getInviteUserId())) {
+      SysUser inviteUser = new SysUser();
+      inviteUser.setUserId(loginByEmailBo.getInviteUserId());
+      kafkaSender.send(inviteUser, KafKaTopics.INVITER_VALUE_ADD);
+    }
+    return SaResult.ok().setData(sysUser);
   }
 
   @Override
@@ -431,9 +529,17 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return SaResult.error("电话格式错误");
       }
 
-      // 校验邮箱
+      // 校验邮箱格式
       if (!Pattern.matches(RegexPool.EMAIL, user.getEmail())) {
         return SaResult.error("邮箱格式错误");
+      }
+      // 校验邮箱是否被占用
+      QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+      queryWrapper.eq("email", user.getEmail());
+      queryWrapper.ne("account", user.getAccount());
+      SysUser emailCheckWeight = sysUserMapper.selectOne(queryWrapper);
+      if (ObjectUtils.isNotEmpty(emailCheckWeight)) {
+        return SaResult.error("邮箱已被占用");
       }
 
       sysUser.setPhoneNumber(user.getPhoneNumber());
@@ -448,7 +554,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       int result = updateUser(sysUser);
       if (result == 0) {
         LOG.error("用户基本信息修改失败");
-        return SaResult.error("服务器繁忙");
+        return SaResult.error("修改失败，稍后提交");
       }
       return SaResult.ok("修改成功").setData(sysUser);
     } catch (Exception e) {
@@ -580,9 +686,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
   @Override
   public SaResult uploadFile(MultipartFile multipartFile) {
-
     SaResult saResult = FileUtil.uploadImageFile(multipartFile, Resource.IMAGE_FILE_TYPES);
-
     if (null == saResult.getData()) {
       return saResult;
     }
@@ -590,7 +694,6 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     String url =
         FileUtil.uploadFileTolocalServer(
             Resource.SYS_USER_ID_CARD_DIRECTORY, fileName, multipartFile);
-
     return SaResult.ok("上传成功").setData(url);
   }
 }
