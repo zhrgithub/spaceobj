@@ -33,6 +33,7 @@ public class SaTokenConfigure {
         .addExclude("/spaceobj-user/customerUser/resetPassword")
         .addExclude("/spaceobj-user/customerUser/loginByWechat")
         .addExclude("/spaceobj-user/customerUser/bindWechat")
+        .addExclude("/spaceobj-user/customerUser/loginByQQ")
         .addExclude("/spaceobj-user/sysUser/getUserInfoByAccount")
         .addExclude("/spaceobj-user/sysUser/getUserPermissionByAccount")
         .addExclude("/spaceobj-user/sysUser/getSysUserByUserId")

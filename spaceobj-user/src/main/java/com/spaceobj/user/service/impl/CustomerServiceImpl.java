@@ -173,7 +173,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 创建新用户
         sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
         sysUser.setAccount(qqOpenId);
-        sysUser.setOpenId(qqOpenId);
+        sysUser.setQqOpenId(qqOpenId);
         sysUser.setIpTerritory(loginByQQBo.getIpTerritory());
         StpUtil.login(qqOpenId);
         sysUser.setToken(StpUtil.getTokenValue());
@@ -185,24 +185,26 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         this.updateCacheByAccount(sysUser.getAccount());
         return SaResult.ok("登录成功").setData(sysUser);
+      } else {
+        // 账号登录
+        //  判断用户是否被封禁
+        boolean isDisable = StpUtil.isDisable(sysUser.getAccount());
+        if (isDisable) {
+          return SaResult.error("账号已被封禁！");
+        }
+        sysUser.setIpTerritory(loginByQQBo.getIpTerritory());
+        StpUtil.login(sysUser.getAccount());
+        sysUser.setToken(StpUtil.getTokenValue());
+        sysUser.setOnlineStatus(1);
+        // 更新用户登录位置
+        int updateResult = this.updateUser(sysUser);
+        if (updateResult == 0) {
+          LOG.error("用户登录信息更新失败");
+          return SaResult.error("服务器繁忙");
+        }
+        return SaResult.ok("登录成功").setData(sysUser);
       }
-      // 账号登录
-      //  判断用户是否被封禁
-      boolean isDisable = StpUtil.isDisable(sysUser.getAccount());
-      if (isDisable) {
-        return SaResult.error("账号已被封禁！");
-      }
-      sysUser.setIpTerritory(loginByQQBo.getIpTerritory());
-      StpUtil.login(sysUser.getAccount());
-      sysUser.setToken(StpUtil.getTokenValue());
-      sysUser.setOnlineStatus(1);
-      // 更新用户登录位置
-      int updateResult = this.updateUser(sysUser);
-      if (updateResult == 0) {
-        LOG.error("用户登录信息更新失败");
-        return SaResult.error("服务器繁忙");
-      }
-      return SaResult.ok("登录成功").setData(sysUser);
+
     } catch (Exception e) {
       ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
