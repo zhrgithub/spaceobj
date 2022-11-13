@@ -140,7 +140,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     QueryWrapper<SysUser> sysQueryWrapper = new QueryWrapper<>();
     sysQueryWrapper.eq("real_name_status", 2);
     List<SysUser> sysUserList = sysUserMapper.selectList(sysQueryWrapper);
-    if (sysUserList.size() >= 0) {
+    if (sysUserList.size() > 0) {
       ReceiveEmailBo receiveEmail =
           ReceiveEmailBo.builder()
               .receiverEmail("zhr_java@163.com")

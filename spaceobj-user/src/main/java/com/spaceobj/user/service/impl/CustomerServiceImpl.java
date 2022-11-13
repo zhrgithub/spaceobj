@@ -173,7 +173,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         // 创建新用户
         sysUser = SysUser.builder().userId(UUID.randomUUID().toString()).build();
         sysUser.setAccount(qqOpenId);
-        sysUser.setQqOpenId(qqOpenId);
+        sysUser.setOpenId(qqOpenId);
         sysUser.setIpTerritory(loginByQQBo.getIpTerritory());
         StpUtil.login(qqOpenId);
         sysUser.setToken(StpUtil.getTokenValue());

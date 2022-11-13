@@ -249,7 +249,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         list =
             redisService.getHashMapValues(RedisKey.PROJECT_LIST, SysProject.class).stream()
                 .filter(p -> !ObjectUtils.isEmpty(p))
-                .sorted(Comparator.comparing(SysProject::getCreateTime))
+                .sorted(Comparator.comparing(SysProject::getCreateTime).reversed())
                 .collect(Collectors.toList());
         return list;
       }
