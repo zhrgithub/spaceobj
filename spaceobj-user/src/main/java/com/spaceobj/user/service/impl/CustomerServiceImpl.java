@@ -450,7 +450,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           }
           // 如果缓存中不存在这个hash key，从数据库中查找
           QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
-          queryWrapper.eq("account", account);
+          queryWrapper.eq("account", account).or().eq("email",account);
           sysUser = sysUserMapper.selectOne(queryWrapper);
           if (!ObjectUtils.isEmpty(sysUser)) {
             redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
@@ -527,7 +527,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
       // 昵称、手机号、邮箱不为空，其余设置为空
       // 校验电话号码
-      if (user.getPhoneNumber().length() > 11) {
+      if (user.getPhoneNumber().length() != 11) {
         return SaResult.error("电话格式错误");
       }
 
