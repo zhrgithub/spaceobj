@@ -73,16 +73,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
       queryWrapper.eq("account", sysUser.getAccount());
       sysUser.setVersion(sysUser.getVersion() + 1);
       result = sysUserMapper.update(sysUser, queryWrapper);
-      if (result == 0) {
-        // 查询最新的版本号然后更新,防止之前修改后的数据被覆盖
-        QueryWrapper<SysUser> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper2.eq("account", sysUser.getAccount());
-        SysUser sysUserTwo = sysUserMapper.selectOne(queryWrapper2);
-        queryWrapper2.eq("version", sysUserTwo.getVersion());
-        sysUser.setVersion(sysUserTwo.getVersion() + 1);
-        result = sysUserMapper.update(sysUser, queryWrapper2);
+      if(result==1 ){
+        redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
       }
-      redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
     } catch (Exception e) {
       ExceptionUtil.exceptionToString(e);
       e.printStackTrace();
@@ -322,9 +315,9 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           if (sysUser.getPassword().equals(md5Password)) {
             sysUser.setOnlineStatus(1);
             sysUser.setToken(StpUtil.getTokenValue());
-            loginOrRegisterBo.setPassword(null);
-            BeanConvertToTargetUtils.copyNotNullProperties(loginOrRegisterBo, sysUser);
-            StpUtil.login(loginOrRegisterBo.getAccount());
+            sysUser.setIpTerritory(loginOrRegisterBo.getIpTerritory());
+            sysUser.setDeviceType(loginOrRegisterBo.getDeviceType());
+            StpUtil.login(sysUser.getAccount());
             sysUser.setToken(StpUtil.getTokenValue());
             // 更新用户登录位置
             int updateResult = this.updateUser(sysUser);
@@ -453,7 +446,7 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
           queryWrapper.eq("account", account).or().eq("email",account);
           sysUser = sysUserMapper.selectOne(queryWrapper);
           if (!ObjectUtils.isEmpty(sysUser)) {
-            redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, account, sysUser);
+            redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, sysUser.getAccount(), sysUser);
           }
         }
       }

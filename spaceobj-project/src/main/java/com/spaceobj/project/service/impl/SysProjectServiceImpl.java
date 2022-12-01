@@ -32,7 +32,9 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -99,6 +101,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
       // 设置成审核中
       sysProject.setStatus(0);
       sysProject.setReleaseUserId(sysUser.getUserId());
+      sysProject.setCreateTime(LocalDateTime.now());
       int result = sysProjectMapper.insert(sysProject);
       if (result == 0) {
         return SaResult.error("新增失败");
