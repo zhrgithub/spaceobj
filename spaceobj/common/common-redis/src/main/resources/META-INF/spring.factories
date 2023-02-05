@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\com.spaceobj.common.redis.config.RedisCommonAutoConfiguration,\
+  \com.spaceobj.common.redis.config.RedissonConfiguration
