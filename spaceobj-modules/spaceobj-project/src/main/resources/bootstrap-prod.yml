@@ -10,7 +10,7 @@ spring:
         ip: 49.232.198.125
         port: 8086
         # 注册到 nacos 的指定 namespace，默认为 public
-      #        namespace: public
+        namespace: a7881a84-b112-430c-ad3b-3dceeb7e5732
       config:
         username: nacos
         password: W6rkecAN123nacos
@@ -18,4 +18,4 @@ spring:
         # 设置配置中心服务端地址
         server-addr: 114.132.226.147:8848
         # Nacos 配置中心的namespace。需要注意，如果使用 public 的 namcespace ，请不要填写这个值，直接留空即可
-#        namespace:
+        namespace: a7881a84-b112-430c-ad3b-3dceeb7e5732
