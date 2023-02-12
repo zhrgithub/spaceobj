@@ -1,5 +1,17 @@
+server:
+  port: 8081
+# 应用名称
 spring:
   profiles:
     active: dev
-  main:
-    allow-bean-definition-overriding: true
+  application:
+    name: spaceobj-gateway
+
+
+
+
+
+
+
+
+

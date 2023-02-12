@@ -1,5 +1,8 @@
+server:
+  port: 8086
+# 应用名称
 spring:
   profiles:
-    active: prod
-  main:
-    allow-bean-definition-overriding: true
+    active: dev
+  application:
+    name: spaceobj-project

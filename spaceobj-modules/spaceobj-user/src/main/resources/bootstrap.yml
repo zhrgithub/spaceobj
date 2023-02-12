@@ -1,5 +1,15 @@
+#spring:
+#  profiles:
+#    active: prod
+#  main:
+#    allow-bean-definition-overriding: true
+
+
+server:
+  port: 8083
+# 应用名称
 spring:
   profiles:
-    active: prod
-  main:
-    allow-bean-definition-overriding: true
+    active: dev
+  application:
+    name: spaceobj-user

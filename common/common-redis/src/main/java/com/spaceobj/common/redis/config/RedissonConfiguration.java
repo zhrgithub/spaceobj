@@ -16,33 +16,32 @@ import org.springframework.util.ObjectUtils;
 @Configuration
 public class RedissonConfiguration {
 
-  @Bean
-  public RedissonService redissonService() {
-    return new RedissonService();
-  }
+    @Bean
+    public RedissonService redissonService() {
 
-  @Value("${spring.redis.host}")
-  private String redisHost;
-
-  @Value("${spring.redis.port}")
-  private int port;
-
-  @Value("${spring.redis.password}")
-  private String password;
-
-  @Bean
-  public RedissonClient getRedisson() {
-
-    Config config = new Config();
-    if (ObjectUtils.isEmpty(password)) {
-      config.useSingleServer().setAddress("redis://" + redisHost + ":" + port);
-    } else {
-      config
-          .useSingleServer()
-          .setAddress("redis://" + redisHost + ":" + port)
-          .setPassword(password);
+        return new RedissonService();
     }
 
-    return Redisson.create(config);
-  }
+    @Value("${spring.redis.host}")
+    private String redisHost;
+
+    @Value("${spring.redis.port}")
+    private int port;
+
+    @Value("${spring.redis.password}")
+    private String password;
+
+    @Bean
+    public RedissonClient getRedisson() {
+
+        Config config = new Config();
+        if (ObjectUtils.isEmpty(password)) {
+            config.useSingleServer().setAddress("redis://" + redisHost + ":" + port);
+        }
+        if (!ObjectUtils.isEmpty(password)) {
+            config.useSingleServer().setAddress("redis://" + redisHost + ":" + port).setPassword(password);
+        }
+        return Redisson.create(config);
+    }
+
 }
