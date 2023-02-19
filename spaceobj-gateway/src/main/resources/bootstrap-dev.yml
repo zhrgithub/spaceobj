@@ -8,9 +8,9 @@ spring:
         # Nacos 服务发现与注册配置，其中子属性 server-addr 指定 Nacos 服务器主机和端口
         server-addr: 10.211.55.11:8848
         # 注册到 nacos 的指定 namespace，默认为 public
-        namespace: 98f19cb6-c280-43e0-a8f4-6c1c9edf46ad
+#        namespace: 98f19cb6-c280-43e0-a8f4-6c1c9edf46ad
       config:
-        namespace: 98f19cb6-c280-43e0-a8f4-6c1c9edf46ad
+#        namespace: 98f19cb6-c280-43e0-a8f4-6c1c9edf46ad
         context-path: /nacos
         server-addr: 10.211.55.11:8848
         file-extension: yml
