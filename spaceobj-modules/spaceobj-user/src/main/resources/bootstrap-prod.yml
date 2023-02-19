@@ -10,7 +10,7 @@ spring:
         # 注册到 nacos 的指定 namespace，默认为 public
         namespace: a7881a84-b112-430c-ad3b-3dceeb7e5732
         ip: 49.232.198.125
-        port: 8086
+        port: 8083
       config:
         username: nacos
         password: W6rkecAN123nacos
