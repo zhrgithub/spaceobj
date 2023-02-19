@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * @date 2022/07/23 22:00
  */
 @Service
+@RefreshScope
 public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, ProjectHelp>
     implements ProjectHelpService {
   Logger logger = LoggerFactory.getLogger(ProjectHelpServiceImpl.class);

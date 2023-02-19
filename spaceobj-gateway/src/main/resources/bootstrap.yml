@@ -3,7 +3,7 @@ server:
 # 应用名称
 spring:
   profiles:
-    active: dev
+    active: prod
   application:
     name: spaceobj-gateway
 
