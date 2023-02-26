@@ -1,6 +1,7 @@
 package com.spaceobj.common.redis.config;
 
 import com.spaceobj.common.redis.service.RedissonService;
+import org.apache.commons.lang.StringUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -37,7 +38,10 @@ public class RedissonConfiguration {
     public RedissonClient getRedisson() {
 
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://" + redisHost + ":" + port).setPassword(password);
+        config.useSingleServer().setAddress("redis://" + redisHost + ":" + port);
+        if (!StringUtils.isEmpty(password)) {
+            config.useSingleServer().setPassword(password);
+        }
         return Redisson.create(config);
     }
 
