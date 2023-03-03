@@ -1,25 +1,23 @@
-# dev
+# prod
 spring:
   cloud:
     nacos:
       discovery:
         username: nacos
-        password: nacos
+        password: W6rkecAN123nacos
         # Nacos 服务发现与注册配置，其中子属性 server-addr 指定 Nacos 服务器主机和端口
-        server-addr: 127.0.0.1:8848
+        server-addr: 114.132.226.147:8848
+        # 注册到 nacos 的指定 namespace，默认为 public
+        namespace: 98f19cb6-c280-43e0-a8f4-6c1c9edf46ad
       config:
+        username: nacos
+        password: W6rkecAN123nacos
         context-path: /nacos
-        server-addr: 127.0.0.1:8848
+        # 设置配置中心服务端地址
+        server-addr: 114.132.226.147:8848
+        # Nacos 配置中心的namespace。需要注意，如果使用 public 的 namcespace ，请不要填写这个值，直接留空即可
+        namespace: 98f19cb6-c280-43e0-a8f4-6c1c9edf46ad
         file-extension: yml
         # 共享配置
         shared-configs:
           - application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
-
-
-
-
-
-
-
-
-
