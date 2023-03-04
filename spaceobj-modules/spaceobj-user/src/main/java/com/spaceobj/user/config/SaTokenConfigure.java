@@ -17,25 +17,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class SaTokenConfigure implements WebMvcConfigurer {
 
-  /**
-   * 注册 Sa-Token 全局过滤器
-   *
-   * @return
-   */
-  @Bean
-  public SaServletFilter getSaServletFilter() {
-    return new SaServletFilter()
-        .addInclude("/**")
-        .addExclude("/favicon.ico")
-        .setAuth(
-            obj -> {
-              // 校验 Id-Token 身份凭证     —— 以下两句代码可简化为：SaIdUtil.checkCurrentRequestToken();
-              String token = SaHolder.getRequest().getHeader(SaIdUtil.ID_TOKEN);
-              SaIdUtil.checkToken(token);
-            })
-        .setError(
-            e -> {
-              return SaResult.error(e.getMessage());
-            });
-  }
+    /**
+     * 注册 Sa-Token 全局过滤器
+     *
+     * @return
+     */
+    @Bean
+    public SaServletFilter getSaServletFilter() {
+
+        return new SaServletFilter().addInclude("/**").addExclude("/favicon.ico").setAuth(obj -> {
+            // 校验 Id-Token 身份凭证     —— 以下两句代码可简化为：SaIdUtil.checkCurrentRequestToken();
+            String token = SaHolder.getRequest().getHeader(SaIdUtil.ID_TOKEN);
+            SaIdUtil.checkToken(token);
+        }).setError(e -> {
+            return SaResult.error(e.getMessage());
+        });
+    }
+
 }
