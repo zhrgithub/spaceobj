@@ -1,7 +1,6 @@
 package com.spaceobj.user.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Component;
  * @date 2023/3/4 20:22
  */
 @Component
-@RefreshScope
 public class UploadConfigure {
 
     /**
