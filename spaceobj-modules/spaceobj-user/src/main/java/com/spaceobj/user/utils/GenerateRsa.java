@@ -13,22 +13,24 @@ import java.util.HashMap;
  */
 public class GenerateRsa {
 
-  /**
-   * 初始化公钥私钥
-   *
-   * @return
-   */
-  public static HashMap<String, String> rsaGenerateKeyPair() {
-    HashMap<String, String> rsa;
-    try {
-      rsa = SaSecureUtil.rsaGenerateKeyPair();
-    } catch (Exception e) {
-      ExceptionUtil.exceptionToString(e);
-      e.printStackTrace();
-      rsa = new HashMap<>();
-      rsa.put("msg", "rsa初始化失败");
-      return rsa;
+    /**
+     * 初始化公钥私钥
+     *
+     * @return
+     */
+    public static HashMap<String, String> rsaGenerateKeyPair() {
+
+        HashMap<String, String> rsa;
+        try {
+            rsa = SaSecureUtil.rsaGenerateKeyPair();
+        } catch (Exception e) {
+            ExceptionUtil.exceptionToString(e);
+            e.printStackTrace();
+            rsa = new HashMap<>();
+            rsa.put("msg", "rsa初始化失败");
+            return rsa;
+        }
+        return rsa;
     }
-    return rsa;
-  }
+
 }

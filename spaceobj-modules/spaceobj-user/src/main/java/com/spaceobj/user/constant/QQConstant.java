@@ -6,15 +6,16 @@ package com.spaceobj.user.constant;
  */
 public class QQConstant {
 
-  /** QQ小程序 appId */
-  public static final String APPID = "1112214148";
+    /** QQ小程序 appId */
+    public static final String APPID = "1112214148";
 
-  /** 小程序 appSecret */
-  public static final String SECRET = "h9uwFEcLC7LDZNIX";
+    /** 小程序 appSecret */
+    public static final String SECRET = "h9uwFEcLC7LDZNIX";
 
-  /** 授权类型，此处只需填写 authorization_code */
-  public static final String GRANT_TYPE = "authorization_code";
+    /** 授权类型，此处只需填写 authorization_code */
+    public static final String GRANT_TYPE = "authorization_code";
 
-  /** 请求地址 */
-  public static final String OPENID_URL = "https://api.q.qq.com/sns/jscode2session";
+    /** 请求地址 */
+    public static final String OPENID_URL = "https://api.q.qq.com/sns/jscode2session";
+
 }

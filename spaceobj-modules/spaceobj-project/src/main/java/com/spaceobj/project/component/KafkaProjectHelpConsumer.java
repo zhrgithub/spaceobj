@@ -26,62 +26,62 @@ import java.util.Optional;
 @Slf4j
 public class KafkaProjectHelpConsumer {
 
-  private static final Logger LOG = LoggerFactory.getLogger(KafkaProjectHelpConsumer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaProjectHelpConsumer.class);
 
-  @Autowired private ProjectHelpService projectHelpService;
+    @Autowired
+    private ProjectHelpService projectHelpService;
 
-  @Autowired private ProjectHelpMapper projectHelpMapper;
+    @Autowired
+    private ProjectHelpMapper projectHelpMapper;
 
-  @Autowired private RedisService redisService;
+    @Autowired
+    private RedisService redisService;
 
-  /**
-   * 监听项目助力更新,一般来自项目表中的通知
-   *
-   * @param record
-   */
-  @KafkaListener(topics = {KafKaTopics.ADD_HELP_PROJECT})
-  public void addHelpProject(ConsumerRecord<?, ?> record) {
+    /**
+     * 监听项目助力更新,一般来自项目表中的通知
+     *
+     * @param record
+     */
+    @KafkaListener(topics = {KafKaTopics.ADD_HELP_PROJECT})
+    public void addHelpProject(ConsumerRecord<?, ?> record) {
 
-    Optional.ofNullable(record.value())
-        .ifPresent(
-            message -> {
-              try {
+        Optional.ofNullable(record.value()).ifPresent(message -> {
+            try {
                 ProjectHelp projectHelp = KafkaSourceToTarget.getObject(message, ProjectHelp.class);
                 // 创建项目助力信息，并同步到缓存
                 int insertResult = projectHelpMapper.insert(projectHelp);
                 if (insertResult == 0) {
-                  LOG.error("project help info update to mysql failed !");
+                    LOG.error("project help info update to mysql failed !");
                 } else {
-                  redisService.setCacheMapValue(
-                      RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
+                    redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
                 }
-              } catch (Exception e) {
-                  ExceptionUtil.exceptionToString(e);
+            } catch (Exception e) {
+                ExceptionUtil.exceptionToString(e);
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
-              }
-            });
-  }
+            }
+        });
+    }
 
-  /**
-   * 监听项目助力更新,一般来自项目表中的通知
-   *
-   * @param record
-   */
-  @KafkaListener(topics = {KafKaTopics.UPDATE_HELP_PROJECT})
-  public void updateProjectHelp(ConsumerRecord<?, ?> record) {
-    Optional.ofNullable(record.value())
-        .ifPresent(
-            message -> {
-              try {
+    /**
+     * 监听项目助力更新,一般来自项目表中的通知
+     *
+     * @param record
+     */
+    @KafkaListener(topics = {KafKaTopics.UPDATE_HELP_PROJECT})
+    public void updateProjectHelp(ConsumerRecord<?, ?> record) {
+
+        Optional.ofNullable(record.value()).ifPresent(message -> {
+            try {
                 ProjectHelp projectHelp = KafkaSourceToTarget.getObject(message, ProjectHelp.class);
                 int result = projectHelpService.updateProjectHelp(projectHelp);
                 if (result == 0) {
-                  LOG.error("project help info update to mysql failed !");
+                    LOG.error("project help info update to mysql failed !");
                 }
-              } catch (Exception e) {
-                  ExceptionUtil.exceptionToString(e);
+            } catch (Exception e) {
+                ExceptionUtil.exceptionToString(e);
                 LOG.error("project help info update to mysql failed !fail info {}", e.getMessage());
-              }
-            });
-  }
+            }
+        });
+    }
+
 }

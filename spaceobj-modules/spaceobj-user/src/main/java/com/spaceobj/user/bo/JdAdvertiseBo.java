@@ -17,19 +17,20 @@ import java.math.BigDecimal;
 @Builder
 public class JdAdvertiseBo implements Serializable {
 
-  private Integer jdAdId;
+    private Integer jdAdId;
 
-  private String jdAdHyperlink;
+    private String jdAdHyperlink;
 
-  private String jdAdImageLink;
+    private String jdAdImageLink;
 
-  private String jdAdName;
+    private String jdAdName;
 
-  private String jdAdStoreName;
+    private String jdAdStoreName;
 
-  private String jdAdCoupon;
+    private String jdAdCoupon;
 
-  private BigDecimal jdAdPrice;
+    private BigDecimal jdAdPrice;
 
-  private String jdAdCommentNum;
+    private String jdAdCommentNum;
+
 }

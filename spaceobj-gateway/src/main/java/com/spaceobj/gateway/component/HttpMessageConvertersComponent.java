@@ -13,6 +13,8 @@ public class HttpMessageConvertersComponent {
 
     @Bean
     public HttpMessageConverters httpMessageConverter() {
-        return  new HttpMessageConverters();
+
+        return new HttpMessageConverters();
     }
+
 }

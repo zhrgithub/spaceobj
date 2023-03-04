@@ -19,38 +19,50 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2022/9/4 17:15
  */
 @RestController
-@RequestMapping(value = "/sysUser", method = RequestMethod.POST)
+@RequestMapping(value = "/sysUser",
+        method = RequestMethod.POST)
 public class SysUserController {
 
-  @Autowired private SysUserService sysUserService;
+    @Autowired
+    private SysUserService sysUserService;
 
-  @PostMapping("findList")
-  public SaResult findList(@Validated(FindListSysUserGroup.class) SysUserDto sysUserDto) {
-    SysUserBo sysUserBo = SysUserBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
-    return sysUserService.findList(sysUserBo);
-  }
+    @PostMapping("findList")
+    public SaResult findList(
+            @Validated(FindListSysUserGroup.class)
+            SysUserDto sysUserDto) {
 
-  @PostMapping("updateUser")
-  public SaResult updateUser(@Validated(UpdateSysUserGroup.class) SysUserDto sysUserDto) {
-    System.out.println("sysUser: " + sysUserDto.toString());
-    SysUserBo sysUserBo = SysUserBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
-    return sysUserService.updateSysUser(sysUserBo);
-  }
+        SysUserBo sysUserBo = SysUserBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
+        return sysUserService.findList(sysUserBo);
+    }
 
-  @PostMapping(value = "getUserInfoByAccount")
-  public byte[] getUserInfoByAccount(String account) {
-    return sysUserService.getUserInfoByAccount(account);
-  }
+    @PostMapping("updateUser")
+    public SaResult updateUser(
+            @Validated(UpdateSysUserGroup.class)
+            SysUserDto sysUserDto) {
 
-  @PostMapping(value = "getUserPermissionByAccount")
-  public byte[] getUserPermissionByAccount(String account) {
-    return sysUserService.getUserPermissionByAccount(account);
-  }
+        System.out.println("sysUser: " + sysUserDto.toString());
+        SysUserBo sysUserBo = SysUserBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(sysUserDto, sysUserBo);
+        return sysUserService.updateSysUser(sysUserBo);
+    }
 
-  @PostMapping(value = "getSysUserByUserId")
-  public byte[] getSysUserByUserId(String userId) {
-    return sysUserService.getSysUserByUserId(userId);
-  }
+    @PostMapping(value = "getUserInfoByAccount")
+    public byte[] getUserInfoByAccount(String account) {
+
+        return sysUserService.getUserInfoByAccount(account);
+    }
+
+    @PostMapping(value = "getUserPermissionByAccount")
+    public byte[] getUserPermissionByAccount(String account) {
+
+        return sysUserService.getUserPermissionByAccount(account);
+    }
+
+    @PostMapping(value = "getSysUserByUserId")
+    public byte[] getSysUserByUserId(String userId) {
+
+        return sysUserService.getSysUserByUserId(userId);
+    }
+
 }

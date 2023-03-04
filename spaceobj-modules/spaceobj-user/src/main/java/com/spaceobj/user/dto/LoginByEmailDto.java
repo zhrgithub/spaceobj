@@ -13,30 +13,28 @@ import org.hibernate.validator.constraints.NotBlank;
 @Builder
 public class LoginByEmailDto {
 
-  /** 邮箱 */
-  @NotBlank(
-      message = "邮箱不为空",
-      groups = {LoginByEmailGroup.class})
-  private String email;
+    /** 邮箱 */
+    @NotBlank(message = "邮箱不为空",
+            groups = {LoginByEmailGroup.class})
+    private String email;
 
-  /** 邮箱验证码 */
-  @NotBlank(
-      message = "邮箱验证码不为空",
-      groups = {LoginByEmailGroup.class})
-  private String emailCode;
+    /** 邮箱验证码 */
+    @NotBlank(message = "邮箱验证码不为空",
+            groups = {LoginByEmailGroup.class})
+    private String emailCode;
 
-  /** ip属地 */
-  private String ipTerritory;
+    /** ip属地 */
+    private String ipTerritory;
 
-  /** 设备类型 */
-  private String deviceType;
+    /** 设备类型 */
+    private String deviceType;
 
-  /** 邀请人账号id */
-  private String inviteUserId;
+    /** 邀请人账号id */
+    private String inviteUserId;
 
-  /** 昵称 */
-  @NotBlank(
-      message = "邮箱不为空",
-      groups = {LoginByEmailGroup.class})
-  private String nickName;
+    /** 昵称 */
+    @NotBlank(message = "邮箱不为空",
+            groups = {LoginByEmailGroup.class})
+    private String nickName;
+
 }

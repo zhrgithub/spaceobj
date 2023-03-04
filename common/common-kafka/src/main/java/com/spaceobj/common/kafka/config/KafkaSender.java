@@ -17,28 +17,32 @@ import java.util.Date;
 @Slf4j
 public class KafkaSender {
 
-  private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
-  /**
-   * 构造器方式注入 kafkaTemplate
-   *
-   * @param kafkaTemplate
-   */
-  public KafkaSender(KafkaTemplate<String, String> kafkaTemplate) {
-    this.kafkaTemplate = kafkaTemplate;
-  }
+    /**
+     * 构造器方式注入 kafkaTemplate
+     *
+     * @param kafkaTemplate
+     */
+    public KafkaSender(KafkaTemplate<String, String> kafkaTemplate) {
 
-  private Gson gsonBuilder = new GsonBuilder().disableHtmlEscaping().create();
-  private Gson gson = new Gson();
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
-  public void send(Object obj, String topicName) {
-    KafkaMessage message = new KafkaMessage();
+    private Gson gsonBuilder = new GsonBuilder().disableHtmlEscaping().create();
 
-    message.setId(System.currentTimeMillis());
+    private Gson gson = new Gson();
 
-    String msg = gson.toJson(obj, obj.getClass());
-    message.setMsg(msg);
-    message.setSendTime(new Date());
-    kafkaTemplate.send(topicName, gsonBuilder.toJson(message));
-  }
+    public void send(Object obj, String topicName) {
+
+        KafkaMessage message = new KafkaMessage();
+
+        message.setId(System.currentTimeMillis());
+
+        String msg = gson.toJson(obj, obj.getClass());
+        message.setMsg(msg);
+        message.setSendTime(new Date());
+        kafkaTemplate.send(topicName, gsonBuilder.toJson(message));
+    }
+
 }

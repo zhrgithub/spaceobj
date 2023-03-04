@@ -10,32 +10,33 @@ import sun.net.util.IPAddressUtil;
  */
 public class HttpUtils {
 
-  /**
-   * IP正则校验
-   *
-   * @param address
-   * @return
-   */
-  public static boolean isIpAddressCheck(String address) {
+    /**
+     * IP正则校验
+     *
+     * @param address
+     *
+     * @return
+     */
+    public static boolean isIpAddressCheck(String address) {
 
-    boolean iPv4LiteralAddress = IPAddressUtil.isIPv4LiteralAddress(address);
-    boolean iPv6LiteralAddress = IPAddressUtil.isIPv6LiteralAddress(address);
-    // ip有可能是v4,也有可能是v6,滿足任何一种都是合法的ip
-    if (!(iPv4LiteralAddress || iPv6LiteralAddress)) {
-      return false;
+        boolean iPv4LiteralAddress = IPAddressUtil.isIPv4LiteralAddress(address);
+        boolean iPv6LiteralAddress = IPAddressUtil.isIPv6LiteralAddress(address);
+        // ip有可能是v4,也有可能是v6,滿足任何一种都是合法的ip
+        if (!(iPv4LiteralAddress || iPv6LiteralAddress)) {
+            return false;
+        }
+        return true;
     }
-    return true;
-  }
 
-  /**
-   * 获取用户IP
-   *
-   * @return
-   */
-  public static String getIPAddress() {
+    /**
+     * 获取用户IP
+     *
+     * @return
+     */
+    public static String getIPAddress() {
 
-    ServletRequestAttributes requestAttributes =
-        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-    return requestAttributes.getRequest().getRemoteHost();
-  }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        return requestAttributes.getRequest().getRemoteHost();
+    }
+
 }

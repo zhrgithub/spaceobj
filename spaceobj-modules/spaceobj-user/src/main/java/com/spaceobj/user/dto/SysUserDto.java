@@ -20,101 +20,97 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class SysUserDto implements Serializable {
 
-  @NotBlank(
-      message = "用户id不为空",
-      groups = {UpdateSysUserGroup.class})
-  private String userId;
+    @NotBlank(message = "用户id不为空",
+            groups = {UpdateSysUserGroup.class})
+    private String userId;
 
-  private String inviteUserId;
+    private String inviteUserId;
 
-  @NotBlank(
-      message = "账号不为空",
-      groups = {UpdateSysUserGroup.class})
-  private String account;
+    @NotBlank(message = "账号不为空",
+            groups = {UpdateSysUserGroup.class})
+    private String account;
 
-  private String emailCode;
+    private String emailCode;
 
-  private String password;
+    private String password;
 
-  private String token;
+    private String token;
 
-  private String openId;
+    private String openId;
 
-  private String phoneNumber;
+    private String phoneNumber;
 
-  private Integer assistValue;
+    private Integer assistValue;
 
-  private Integer invitationValue;
+    private Integer invitationValue;
 
-  private String userType;
+    private String userType;
 
-  private String userRights;
+    private String userRights;
 
-  private String username;
+    private String username;
 
-  private String nickName;
+    private String nickName;
 
-  private String photoUrl;
+    private String photoUrl;
 
-  private Integer onlineStatus;
+    private Integer onlineStatus;
 
-  private Integer userInfoEditStatus;
+    private Integer userInfoEditStatus;
 
-  private String idCardNum;
+    private String idCardNum;
 
-  private String idCardPic;
+    private String idCardPic;
 
-  private Integer realNameStatus;
+    private Integer realNameStatus;
 
-  private String ip;
+    private String ip;
 
-  private String ipTerritory;
+    private String ipTerritory;
 
-  private Integer editInfoTimes;
+    private Integer editInfoTimes;
 
-  private Integer sendCodeTimes;
+    private Integer sendCodeTimes;
 
-  private Integer releaseProjectTimes;
+    private Integer releaseProjectTimes;
 
-  private Integer projectHelpTimes;
+    private Integer projectHelpTimes;
 
-  private String deviceType;
+    private String deviceType;
 
-  /** requestIP */
-  private String requestIp;
+    /** requestIP */
+    private String requestIp;
 
-  /** 新密码 */
-  private String newPassword;
+    /** 新密码 */
+    private String newPassword;
 
-  /** 登录id */
-  private String loginId;
+    /** 登录id */
+    private String loginId;
 
-  /** 用户封禁状态 */
-  @NotNull(
-      message = "用户封禁状态不为空",
-      groups = {UpdateSysUserGroup.class})
-  private Integer disableStatus;
+    /** 用户封禁状态 */
+    @NotNull(message = "用户封禁状态不为空",
+            groups = {UpdateSysUserGroup.class})
+    private Integer disableStatus;
 
-  /** 创建项目的剩余次数 */
-  private Integer createProjectHelpTimes;
+    /** 创建项目的剩余次数 */
+    private Integer createProjectHelpTimes;
 
-  /** 当前页 */
-  @NotNull(
-      message = "当前页不为空",
-      groups = {FindListSysUserGroup.class})
-  private Integer currentPage;
+    /** 当前页 */
+    @NotNull(message = "当前页不为空",
+            groups = {FindListSysUserGroup.class})
+    private Integer currentPage;
 
-  /** 每页大小 */
-  @NotNull(
-      message = "每页大小不为空",
-      groups = {FindListSysUserGroup.class})
-  private Integer pageSize;
+    /** 每页大小 */
+    @NotNull(message = "每页大小不为空",
+            groups = {FindListSysUserGroup.class})
+    private Integer pageSize;
 
-  /** 搜索内容 */
-  private String content;
+    /** 搜索内容 */
+    private String content;
 
-  private String email;
+    private String email;
 
-  /** 审核内容 */
-  private String auditMsg;
+    /** 审核内容 */
+    private String auditMsg;
+
 }

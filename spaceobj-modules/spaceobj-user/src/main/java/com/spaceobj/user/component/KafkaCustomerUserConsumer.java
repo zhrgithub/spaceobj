@@ -24,57 +24,56 @@ import java.util.Optional;
 @Slf4j
 public class KafkaCustomerUserConsumer {
 
-  @Autowired private CustomerUserService customerUserService;
+    @Autowired
+    private CustomerUserService customerUserService;
 
-  private static final Logger LOG = LoggerFactory.getLogger(KafkaCustomerUserConsumer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaCustomerUserConsumer.class);
 
-  /**
-   * 邀请人的邀请值加一
-   *
-   * @param record
-   */
-  @KafkaListener(topics = {KafKaTopics.INVITER_VALUE_ADD})
-  public void inviterValueAdd(ConsumerRecord<?, ?> record) {
+    /**
+     * 邀请人的邀请值加一
+     *
+     * @param record
+     */
+    @KafkaListener(topics = {KafKaTopics.INVITER_VALUE_ADD})
+    public void inviterValueAdd(ConsumerRecord<?, ?> record) {
 
-    Optional.ofNullable(record.value())
-        .ifPresent(
-            message -> {
-              try {
+        Optional.ofNullable(record.value()).ifPresent(message -> {
+            try {
                 SysUser sysUser = KafkaSourceToTarget.getObject(message, SysUser.class);
                 if (ObjectUtils.isNotEmpty(sysUser)) {
-                  sysUser = customerUserService.getUserInfoByUserId(sysUser.getUserId());
-                  sysUser.setInvitationValue(sysUser.getInvitationValue() + 1);
-                  int result = customerUserService.updateUser(sysUser);
-                  if (result == 0) {
-                    LOG.error("user info update to mysql failed! sysUser {}" + sysUser.getUserId());
-                    return;
-                  }
+                    sysUser = customerUserService.getUserInfoByUserId(sysUser.getUserId());
+                    sysUser.setInvitationValue(sysUser.getInvitationValue() + 1);
+                    int result = customerUserService.updateUser(sysUser);
+                    if (result == 0) {
+                        LOG.error("user info update to mysql failed! sysUser {}" + sysUser.getUserId());
+                        return;
+                    }
                 }
-              } catch (Exception e) {
+            } catch (Exception e) {
                 ExceptionUtil.exceptionToString(e);
                 LOG.error("update info update to mysql failed!failed info {}", e.getMessage());
-              }
-            });
-  }
+            }
+        });
+    }
 
-  /**
-   * 用户数据更新
-   *
-   * @param record
-   */
-  @KafkaListener(topics = {KafKaTopics.UPDATE_USER})
-  public void userUpdate(ConsumerRecord<?, ?> record) {
+    /**
+     * 用户数据更新
+     *
+     * @param record
+     */
+    @KafkaListener(topics = {KafKaTopics.UPDATE_USER})
+    public void userUpdate(ConsumerRecord<?, ?> record) {
 
-    Optional.ofNullable(record.value())
-        .ifPresent(
-            message -> {
-              try {
+        Optional.ofNullable(record.value()).ifPresent(message -> {
+            try {
                 SysUser sysUser = KafkaSourceToTarget.getObject(message, SysUser.class);
                 int result = customerUserService.updateUser(sysUser);
-                if (result == 0) {}
-              } catch (Exception e) {
+                if (result == 0) {
+                }
+            } catch (Exception e) {
                 ExceptionUtil.exceptionToString(e);
-              }
-            });
-  }
+            }
+        });
+    }
+
 }

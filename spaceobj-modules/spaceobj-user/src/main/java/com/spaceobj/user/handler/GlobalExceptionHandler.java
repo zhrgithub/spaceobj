@@ -28,132 +28,143 @@ import java.util.List;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  @ResponseBody
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ExceptionHandler(BindException.class)
-  public SaResult exceptionHandler(BindException exception) {
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BindException.class)
+    public SaResult exceptionHandler(BindException exception) {
 
-    BindingResult result = exception.getBindingResult();
-    StringBuilder stringBuilder = new StringBuilder();
-    if (result.hasErrors()) {
-      List<ObjectError> errors = result.getAllErrors();
-      if (errors != null) {
-        errors.forEach(
-            p -> {
-              FieldError fieldError = (FieldError) p;
-              log.warn(
-                  "Bad Request Parameters: dto entity [{}],field [{}],message [{}]",
-                  fieldError.getObjectName(),
-                  fieldError.getField(),
-                  fieldError.getDefaultMessage());
-              stringBuilder.append(fieldError.getDefaultMessage());
-            });
-      }
+        BindingResult result = exception.getBindingResult();
+        StringBuilder stringBuilder = new StringBuilder();
+        if (result.hasErrors()) {
+            List<ObjectError> errors = result.getAllErrors();
+            if (errors != null) {
+                errors.forEach(p -> {
+                    FieldError fieldError = (FieldError) p;
+                    log.warn("Bad Request Parameters: dto entity [{}],field [{}],message [{}]", fieldError.getObjectName(), fieldError.getField(), fieldError.getDefaultMessage());
+                    stringBuilder.append(fieldError.getDefaultMessage());
+                });
+            }
+        }
+        return SaResult.error(stringBuilder.toString());
     }
-    return SaResult.error(stringBuilder.toString());
-  }
 
-  /** 请求参数为空 */
-  @ExceptionHandler(NullPointerException.class)
-  @ResponseBody
-  public SaResult nullPointerException(NullPointerException ex) {
-    ex.printStackTrace();
-    log.error("null point exception info:" + ex.getMessage());
-    return SaResult.error("请求参数为空");
-  }
+    /** 请求参数为空 */
+    @ExceptionHandler(NullPointerException.class)
+    @ResponseBody
+    public SaResult nullPointerException(NullPointerException ex) {
 
-  /**
-   * 参数类型转换异常捕获
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(NumberFormatException.class)
-  @ResponseBody
-  public SaResult numberFormatException(NumberFormatException ex) {
-    log.error("number format exception info:" + ex.getMessage());
-    return SaResult.error("参数类型转换错误");
-  }
+        ex.printStackTrace();
+        log.error("null point exception info:" + ex.getMessage());
+        return SaResult.error("请求参数为空");
+    }
 
-  /**
-   * 非空校验
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(SaTokenException.class)
-  @ResponseBody
-  public SaResult saTokenException(SaTokenException ex) {
-    log.error("sa token exception info:" + ex.getMessage());
-    return SaResult.error(ex.getMessage());
-  }
+    /**
+     * 参数类型转换异常捕获
+     *
+     * @param ex
+     *
+     * @return
+     */
+    @ExceptionHandler(NumberFormatException.class)
+    @ResponseBody
+    public SaResult numberFormatException(NumberFormatException ex) {
 
-  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-  @ResponseBody
-  public SaResult httpRequestMethodNotSupportedException(
-      HttpRequestMethodNotSupportedException ex) {
-    log.error("httpRequest method notSupported exception info:" + ex.getMessage());
-    return SaResult.error("请求方法不支持");
-  }
+        log.error("number format exception info:" + ex.getMessage());
+        return SaResult.error("参数类型转换错误");
+    }
 
-  /**
-   * 登录校验
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(NotLoginException.class)
-  @ResponseBody
-  public SaResult notLoginException(NotLoginException ex) {
-    ex.printStackTrace();
-    log.error("not login exception:" + ex.getMessage());
-    return SaResult.error("登录后操作");
-  }
+    /**
+     * 非空校验
+     *
+     * @param ex
+     *
+     * @return
+     */
+    @ExceptionHandler(SaTokenException.class)
+    @ResponseBody
+    public SaResult saTokenException(SaTokenException ex) {
 
-  /**
-   * 权限校验
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(NotPermissionException.class)
-  @ResponseBody
-  public SaResult notPermissionException(NotPermissionException ex) {
-    return SaResult.error("无此权限");
-  }
+        log.error("sa token exception info:" + ex.getMessage());
+        return SaResult.error(ex.getMessage());
+    }
 
-  /**
-   * 文件大小校验
-   *
-   * @param ex
-   * @return
-   */
-  @ExceptionHandler(MaxUploadSizeExceededException.class)
-  @ResponseBody
-  public SaResult processException(MaxUploadSizeExceededException ex) {
-    return SaResult.error("文件不得超过200kb");
-  }
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseBody
+    public SaResult httpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
 
-  /**
-   * 404异常
-   *
-   * @param e
-   * @return
-   */
-  @ExceptionHandler(NoHandlerFoundException.class)
-  public SaResult handlerNoFoundException(Exception e) {
-    return SaResult.error("路径不存在");
-  }
+        log.error("httpRequest method notSupported exception info:" + ex.getMessage());
+        return SaResult.error("请求方法不支持");
+    }
 
-  /**
-   * 全局异常拦截
-   *
-   * @param e
-   * @return
-   */
-  @ExceptionHandler
-  public SaResult handlerException(Exception e) {
-    e.printStackTrace();
-    return SaResult.error("系统繁忙,请稍后再试");
-  }
+    /**
+     * 登录校验
+     *
+     * @param ex
+     *
+     * @return
+     */
+    @ExceptionHandler(NotLoginException.class)
+    @ResponseBody
+    public SaResult notLoginException(NotLoginException ex) {
+
+        ex.printStackTrace();
+        log.error("not login exception:" + ex.getMessage());
+        return SaResult.error("登录后操作");
+    }
+
+    /**
+     * 权限校验
+     *
+     * @param ex
+     *
+     * @return
+     */
+    @ExceptionHandler(NotPermissionException.class)
+    @ResponseBody
+    public SaResult notPermissionException(NotPermissionException ex) {
+
+        return SaResult.error("无此权限");
+    }
+
+    /**
+     * 文件大小校验
+     *
+     * @param ex
+     *
+     * @return
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ResponseBody
+    public SaResult processException(MaxUploadSizeExceededException ex) {
+
+        return SaResult.error("文件不得超过200kb");
+    }
+
+    /**
+     * 404异常
+     *
+     * @param e
+     *
+     * @return
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public SaResult handlerNoFoundException(Exception e) {
+
+        return SaResult.error("路径不存在");
+    }
+
+    /**
+     * 全局异常拦截
+     *
+     * @param e
+     *
+     * @return
+     */
+    @ExceptionHandler
+    public SaResult handlerException(Exception e) {
+
+        e.printStackTrace();
+        return SaResult.error("系统繁忙,请稍后再试");
+    }
+
 }

@@ -13,48 +13,21 @@ import java.util.Date;
 @Slf4j
 public class ExceptionUtil {
 
-  /**
-   * 打印异常日志
-   *
-   * @param e
-   */
-  public static void exceptionToString(Exception e) {
-    StringWriter sw = new StringWriter();
-    e.printStackTrace(new PrintWriter(sw, true));
+    /**
+     * 打印异常日志
+     *
+     * @param e
+     */
+    public static void exceptionToString(Exception e) {
 
-    // 堆栈信息
-    StackTraceElement ste = e.getStackTrace()[0];
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw, true));
 
-    ExceptionMessage exceptionMessage =
-        ExceptionMessage.builder()
-            .className(ste.getClassName())
-            .methodName(ste.getMethodName())
-            .lineNumber(ste.getLineNumber())
-            .fileName(ste.getFileName())
-            .createTime(new Date())
-            .content(sw.toString())
-            .build();
-    log.error(
-        "===start=====>\n"
-            + "---exceptionMessage: \n"
-            + "---className: "
-            + exceptionMessage.getClassName()
-            + "\n"
-            + "---methodName: "
-            + exceptionMessage.getMethodName()
-            + "\n"
-            + "---linNumber: "
-            + exceptionMessage.getLineNumber()
-            + "\n"
-            + "---fileName: "
-            + exceptionMessage.getFileName()
-            + "\n"
-            + "---createTime: "
-            + exceptionMessage.getCreateTime()
-            + "\n"
-            + "---content: "
-            + exceptionMessage.getContent()
-            + "\n"
-            + "===========end==>");
-  }
+        // 堆栈信息
+        StackTraceElement ste = e.getStackTrace()[0];
+
+        ExceptionMessage exceptionMessage = ExceptionMessage.builder().className(ste.getClassName()).methodName(ste.getMethodName()).lineNumber(ste.getLineNumber()).fileName(ste.getFileName()).createTime(new Date()).content(sw.toString()).build();
+        log.error("===start=====>\n" + "---exceptionMessage: \n" + "---className: " + exceptionMessage.getClassName() + "\n" + "---methodName: " + exceptionMessage.getMethodName() + "\n" + "---linNumber: " + exceptionMessage.getLineNumber() + "\n" + "---fileName: " + exceptionMessage.getFileName() + "\n" + "---createTime: " + exceptionMessage.getCreateTime() + "\n" + "---content: " + exceptionMessage.getContent() + "\n" + "===========end==>");
+    }
+
 }

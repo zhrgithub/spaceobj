@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserClientFallback implements UserClient {
 
-
     @Override
     public byte[] getUserInfoByAccount(String account) {
 

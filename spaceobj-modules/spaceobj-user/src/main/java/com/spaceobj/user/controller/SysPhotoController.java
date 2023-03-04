@@ -19,27 +19,37 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2022/9/4 19:17
  */
 @RestController("sysPhotoController")
-@RequestMapping(value = "/sysPhoto", method = RequestMethod.POST)
+@RequestMapping(value = "/sysPhoto",
+        method = RequestMethod.POST)
 public class SysPhotoController {
 
-  @Autowired private PhotoService photoService;
+    @Autowired
+    private PhotoService photoService;
 
-  @PostMapping("addOrUpdate")
-  public SaResult addOrUpdate(@Validated(AddOrUpdatePhotoGroup.class) SysPhotoDto sysPhotoDto) {
-    SysPhotoBo sysPhotoBo = new SysPhotoBo();
-    BeanConvertToTargetUtils.copyNotNullProperties(sysPhotoDto, sysPhotoBo);
-    return photoService.addOrUpdate(sysPhotoBo);
-  }
+    @PostMapping("addOrUpdate")
+    public SaResult addOrUpdate(
+            @Validated(AddOrUpdatePhotoGroup.class)
+            SysPhotoDto sysPhotoDto) {
 
-  @PostMapping("delete")
-  public SaResult delete(@Validated(DeletePhotoGroup.class) SysPhotoDto sysPhotoDto) {
-    SysPhotoBo sysPhotoBo = new SysPhotoBo();
-    BeanConvertToTargetUtils.copyNotNullProperties(sysPhotoDto, sysPhotoBo);
-    return photoService.delete(sysPhotoBo);
-  }
+        SysPhotoBo sysPhotoBo = new SysPhotoBo();
+        BeanConvertToTargetUtils.copyNotNullProperties(sysPhotoDto, sysPhotoBo);
+        return photoService.addOrUpdate(sysPhotoBo);
+    }
 
-  @PostMapping("photoList")
-  public SaResult photoList() {
-    return photoService.photoList();
-  }
+    @PostMapping("delete")
+    public SaResult delete(
+            @Validated(DeletePhotoGroup.class)
+            SysPhotoDto sysPhotoDto) {
+
+        SysPhotoBo sysPhotoBo = new SysPhotoBo();
+        BeanConvertToTargetUtils.copyNotNullProperties(sysPhotoDto, sysPhotoBo);
+        return photoService.delete(sysPhotoBo);
+    }
+
+    @PostMapping("photoList")
+    public SaResult photoList() {
+
+        return photoService.photoList();
+    }
+
 }

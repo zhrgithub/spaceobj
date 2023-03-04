@@ -17,16 +17,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("other")
 public class OtherController {
 
-  @Autowired private OtherService otherService;
+    @Autowired
+    private OtherService otherService;
 
-  @PostMapping("getOther")
-  public SaResult getOther() {
-    return otherService.getOther();
-  }
+    @PostMapping("getOther")
+    public SaResult getOther() {
 
-  @PostMapping("updateOther")
-  public SaResult updateOther(@Validated Other other) {
+        return otherService.getOther();
+    }
 
-    return otherService.updateOther(other);
-  }
+    @PostMapping("updateOther")
+    public SaResult updateOther(
+            @Validated
+            Other other) {
+
+        return otherService.updateOther(other);
+    }
+
 }

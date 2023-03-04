@@ -29,62 +29,67 @@ import reactor.netty.http.client.PrematureCloseException;
 @Slf4j
 public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
 
-  @Override
-  public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-    ServerHttpResponse response = exchange.getResponse();
-    if (exchange.getResponse().isCommitted()) {
-      return Mono.error(ex);
+    @Override
+    public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
+
+        ServerHttpResponse response = exchange.getResponse();
+        if (exchange.getResponse().isCommitted()) {
+            return Mono.error(ex);
+        }
+        String msg;
+        if (ex instanceof NotFoundException) {
+            msg = "服务未找到";
+        } else if (ex instanceof ResponseStatusException) {
+            ResponseStatusException responseStatusException = (ResponseStatusException) ex;
+            msg = responseStatusException.getMessage();
+        } else if (ex instanceof PrematureCloseException) {
+            msg = "图片不得超过200kb";
+            ex.printStackTrace();
+        } else {
+            msg = "内部服务器错误";
+            ex.printStackTrace();
+        }
+
+        log.error("[网关异常处理]请求路径:{},异常信息:{}", exchange.getRequest().getPath(), ex.getMessage());
+
+        return responseWrap(response, msg);
     }
-    String msg;
-    if (ex instanceof NotFoundException) {
-      msg = "服务未找到";
-    } else if (ex instanceof ResponseStatusException) {
-      ResponseStatusException responseStatusException = (ResponseStatusException) ex;
-      msg = responseStatusException.getMessage();
-    } else if(ex instanceof PrematureCloseException){
-      msg = "图片不得超过200kb";
-      ex.printStackTrace();
-    }else{
-      msg = "内部服务器错误";
-      ex.printStackTrace();
+
+    /**
+     * 返回错误消息体
+     *
+     * @param response
+     *
+     * @return
+     */
+    private static Mono<Void> responseWrap(ServerHttpResponse response, String msg) {
+
+        response.setStatusCode(HttpStatus.BAD_REQUEST);
+        // String data = msg;
+        SaResult saResult = SaResult.error(msg);
+        DataBuffer wrap = response.bufferFactory().wrap(saResult.toString().getBytes());
+        return response.writeWith(Mono.just(wrap));
     }
 
-    log.error("[网关异常处理]请求路径:{},异常信息:{}", exchange.getRequest().getPath(), ex.getMessage());
+    @ExceptionHandler(RetryableException.class)
+    public SaResult handlerException(RetryableException e) {
 
-    return responseWrap(response,msg);
-  }
+        e.printStackTrace();
+        return SaResult.error("feign重试错误");
+    }
 
-  /**
-   * 返回错误消息体
-   *
-   * @param response
-   * @return
-   */
-  private static Mono<Void> responseWrap(ServerHttpResponse response,String msg) {
-    response.setStatusCode(HttpStatus.BAD_REQUEST);
-    // String data = msg;
-    SaResult saResult =  SaResult.error(msg);
-    DataBuffer wrap = response.bufferFactory().wrap(saResult.toString().getBytes());
-    return response.writeWith(Mono.just(wrap));
-  }
+    @ExceptionHandler(SaTokenException.class)
+    public SaResult handlerException(SaTokenException e) {
 
-  @ExceptionHandler(RetryableException.class)
-  public SaResult handlerException(RetryableException e) {
-    e.printStackTrace();
-    return SaResult.error("feign重试错误");
-  }
+        e.printStackTrace();
+        return SaResult.error("未登录").setCode(201);
+    }
 
-  @ExceptionHandler(SaTokenException.class)
-  public SaResult handlerException(SaTokenException e) {
-    e.printStackTrace();
-    return SaResult.error("未登录").setCode(201);
-  }
+    @ExceptionHandler(NotLoginException.class)
+    public SaResult handlerException(NotLoginException e) {
 
-  @ExceptionHandler(NotLoginException.class)
-  public SaResult handlerException(NotLoginException e) {
-    e.printStackTrace();
-    return SaResult.error("未登录").setCode(201);
-  }
-
+        e.printStackTrace();
+        return SaResult.error("未登录").setCode(201);
+    }
 
 }

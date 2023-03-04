@@ -17,41 +17,47 @@ import org.springframework.web.bind.annotation.*;
  * @date 2022/7/17 22:50
  */
 @RestController
-@RequestMapping(value = "jd", method = RequestMethod.POST)
+@RequestMapping(value = "jd",
+        method = RequestMethod.POST)
 public class JdAdvertiseController {
 
-  @Autowired private JdAdvertiseService jdAdvertiseService;
+    @Autowired
+    private JdAdvertiseService jdAdvertiseService;
 
-  @GetMapping(value = "list")
-  public SaResult list() {
+    @GetMapping(value = "list")
+    public SaResult list() {
 
-    return jdAdvertiseService.findList();
-  }
+        return jdAdvertiseService.findList();
+    }
 
-  @PostMapping("saveAdvertise")
-  public SaResult saveAdvertise(
-      @Validated(InsertAdverTiseGroup.class) JdAdvertiseDto jdAdvertiseDto) {
+    @PostMapping("saveAdvertise")
+    public SaResult saveAdvertise(
+            @Validated(InsertAdverTiseGroup.class)
+            JdAdvertiseDto jdAdvertiseDto) {
 
-    JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
-    return jdAdvertiseService.saveAdvertise(jdAdvertiseBo);
-  }
+        JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
+        return jdAdvertiseService.saveAdvertise(jdAdvertiseBo);
+    }
 
-  @PostMapping("deleteAdvertise")
-  public SaResult deleteAdvertise(
-      @Validated(DeleteAdvertiseGroup.class) JdAdvertiseDto jdAdvertiseDto) {
+    @PostMapping("deleteAdvertise")
+    public SaResult deleteAdvertise(
+            @Validated(DeleteAdvertiseGroup.class)
+            JdAdvertiseDto jdAdvertiseDto) {
 
-    JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
-    return jdAdvertiseService.deleteAdvertise(jdAdvertiseBo.getJdAdId());
-  }
+        JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
+        return jdAdvertiseService.deleteAdvertise(jdAdvertiseBo.getJdAdId());
+    }
 
-  @PostMapping("updateAdvertise")
-  public SaResult updateAdvertise(
-      @Validated(UpdateAdvertiseGroup.class) JdAdvertiseDto jdAdvertiseDto) {
+    @PostMapping("updateAdvertise")
+    public SaResult updateAdvertise(
+            @Validated(UpdateAdvertiseGroup.class)
+            JdAdvertiseDto jdAdvertiseDto) {
 
-    JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
-    return jdAdvertiseService.updateAdvertise(jdAdvertiseBo);
-  }
+        JdAdvertiseBo jdAdvertiseBo = JdAdvertiseBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(jdAdvertiseDto, jdAdvertiseBo);
+        return jdAdvertiseService.updateAdvertise(jdAdvertiseBo);
+    }
+
 }

@@ -11,21 +11,22 @@ import lombok.Data;
 @Builder
 public class LoginByEmailBo {
 
-  /** 邮箱 */
-  private String email;
+    /** 邮箱 */
+    private String email;
 
-  /** 邮箱验证码 */
-  private String emailCode;
+    /** 邮箱验证码 */
+    private String emailCode;
 
-  /** ip属地 */
-  private String ipTerritory;
+    /** ip属地 */
+    private String ipTerritory;
 
-  /** 设备类型 */
-  private String deviceType;
+    /** 设备类型 */
+    private String deviceType;
 
-  /** 邀请人账号id */
-  private String inviteUserId;
+    /** 邀请人账号id */
+    private String inviteUserId;
 
-  /** 昵称 */
-  private String nickName;
+    /** 昵称 */
+    private String nickName;
+
 }

@@ -15,9 +15,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserPermission {
 
-  /** 用户角色权限 */
-  private String userType;
+    /** 用户角色权限 */
+    private String userType;
 
-  /** 用户接口权限 */
-  private String userRights;
+    /** 用户接口权限 */
+    private String userRights;
+
 }

@@ -9,18 +9,20 @@ import com.spaceobj.user.pojo.Other;
  */
 public interface OtherService {
 
-  /**
-   * 修改内容
-   *
-   * @param other
-   * @return
-   */
-  SaResult updateOther(Other other);
+    /**
+     * 修改内容
+     *
+     * @param other
+     *
+     * @return
+     */
+    SaResult updateOther(Other other);
 
-  /**
-   * 查询内容
-   *
-   * @return
-   */
-  SaResult getOther();
+    /**
+     * 查询内容
+     *
+     * @return
+     */
+    SaResult getOther();
+
 }

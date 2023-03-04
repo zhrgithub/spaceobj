@@ -15,9 +15,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class GetPhoneNumberBo {
 
-  private String uuid;
+    private String uuid;
 
-  /** 当前登录用户id */
-  private String userId;
+    /** 当前登录用户id */
+    private String userId;
 
 }

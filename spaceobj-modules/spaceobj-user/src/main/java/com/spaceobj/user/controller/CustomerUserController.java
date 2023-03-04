@@ -25,101 +25,126 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/customerUser")
 public class CustomerUserController {
 
-  @Autowired private CustomerUserService customerUserService;
+    @Autowired
+    private CustomerUserService customerUserService;
 
-  @PostMapping("loginOrRegister")
-  public SaResult loginOrRegister(
-      @Validated(LoginOrRegisterGroup.class) CustomerUserDto customerUserDto) {
-    LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginOrRegisterBo);
-    return customerUserService.loginOrRegister(loginOrRegisterBo);
-  }
+    @PostMapping("loginOrRegister")
+    public SaResult loginOrRegister(
+            @Validated(LoginOrRegisterGroup.class)
+            CustomerUserDto customerUserDto) {
 
-  @PostMapping("loginByWechat")
-  public SaResult loginByWechat(@Validated(LoginByWechat.class) CustomerUserDto customerUserDto) {
-    LoginByWechatBo loginByWechat = LoginByWechatBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginByWechat);
-    return customerUserService.loginByWeChat(loginByWechat);
-  }
-
-  @PostMapping("loginByQQ")
-  public SaResult loginByQQ(@Validated(LoginByQQ.class) CustomerUserDto customerUserDto) {
-    LoginByQQBo loginByQQBo = LoginByQQBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginByQQBo);
-    return customerUserService.loginByQQ(loginByQQBo);
-  }
-
-  @PostMapping("bindWechat")
-  public SaResult bindWechat(@Validated(BindWechat.class) CustomerUserDto customerUserDto) {
-    String code = customerUserDto.getCode();
-    if (StringUtils.isEmpty(code)) {
-      return SaResult.error("授权失败");
+        LoginOrRegisterBo loginOrRegisterBo = LoginOrRegisterBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginOrRegisterBo);
+        return customerUserService.loginOrRegister(loginOrRegisterBo);
     }
-    SysUserBo sysUserBo = new SysUserBo();
-    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
-    System.out.println(customerUserDto);
-    System.out.println(sysUserBo);
-    return customerUserService.bindWechat(sysUserBo);
-  }
 
-  @PostMapping("loginOut")
-  public SaResult loginOut() {
-    return customerUserService.loginOut();
-  }
+    @PostMapping("loginByWechat")
+    public SaResult loginByWechat(
+            @Validated(LoginByWechat.class)
+            CustomerUserDto customerUserDto) {
 
-  @PostMapping("getUserInfo")
-  public SaResult getUserInfo() {
+        LoginByWechatBo loginByWechat = LoginByWechatBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginByWechat);
+        return customerUserService.loginByWeChat(loginByWechat);
+    }
 
-    return customerUserService.getUserInfo();
-  }
+    @PostMapping("loginByQQ")
+    public SaResult loginByQQ(
+            @Validated(LoginByQQ.class)
+            CustomerUserDto customerUserDto) {
 
-  @PostMapping("updateUserInfo")
-  public SaResult updateUserInfo(
-      @Validated(UpdateUserInfoGroup.class) CustomerUserDto customerUserDto) {
+        LoginByQQBo loginByQQBo = LoginByQQBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, loginByQQBo);
+        return customerUserService.loginByQQ(loginByQQBo);
+    }
 
-    customerUserDto.setLoginId(StpUtil.getLoginId().toString());
-    SysUserBo sysUserBo = SysUserBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+    @PostMapping("bindWechat")
+    public SaResult bindWechat(
+            @Validated(BindWechat.class)
+            CustomerUserDto customerUserDto) {
 
-    return customerUserService.updateUserInfo(sysUserBo);
-  }
+        String code = customerUserDto.getCode();
+        if (StringUtils.isEmpty(code)) {
+            return SaResult.error("授权失败");
+        }
+        SysUserBo sysUserBo = new SysUserBo();
+        BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+        System.out.println(customerUserDto);
+        System.out.println(sysUserBo);
+        return customerUserService.bindWechat(sysUserBo);
+    }
 
-  @PostMapping("sendMailCode")
-  public SaResult sendMailCode(@Validated(SendMailGroup.class) CustomerUserDto customerUserDto) {
+    @PostMapping("loginOut")
+    public SaResult loginOut() {
 
-    return customerUserService.sendMailCode(customerUserDto.getAccount());
-  }
+        return customerUserService.loginOut();
+    }
 
-  @PostMapping("resetPassword")
-  public SaResult resetPassword(
-      @Validated(ResetPassWordGroup.class) CustomerUserDto customerUserDto) {
+    @PostMapping("getUserInfo")
+    public SaResult getUserInfo() {
 
-    SysUserBo sysUserBo = SysUserBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+        return customerUserService.getUserInfo();
+    }
 
-    return customerUserService.resetPassword(sysUserBo);
-  }
+    @PostMapping("updateUserInfo")
+    public SaResult updateUserInfo(
+            @Validated(UpdateUserInfoGroup.class)
+            CustomerUserDto customerUserDto) {
 
-  @PostMapping("realName")
-  public SaResult realName(@Validated(RealNameGroup.class) CustomerUserDto customerUserDto) {
+        customerUserDto.setLoginId(StpUtil.getLoginId().toString());
+        SysUserBo sysUserBo = SysUserBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
 
-    customerUserDto.setLoginId(StpUtil.getLoginId().toString());
-    SysUserBo sysUserBo = SysUserBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+        return customerUserService.updateUserInfo(sysUserBo);
+    }
 
-    return customerUserService.realName(sysUserBo);
-  }
+    @PostMapping("sendMailCode")
+    public SaResult sendMailCode(
+            @Validated(SendMailGroup.class)
+            CustomerUserDto customerUserDto) {
 
-  @PostMapping("loginByEmail")
-  public SaResult loginByEmail(
-      @Validated(LoginByEmailGroup.class) LoginByEmailDto loginByEmailDto) {
-    LoginByEmailBo loginByEmailBo = LoginByEmailBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(loginByEmailDto, loginByEmailBo);
-    return customerUserService.loginByEmail(loginByEmailBo);
-  }
+        return customerUserService.sendMailCode(customerUserDto.getAccount());
+    }
 
-  @RequestMapping("upload")
-  public SaResult uploadFile(@RequestPart("file") MultipartFile file) {
-    return customerUserService.uploadFile(file);
-  }
+    @PostMapping("resetPassword")
+    public SaResult resetPassword(
+            @Validated(ResetPassWordGroup.class)
+            CustomerUserDto customerUserDto) {
+
+        SysUserBo sysUserBo = SysUserBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+
+        return customerUserService.resetPassword(sysUserBo);
+    }
+
+    @PostMapping("realName")
+    public SaResult realName(
+            @Validated(RealNameGroup.class)
+            CustomerUserDto customerUserDto) {
+
+        customerUserDto.setLoginId(StpUtil.getLoginId().toString());
+        SysUserBo sysUserBo = SysUserBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(customerUserDto, sysUserBo);
+
+        return customerUserService.realName(sysUserBo);
+    }
+
+    @PostMapping("loginByEmail")
+    public SaResult loginByEmail(
+            @Validated(LoginByEmailGroup.class)
+            LoginByEmailDto loginByEmailDto) {
+
+        LoginByEmailBo loginByEmailBo = LoginByEmailBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(loginByEmailDto, loginByEmailBo);
+        return customerUserService.loginByEmail(loginByEmailBo);
+    }
+
+    @RequestMapping("upload")
+    public SaResult uploadFile(
+            @RequestPart("file")
+            MultipartFile file) {
+
+        return customerUserService.uploadFile(file);
+    }
+
 }

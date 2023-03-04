@@ -8,13 +8,15 @@ import java.security.SecureRandom;
  */
 public class EmailVerifyCode {
 
-  public static final String getVerifyCode() {
-    String verifyCode = "";
-    SecureRandom securityRandom = new SecureRandom();
-    for (int i = 0; i < 6; i++) {
-      verifyCode = verifyCode + securityRandom.nextInt(10);
+    public static final String getVerifyCode() {
+
+        String verifyCode = "";
+        SecureRandom securityRandom = new SecureRandom();
+        for (int i = 0; i < 6; i++) {
+            verifyCode = verifyCode + securityRandom.nextInt(10);
+        }
+
+        return verifyCode;
     }
 
-    return verifyCode;
-  }
 }

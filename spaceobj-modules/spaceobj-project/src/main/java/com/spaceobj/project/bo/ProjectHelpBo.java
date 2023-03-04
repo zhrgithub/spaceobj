@@ -17,30 +17,29 @@ import java.math.BigDecimal;
 @Builder
 public class ProjectHelpBo {
 
-  /** 项目助力id */
-  private String hpId;
+    /** 项目助力id */
+    private String hpId;
 
-  /** 创建助力链接的用户id,也是当前登录者id */
-  private String createUserId;
+    /** 创建助力链接的用户id,也是当前登录者id */
+    private String createUserId;
 
-  /** 项目uuid */
-  private String pUUID;
+    /** 项目uuid */
+    private String pUUID;
 
-  /** 项目内容 */
-  private String pContent;
+    /** 项目内容 */
+    private String pContent;
 
-  /** 项目预算 */
-  private BigDecimal pPrice;
+    /** 项目预算 */
+    private BigDecimal pPrice;
 
+    /** 当前页 */
+    private Integer currentPage;
 
-  /** 当前页 */
-  private Integer currentPage;
+    /** 每页条数 */
+    private Integer pageSize;
 
-  /** 每页条数 */
-  private Integer pageSize;
+    private Data createTime;
 
+    private Data updateTime;
 
-  private Data createTime;
-
-  private Data updateTime;
 }

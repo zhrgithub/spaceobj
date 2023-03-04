@@ -18,56 +18,52 @@ import org.springframework.util.ObjectUtils;
 @Service
 public class OtherServiceImpl implements OtherService {
 
-  private static final String OTHER_INFO = "other_info";
+    private static final String OTHER_INFO = "other_info";
 
-  @Autowired private RedisService redisService;
+    @Autowired
+    private RedisService redisService;
 
-  @Override
-  public SaResult updateOther(Other other) {
+    @Override
+    public SaResult updateOther(Other other) {
 
-    try {
-      redisService.setCacheObject(OTHER_INFO, other);
-    } catch (Exception e) {
-      ExceptionUtil.exceptionToString(e);
-      e.printStackTrace();
-      return SaResult.error("修改失败");
+        try {
+            redisService.setCacheObject(OTHER_INFO, other);
+        } catch (Exception e) {
+            ExceptionUtil.exceptionToString(e);
+            e.printStackTrace();
+            return SaResult.error("修改失败");
+        }
+
+        return SaResult.ok("修改成功").setData(other);
     }
 
-    return SaResult.ok("修改成功").setData(other);
-  }
+    @Override
+    public SaResult getOther() {
 
-  @Override
-  public SaResult getOther() {
+        Other other = null;
+        //如果缓存中存在key，返回数据
+        if (redisService.hasKey(OTHER_INFO)) {
+            other = (Other) redisService.getCacheObject(OTHER_INFO, Other.class);
 
-    Other other = null;
-    //如果缓存中存在key，返回数据
-    if (redisService.hasKey(OTHER_INFO)) {
-      other = (Other) redisService.getCacheObject(OTHER_INFO, Other.class);
+            if (StringUtils.isBlank(other.getWechat())) {
+                other.setWechat(RestData.WECHAT);
+            }
+            if (StringUtils.isBlank(other.getDownloadUrl())) {
+                other.setDownloadUrl(RestData.DOWNLOAD_URL);
+            }
+            if (ObjectUtils.isEmpty(other.getOnline())) {
+                other.setOnline(RestData.ONLINE);
+            }
 
-      if (StringUtils.isBlank(other.getWechat())) {
-        other.setWechat(RestData.WECHAT);
-      }
-      if (StringUtils.isBlank(other.getDownloadUrl())) {
-        other.setDownloadUrl(RestData.DOWNLOAD_URL);
-      }
-      if (ObjectUtils.isEmpty(other.getOnline())) {
-        other.setOnline(RestData.ONLINE);
-      }
-
-      if (ObjectUtils.isEmpty(other.getVersion())) {
-        other.setVersion(RestData.version);
-      }
-      return SaResult.ok().setData(other);
+            if (ObjectUtils.isEmpty(other.getVersion())) {
+                other.setVersion(RestData.version);
+            }
+            return SaResult.ok().setData(other);
+        }
+        //缓存中不存在数据，设置成静态资源数据
+        other = Other.builder().downloadUrl(RestData.DOWNLOAD_URL).wechat(RestData.WECHAT).online(RestData.ONLINE).version(RestData.version).build();
+        redisService.setCacheObject(OTHER_INFO, other);
+        return SaResult.ok().setData(other);
     }
-    //缓存中不存在数据，设置成静态资源数据
-    other =
-        Other.builder()
-            .downloadUrl(RestData.DOWNLOAD_URL)
-            .wechat(RestData.WECHAT)
-            .online(RestData.ONLINE)
-            .version(RestData.version)
-            .build();
-    redisService.setCacheObject(OTHER_INFO, other);
-    return SaResult.ok().setData(other);
-  }
+
 }

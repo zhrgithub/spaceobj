@@ -20,28 +20,29 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @AutoConfigureBefore(RedisAutoConfiguration.class)
 public class RedisCommonAutoConfiguration extends CachingConfigurerSupport {
 
+    @Bean
+    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
 
-  @Bean
-  public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<Object, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        FastJson2JsonRedisSerializer serializer = new FastJson2JsonRedisSerializer(Object.class);
 
-    RedisTemplate<Object, Object> template = new RedisTemplate<>();
-    template.setConnectionFactory(connectionFactory);
-    FastJson2JsonRedisSerializer serializer = new FastJson2JsonRedisSerializer(Object.class);
+        // 使用StringRedisSerializer来序列化和反序列化redis的key值
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
 
-    // 使用StringRedisSerializer来序列化和反序列化redis的key值
-    template.setKeySerializer(new StringRedisSerializer());
-      template.setValueSerializer(serializer);
+        // Hash的key也采用StringRedisSerializer的序列化方式
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
 
-    // Hash的key也采用StringRedisSerializer的序列化方式
-    template.setHashKeySerializer(new StringRedisSerializer());
-    template.setHashValueSerializer(serializer);
+        template.afterPropertiesSet();
+        return template;
+    }
 
-    template.afterPropertiesSet();
-    return template;
-  }
+    @Bean
+    public RedisService redisService() {
 
-  @Bean
-  public RedisService redisService(){
-    return new RedisService();
-  }
+        return new RedisService();
+    }
+
 }

@@ -27,58 +27,54 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class SysProjectDto implements Serializable {
 
-  @NotNull(
-      message = "项目id是必填项",
-      groups = {UpdateProjectGroup.class, AuditProjectGroup.class})
-  private Long pId;
+    @NotNull(message = "项目id是必填项",
+            groups = {UpdateProjectGroup.class, AuditProjectGroup.class})
+    private Long pId;
 
-  @NotBlank(
-      message = "UUID是必填项",
-      groups = {UpdateProjectGroup.class, AddPageViewsGroup.class})
-  private String uuid;
+    @NotBlank(message = "UUID是必填项",
+            groups = {UpdateProjectGroup.class, AddPageViewsGroup.class})
+    private String uuid;
 
-  @NotBlank(
-      message = "内容是必填项",
-      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
-  private String content;
+    @NotBlank(message = "内容是必填项",
+            groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
+    private String content;
 
-  @Digits(integer = 9, fraction = 2, message = "预算格式不正确")
-  @DecimalMin(value = "0.00", message = "预算格式不正确")
-  @NotNull(
-      message = "预算是必填项",
-      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
-  private BigDecimal price;
+    @Digits(integer = 9,
+            fraction = 2,
+            message = "预算格式不正确")
+    @DecimalMin(value = "0.00",
+            message = "预算格式不正确")
+    @NotNull(message = "预算是必填项",
+            groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
+    private BigDecimal price;
 
-  @NotBlank(
-      message = "用户ID是必填项",
-      groups = {})
-  private String releaseUserId;
+    @NotBlank(message = "用户ID是必填项",
+            groups = {})
+    private String releaseUserId;
 
-  private Long pageViews;
+    private Long pageViews;
 
-  @NotNull(
-      message = "审核状态是必选项",
-      groups = {AuditProjectGroup.class})
-  private Long status;
+    @NotNull(message = "审核状态是必选项",
+            groups = {AuditProjectGroup.class})
+    private Long status;
 
-  @NotBlank(
-      message = "IP属地是必填项",
-      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
-  private String ipAddress;
+    @NotBlank(message = "IP属地是必填项",
+            groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
+    private String ipAddress;
 
-  @NotBlank(
-      message = "用户昵称是必填项",
-      groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
-  private String nickname;
+    @NotBlank(message = "用户昵称是必填项",
+            groups = {InsertProjectGroup.class, UpdateProjectGroup.class})
+    private String nickname;
 
-  /** 审核内容 */
-  private String message;
+    /** 审核内容 */
+    private String message;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
-  private LocalDateTime createTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
 
-  @NotNull(
-      message = "版本号不为空",
-      groups = {UpdateProjectGroup.class})
-  private long version;
+    @NotNull(message = "版本号不为空",
+            groups = {UpdateProjectGroup.class})
+    private long version;
+
 }

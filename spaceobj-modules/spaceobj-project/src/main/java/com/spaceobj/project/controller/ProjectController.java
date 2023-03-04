@@ -19,69 +19,83 @@ import org.springframework.web.bind.annotation.*;
  * @date 2022/9/5 22:11
  */
 @RestController(value = "projectController")
-@RequestMapping(value = "project", method = RequestMethod.POST)
+@RequestMapping(value = "project",
+        method = RequestMethod.POST)
 public class ProjectController {
 
-  @Autowired private SysProjectService sysProjectService;
+    @Autowired
+    private SysProjectService sysProjectService;
 
-  @PostMapping(value = "addProject")
-  public SaResult addProject(@Validated(InsertProjectGroup.class) SysProjectDto sysProjectDto) {
+    @PostMapping(value = "addProject")
+    public SaResult addProject(
+            @Validated(InsertProjectGroup.class)
+            SysProjectDto sysProjectDto) {
 
-    SysProject sysProject = SysProject.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
+        SysProject sysProject = SysProject.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
 
-    return sysProjectService.addProject(sysProject);
-  }
+        return sysProjectService.addProject(sysProject);
+    }
 
-  @PostMapping(value = "updateProject")
-  public SaResult updateProject(
-      @Validated(UpdateProjectGroup.class) @RequestBody SysProjectDto sysProjectDto) {
+    @PostMapping(value = "updateProject")
+    public SaResult updateProject(
+            @Validated(UpdateProjectGroup.class)
+            @RequestBody
+            SysProjectDto sysProjectDto) {
 
-    SysProject sysProject = SysProject.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
+        SysProject sysProject = SysProject.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
 
-    return sysProjectService.updateProject(sysProject);
-  }
+        return sysProjectService.updateProject(sysProject);
+    }
 
-  @PostMapping(value = "auditProject")
-  public SaResult auditProject(@Validated(AuditProjectGroup.class) SysProjectDto sysProjectDto) {
+    @PostMapping(value = "auditProject")
+    public SaResult auditProject(
+            @Validated(AuditProjectGroup.class)
+            SysProjectDto sysProjectDto) {
 
-    SysProject sysProject = SysProject.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
+        SysProject sysProject = SysProject.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(sysProjectDto, sysProject);
 
-    return sysProjectService.auditProject(sysProject);
-  }
+        return sysProjectService.auditProject(sysProject);
+    }
 
-  @PostMapping("findList")
-  public SaResult findList(
-      @Validated(ProjectSearchCustomer.class) ProjectSearchDto projectSearchDto) {
+    @PostMapping("findList")
+    public SaResult findList(
+            @Validated(ProjectSearchCustomer.class)
+            ProjectSearchDto projectSearchDto) {
 
-    ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
-    return sysProjectService.findList(projectSearchBo);
-  }
+        ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
+        return sysProjectService.findList(projectSearchBo);
+    }
 
-  @PostMapping(value = "addPageViews")
-  public void addPageViews(@Validated(AddPageViewsGroup.class) SysProjectDto sysProjectDto) {
-    sysProjectService.addPageViews(sysProjectDto.getUuid());
-  }
+    @PostMapping(value = "addPageViews")
+    public void addPageViews(
+            @Validated(AddPageViewsGroup.class)
+            SysProjectDto sysProjectDto) {
 
-  @PostMapping("getPhoneNumberByProjectId")
-  public SaResult getPhoneNumberByProjectId(
-      @Validated(GetPhoneNumberGroup.class) GetPhoneNumberDto getPhoneNumberDto) {
-    GetPhoneNumberBo getPhoneNumberBo = GetPhoneNumberBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(getPhoneNumberDto, getPhoneNumberBo);
-    return sysProjectService.getPhoneNumberByProjectId(getPhoneNumberBo);
-  }
+        sysProjectService.addPageViews(sysProjectDto.getUuid());
+    }
 
-  @PostMapping(value = "queryListAdmin")
-  public SaResult queryListAdmin(
-      @Validated(ProjectSearchAdmin.class) ProjectSearchDto projectSearchDto) {
+    @PostMapping("getPhoneNumberByProjectId")
+    public SaResult getPhoneNumberByProjectId(
+            @Validated(GetPhoneNumberGroup.class)
+            GetPhoneNumberDto getPhoneNumberDto) {
 
-    ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
-    BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
-    return sysProjectService.queryListAdmin(projectSearchBo);
-  }
+        GetPhoneNumberBo getPhoneNumberBo = GetPhoneNumberBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(getPhoneNumberDto, getPhoneNumberBo);
+        return sysProjectService.getPhoneNumberByProjectId(getPhoneNumberBo);
+    }
 
+    @PostMapping(value = "queryListAdmin")
+    public SaResult queryListAdmin(
+            @Validated(ProjectSearchAdmin.class)
+            ProjectSearchDto projectSearchDto) {
+
+        ProjectSearchBo projectSearchBo = ProjectSearchBo.builder().build();
+        BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
+        return sysProjectService.queryListAdmin(projectSearchBo);
+    }
 
 }

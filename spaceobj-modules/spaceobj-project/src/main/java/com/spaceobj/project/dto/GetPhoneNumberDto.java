@@ -17,11 +17,12 @@ import org.hibernate.validator.constraints.NotBlank;
 @Builder
 public class GetPhoneNumberDto {
 
-  private long projectId;
+    private long projectId;
 
-  private String userId;
+    private String userId;
 
+    @NotBlank(message = "UUID为空",
+            groups = {GetPhoneNumberGroup.class})
+    private String uuid;
 
-  @NotBlank(message = "UUID为空",groups={GetPhoneNumberGroup.class})
-  private String uuid;
 }

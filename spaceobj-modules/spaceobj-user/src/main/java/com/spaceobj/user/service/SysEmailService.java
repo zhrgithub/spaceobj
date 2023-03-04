@@ -10,10 +10,11 @@ import com.spaceobj.user.pojo.SysEmail;
  */
 public interface SysEmailService extends IService<SysEmail> {
 
-  /**
-   * 查询所有邮箱
-   *
-   * @return
-   */
-  SaResult findList();
+    /**
+     * 查询所有邮箱
+     *
+     * @return
+     */
+    SaResult findList();
+
 }

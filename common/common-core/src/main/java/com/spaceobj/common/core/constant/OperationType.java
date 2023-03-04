@@ -6,15 +6,16 @@ package com.spaceobj.common.core.constant;
  */
 public class OperationType {
 
-  /** 新增数据 */
-  public static final Integer ADD = 0;
+    /** 新增数据 */
+    public static final Integer ADD = 0;
 
-  /** 删除数据 */
-  public static final Integer DELETE = 1;
+    /** 删除数据 */
+    public static final Integer DELETE = 1;
 
-  /** 更新数据 */
-  public static final Integer UPDATE = 2;
+    /** 更新数据 */
+    public static final Integer UPDATE = 2;
 
-  /** 登录 */
-  public static final Integer LOGIN = 3;
+    /** 登录 */
+    public static final Integer LOGIN = 3;
+
 }

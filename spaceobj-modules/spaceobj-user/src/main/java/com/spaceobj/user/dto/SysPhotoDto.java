@@ -20,21 +20,19 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class SysPhotoDto implements Serializable {
 
-  /** 图片id */
-  @NotNull(
-      message = "图片id不为空",
-      groups = {DeletePhotoGroup.class})
-  private String photoId;
+    /** 图片id */
+    @NotNull(message = "图片id不为空",
+            groups = {DeletePhotoGroup.class})
+    private String photoId;
 
-  /** 图片URl */
-  @NotBlank(
-      message = "图片URL不为空",
-      groups = {AddOrUpdatePhotoGroup.class})
-  private String photoUrl;
+    /** 图片URl */
+    @NotBlank(message = "图片URL不为空",
+            groups = {AddOrUpdatePhotoGroup.class})
+    private String photoUrl;
 
-  /** 操作类型 */
-  @NotNull(
-      message = "操作类型不为空",
-      groups = {AddOrUpdatePhotoGroup.class})
-  private Integer operation;
+    /** 操作类型 */
+    @NotNull(message = "操作类型不为空",
+            groups = {AddOrUpdatePhotoGroup.class})
+    private Integer operation;
+
 }

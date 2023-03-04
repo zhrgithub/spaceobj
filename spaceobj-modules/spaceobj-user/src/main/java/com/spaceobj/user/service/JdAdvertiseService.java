@@ -11,34 +11,38 @@ import com.spaceobj.user.pojo.JdAdvertise;
  */
 public interface JdAdvertiseService extends IService<JdAdvertise> {
 
-  /**
-   * 查询所有的广告内容
-   *
-   * @return
-   */
-  SaResult findList();
+    /**
+     * 查询所有的广告内容
+     *
+     * @return
+     */
+    SaResult findList();
 
-  /**
-   * 新增广告内容
-   *
-   * @param jdAdvertiseBo
-   * @return
-   */
-  SaResult saveAdvertise(JdAdvertiseBo jdAdvertiseBo);
+    /**
+     * 新增广告内容
+     *
+     * @param jdAdvertiseBo
+     *
+     * @return
+     */
+    SaResult saveAdvertise(JdAdvertiseBo jdAdvertiseBo);
 
-  /**
-   * 删除广告内容
-   *
-   * @param id
-   * @return
-   */
-  SaResult deleteAdvertise(long id);
+    /**
+     * 删除广告内容
+     *
+     * @param id
+     *
+     * @return
+     */
+    SaResult deleteAdvertise(long id);
 
-  /**
-   * 修改广告内容
-   *
-   * @param jdAdvertiseBo
-   * @return
-   */
-  SaResult updateAdvertise(JdAdvertiseBo jdAdvertiseBo);
+    /**
+     * 修改广告内容
+     *
+     * @param jdAdvertiseBo
+     *
+     * @return
+     */
+    SaResult updateAdvertise(JdAdvertiseBo jdAdvertiseBo);
+
 }

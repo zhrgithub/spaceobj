@@ -17,21 +17,22 @@ import java.util.Date;
 @AllArgsConstructor
 public class ExceptionMessage {
 
-  /** 类名 */
-  String className;
+    /** 类名 */
+    String className;
 
-  /** 方法名 */
-  String methodName;
+    /** 方法名 */
+    String methodName;
 
-  /** 行号 */
-  Integer lineNumber;
+    /** 行号 */
+    Integer lineNumber;
 
-  /** 文件名 */
-  String fileName;
+    /** 文件名 */
+    String fileName;
 
-  /** 创建时间 */
-  Date createTime;
+    /** 创建时间 */
+    Date createTime;
 
-  /** 异常内容 */
-  String content;
+    /** 异常内容 */
+    String content;
+
 }

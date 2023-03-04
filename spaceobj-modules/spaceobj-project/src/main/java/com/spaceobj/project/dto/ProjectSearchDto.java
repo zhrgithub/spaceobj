@@ -18,25 +18,24 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @Builder
 public class ProjectSearchDto {
-  private String content;
 
-  @NotNull(
-      message = "查询类型是必填项",
-      groups = {ProjectSearchCustomer.class})
-  private Integer projectType;
+    private String content;
 
-  /** 当前页 */
-  @NotNull(
-      message = "当前页是必填项",
-      groups = {ProjectSearchCustomer.class, ProjectSearchAdmin.class})
-  private Integer currentPage;
+    @NotNull(message = "查询类型是必填项",
+            groups = {ProjectSearchCustomer.class})
+    private Integer projectType;
 
-  /** 每页条数 */
-  @NotNull(
-      message = "每页条数是必填项",
-      groups = {ProjectSearchCustomer.class, ProjectSearchAdmin.class})
-  private Integer pageSize;
+    /** 当前页 */
+    @NotNull(message = "当前页是必填项",
+            groups = {ProjectSearchCustomer.class, ProjectSearchAdmin.class})
+    private Integer currentPage;
 
-  /** 项目id */
-  private Long pId;
+    /** 每页条数 */
+    @NotNull(message = "每页条数是必填项",
+            groups = {ProjectSearchCustomer.class, ProjectSearchAdmin.class})
+    private Integer pageSize;
+
+    /** 项目id */
+    private Long pId;
+
 }

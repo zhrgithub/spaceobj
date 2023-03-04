@@ -11,18 +11,26 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @date 2022/10/8 14:27
  */
 @Component
-@FeignClient(contextId = "spaceobj-project", name = "spaceobjGateway",fallback = UserClientFallback.class)
+@FeignClient(contextId = "spaceobj-project",
+        name = "spaceobjGateway",
+        fallback = UserClientFallback.class)
 public interface UserClient {
 
-  @PostMapping(value = "/spaceobj-user/sysUser/getUserInfoByAccount")
-  public byte[] getUserInfoByAccount(@RequestParam("account") String account);
+    @PostMapping(value = "/spaceobj-user/sysUser/getUserInfoByAccount")
+    public byte[] getUserInfoByAccount(
+            @RequestParam("account")
+            String account);
 
-  /**
-   * 根据用户id返回实体信息
-   *
-   * @param userId
-   * @return
-   */
-  @PostMapping(value = "/spaceobj-user/sysUser/getSysUserByUserId")
-  public byte[] getSysUserByUserId(@RequestParam("userId") String userId);
+    /**
+     * 根据用户id返回实体信息
+     *
+     * @param userId
+     *
+     * @return
+     */
+    @PostMapping(value = "/spaceobj-user/sysUser/getSysUserByUserId")
+    public byte[] getSysUserByUserId(
+            @RequestParam("userId")
+            String userId);
+
 }

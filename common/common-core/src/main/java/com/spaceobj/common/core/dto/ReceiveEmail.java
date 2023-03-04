@@ -9,13 +9,13 @@ import lombok.Data;
 @Data
 public class ReceiveEmail {
 
-  /** 收件人邮箱 */
-  private String receiverEmail;
+    /** 收件人邮箱 */
+    private String receiverEmail;
 
-  /** 标题 */
-  private String title;
+    /** 标题 */
+    private String title;
 
-  /** 内容 */
-  private String content;
+    /** 内容 */
+    private String content;
 
 }
