@@ -26,7 +26,7 @@ public class TaskJob {
     public void updateUserInfoEveryDay() {
 
         try {
-            SysUserBo sysUserBo = SysUserBo.builder().releaseProjectTimes(10).projectHelpTimes(10).sendCodeTimes(3).createProjectHelpTimes(10).build();
+            SysUserBo sysUserBo = SysUserBo.builder().releaseProjectTimes(10).projectHelpTimes(10).sendCodeTimes(3).createProjectHelpTimes(3).build();
             sysUserService.updateAll(sysUserBo);
         } catch (Exception e) {
             ExceptionUtil.exceptionToString(e);

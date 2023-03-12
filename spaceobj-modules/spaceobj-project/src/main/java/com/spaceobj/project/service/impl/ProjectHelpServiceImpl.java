@@ -176,7 +176,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
             // 如果用户的创建剩余次数小于10次，提醒明天再来
             if (sysUser.getCreateProjectHelpTimes() <= 0) {
-                return SaResult.error("今日分享链接创建已上限，明天再来吧！");
+                return SaResult.error("今日分享链接创建已上限，是否看广告获取！").setCode(888);
             }
             // 判断项目中是否有该项目的id
             // 根据前端传递过来的项目id，判断项目列表中是否有该项目

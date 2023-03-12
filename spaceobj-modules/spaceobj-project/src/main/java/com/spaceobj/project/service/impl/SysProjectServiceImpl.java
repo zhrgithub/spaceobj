@@ -70,6 +70,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
     Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
 
+
+    //好友最大点击次数即可获取用户联系方式
+    public static final int MAX_CLICK_SHARE_TIMES = 2;
+
     @Override
     public SaResult addProject(SysProject sysProject) {
 
@@ -368,7 +372,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             // 判断是否已经获取到该项目联系人
             ProjectHelp helpBo = this.getProjectHelpLink(getPhoneNumberBo.getUuid(), getPhoneNumberBo.getUserId());
             if (!ObjectUtils.isEmpty(helpBo)) {
-                if (helpBo.getHpStatus() == 1 || helpBo.getHpNumber() >= 10) {
+                if (helpBo.getHpStatus() == 1 || helpBo.getHpNumber() >= MAX_CLICK_SHARE_TIMES) {
                     // 获取项目发布者id的联系方式,后期此处修改成根据账户获取用户信息，项目中的userId设置成email,数据进行脱敏
                     String releaseId = sysProject.getReleaseUserId();
                     SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
@@ -386,13 +390,13 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 //  邀请值减一，如果项目助力列表中没有该项目，那么设置成已经获取到，如果没有，那么新增到项目助力列表并设置成已经获取到的状态
                 sysUser.setInvitationValue(sysUser.getInvitationValue() - 1);
                 if (!ObjectUtils.isEmpty(helpBo)) {
-                    helpBo.setHpNumber(10);
+                    helpBo.setHpNumber(MAX_CLICK_SHARE_TIMES);
                     helpBo.setHpStatus(1);
                     // 更新该用户助力的项目助力信息
 
                     kafkaSender.send(helpBo, KafKaTopics.UPDATE_HELP_PROJECT);
                 } else {
-                    helpBo = ProjectHelp.builder().hpId(UUID.randomUUID().toString()).pUUID(sysProject.getUuid()).createUserId(getPhoneNumberBo.getUserId()).hpNumber(10).pContent(sysProject.getContent()).pPrice(sysProject.getPrice()).pReleaseUserId(sysProject.getReleaseUserId()).hpStatus(1).projectId(sysProject.getPId()).build();
+                    helpBo = ProjectHelp.builder().hpId(UUID.randomUUID().toString()).pUUID(sysProject.getUuid()).createUserId(getPhoneNumberBo.getUserId()).hpNumber(MAX_CLICK_SHARE_TIMES).pContent(sysProject.getContent()).pPrice(sysProject.getPrice()).pReleaseUserId(sysProject.getReleaseUserId()).hpStatus(1).projectId(sysProject.getPId()).build();
                     // 通知项目助力服务该用户新增一条获取成功的项目助力信息
                     kafkaSender.send(helpBo, KafKaTopics.ADD_HELP_PROJECT);
                 }
@@ -407,10 +411,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
                 return SaResult.ok().setData(releaseProjectUser.getPhoneNumber());
             }
-            // 如果已经分享过，提示还差多少次分享
+            // 如果已经分享过，提示还差多少好友点击
             if (!ObjectUtils.isEmpty(helpBo)) {
-                int num = (int) (10 - helpBo.getHpNumber());
-                return SaResult.error("还差" + num + "位好友助力").setCode(202);
+                int num = (int) (MAX_CLICK_SHARE_TIMES - helpBo.getHpNumber());
+                return SaResult.error("还差" + num + "位好友点击").setCode(202);
             }
 
             // 需要获取助力链接
