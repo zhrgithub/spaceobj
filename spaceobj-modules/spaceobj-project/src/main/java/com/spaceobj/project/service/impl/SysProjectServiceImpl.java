@@ -61,10 +61,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     @Autowired
     private SysProjectMapper sysProjectMapper;
 
-
     @Autowired
     private ProjectHelpMapper projectHelpMapper;
-
 
     @Resource
     private UserClient userClient;
@@ -526,37 +524,33 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     public String getPhoneNumberByProjectUUID(String uuid) {
 
         String phoneNumber = null;
+        ProjectHelp projectHelp = null;
 
         String loginId = (String) StpUtil.getLoginId();
         SysUser sysUser = getSysUser(loginId);
 
-
-        QueryWrapper<SysProject> queryWrapper =  new QueryWrapper<>();
-        queryWrapper.eq("p_uuid",uuid);
+        QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("p_uuid", uuid);
         SysProject sysProject = sysProjectMapper.selectOne(queryWrapper);
+        // 判断项目助力是否存在，存在则更新，不存在就新增
+        projectHelp = projectHelpService.getProjectHelpLink(uuid, sysUser.getUserId());
 
-        ProjectHelp projectHelp = ProjectHelp.builder()
-                .hpId(UUID.randomUUID().toString())
-                .projectId(sysProject.getPId())
-                .pUUID(sysProject.getUuid())
-                .hpNumber(3)
-                .createUserId(sysUser.getUserId())
-                .hpCreateNickName(sysUser.getNickName())
-                .pContent(sysProject.getContent())
-                .pPrice(sysProject.getPrice())
-                .pReleaseUserId(sysProject.getReleaseUserId())
-                .hpStatus(1)
-                .ipTerritory(sysProject.getIpAddress())
-                .projectCreateNickName(sysProject.getNickname())
-                .build();
-        projectHelpMapper.insert(projectHelp);
+        if (ObjectUtils.isEmpty(projectHelp)) {
+            projectHelp = ProjectHelp.builder().hpId(UUID.randomUUID().toString()).projectId(sysProject.getPId()).pUUID(sysProject.getUuid()).hpNumber(3).createUserId(sysUser.getUserId()).hpCreateNickName(sysUser.getNickName()).pContent(sysProject.getContent()).pPrice(sysProject.getPrice()).pReleaseUserId(sysProject.getReleaseUserId()).hpStatus(1).ipTerritory(sysProject.getIpAddress()).projectCreateNickName(sysProject.getNickname()).build();
+            projectHelpMapper.insert(projectHelp);
+        }
 
+        if(!ObjectUtils.isEmpty(projectHelp)){
+            projectHelp.setHpStatus(1);
+            projectHelp.setHpNumber(3);
+            projectHelpService.updateProjectHelp(projectHelp);
+        }
 
-        if(sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)){
+        if (sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)) {
             phoneNumber = sysProject.getPhoneNumber();
         }
-        if(!sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)){
-            SysUser releaseUser =  getSysUserByUserId(sysProject.getReleaseUserId());
+        if (!sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)) {
+            SysUser releaseUser = getSysUserByUserId(sysProject.getReleaseUserId());
             phoneNumber = releaseUser.getPhoneNumber();
 
         }

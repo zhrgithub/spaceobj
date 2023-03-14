@@ -61,10 +61,10 @@ public interface ProjectHelpService extends IService<ProjectHelp> {
     int updateProjectHelp(ProjectHelp projectHelp);
 
     /**
-     * 根据项目id和UUID获取项目助力链接
+     * 根据项目pUUID、项目助力创建人ID获取项目助力链接
      *
-     * @param pUUID
-     * @param userId
+     * @param pUUID  项目pUUID
+     * @param userId 项目助力创建人ID
      *
      * @return
      */
