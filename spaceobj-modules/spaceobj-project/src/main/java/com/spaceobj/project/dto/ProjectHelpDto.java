@@ -56,4 +56,6 @@ public class ProjectHelpDto {
     @DateTimeFormat(pattern = "yyy-MM-dd HH:mm:ss")
     private Data updateTime;
 
+    private String dropshipping;
+
 }

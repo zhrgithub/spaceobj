@@ -18,6 +18,7 @@ import com.spaceobj.common.redis.service.RedissonService;
 import com.spaceobj.project.bo.GetPhoneNumberBo;
 import com.spaceobj.project.bo.ProjectSearchBo;
 import com.spaceobj.project.component.UserClient;
+import com.spaceobj.project.mapper.ProjectHelpMapper;
 import com.spaceobj.project.mapper.SysProjectMapper;
 import com.spaceobj.project.pojo.ProjectHelp;
 import com.spaceobj.project.pojo.SysProject;
@@ -34,6 +35,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -59,6 +61,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     @Autowired
     private SysProjectMapper sysProjectMapper;
 
+
+    @Autowired
+    private ProjectHelpMapper projectHelpMapper;
+
+
     @Resource
     private UserClient userClient;
 
@@ -70,9 +77,20 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
     Logger LOG = LoggerFactory.getLogger(SysProjectServiceImpl.class);
 
-
     //好友最大点击次数即可获取用户联系方式
     public static final int MAX_CLICK_SHARE_TIMES = 2;
+
+    //审核状态通过
+    public static final int EXAMINATION_PASSED = 1;
+
+    // 查询首页项目
+    public static final int SEARCH_INDEX_PROJECT_TYPE = 0;
+
+    // 查询我发布的项目
+    public static final int SEARCH_MY_RELEASED_PROJECT = 1;
+
+    // 属于代发项目
+    public static final String DROPSHIPPING_TRUE = "1";
 
     @Override
     public SaResult addProject(SysProject sysProject) {
@@ -195,12 +213,12 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             }
             List<SysProject> list = getSysProjectList();
             // 查询首页信息
-            if (projectSearchBo.getProjectType() == 0) {
+            if (projectSearchBo.getProjectType() == SEARCH_INDEX_PROJECT_TYPE) {
                 list = list.stream().filter(p -> {
                     if (!ObjectUtils.isEmpty(projectSearchBo.getContent())) {
-                        return !ObjectUtils.isEmpty(p) && p.getStatus() == 1 && p.getContent().contains(projectSearchBo.getContent());
+                        return !ObjectUtils.isEmpty(p) && p.getStatus() == EXAMINATION_PASSED && p.getContent().contains(projectSearchBo.getContent());
                     }
-                    return p.getStatus() == 1;
+                    return p.getStatus() == EXAMINATION_PASSED;
                 }).collect(Collectors.toList());
                 int endNumber = 0;
                 int startNumber = 0;
@@ -212,21 +230,25 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 }
                 if (startNumber > list.size()) {
                     list.clear();
-                    return SaResult.ok().setData(list);
                 }
-                list = list.subList(startNumber, endNumber);
-                return SaResult.ok().setData(list);
+                if (startNumber < list.size()) {
+                    list = list.subList(startNumber, endNumber);
+                }
             }
-            if (projectSearchBo.getProjectType() == 1) {
+            if (projectSearchBo.getProjectType() == SEARCH_MY_RELEASED_PROJECT) {
                 // 查询自己发布的信息,根据项目创建人id查询项目
                 QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("p_release_user_id", projectSearchBo.getUserId()).orderByDesc("create_time");
                 Page<SysProject> page = new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
                 IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
                 list = iPage.getRecords();
-                return SaResult.ok().setData(list);
             }
-            return SaResult.error("请求参数错误");
+
+            // 数据脱敏
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).setPhoneNumber(null);
+            }
+            return SaResult.ok().setData(list);
         } catch (NotLoginException e) {
             ExceptionUtil.exceptionToString(e);
             e.printStackTrace();
@@ -365,14 +387,19 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             }
 
             //  判断项目是否审核通过
-            if (sysProject.getStatus() != 1) {
+            if (sysProject.getStatus() != EXAMINATION_PASSED) {
                 return SaResult.error("项目未通过审核");
             }
             // 判断该用户的助力列表中是否有该项目数据，当前方案要保证项目助力hash表的RedisKey永不失效
             // 判断是否已经获取到该项目联系人
             ProjectHelp helpBo = this.getProjectHelpLink(getPhoneNumberBo.getUuid(), getPhoneNumberBo.getUserId());
             if (!ObjectUtils.isEmpty(helpBo)) {
-                if (helpBo.getHpStatus() == 1 || helpBo.getHpNumber() >= MAX_CLICK_SHARE_TIMES) {
+                if (helpBo.getHpStatus() == EXAMINATION_PASSED || helpBo.getHpNumber() >= MAX_CLICK_SHARE_TIMES) {
+                    // 如果是代发项目，直接返回联系方式
+                    if (sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)) {
+                        return SaResult.ok().setData(sysProject.getPhoneNumber());
+                    }
+
                     // 获取项目发布者id的联系方式,后期此处修改成根据账户获取用户信息，项目中的userId设置成email,数据进行脱敏
                     String releaseId = sysProject.getReleaseUserId();
                     SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
@@ -392,20 +419,33 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 if (!ObjectUtils.isEmpty(helpBo)) {
                     helpBo.setHpNumber(MAX_CLICK_SHARE_TIMES);
                     helpBo.setHpStatus(1);
+                    if (sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)) {
+                        helpBo.setDropshipping(DROPSHIPPING_TRUE);
+                    }
                     // 更新该用户助力的项目助力信息
 
                     kafkaSender.send(helpBo, KafKaTopics.UPDATE_HELP_PROJECT);
                 } else {
                     helpBo = ProjectHelp.builder().hpId(UUID.randomUUID().toString()).pUUID(sysProject.getUuid()).createUserId(getPhoneNumberBo.getUserId()).hpNumber(MAX_CLICK_SHARE_TIMES).pContent(sysProject.getContent()).pPrice(sysProject.getPrice()).pReleaseUserId(sysProject.getReleaseUserId()).hpStatus(1).projectId(sysProject.getPId()).build();
+                    if (sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)) {
+                        helpBo.setDropshipping(DROPSHIPPING_TRUE);
+                    }
                     // 通知项目助力服务该用户新增一条获取成功的项目助力信息
                     kafkaSender.send(helpBo, KafKaTopics.ADD_HELP_PROJECT);
                 }
+
                 //  判断当前用户是否已经实名认证
                 // if (sysUser.getRealNameStatus() != 1) {
                 //   return SaResult.error("实名认证后获取");
                 // }
+
                 // 通知用户服务更新该用户的基本信息
                 kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+
+                if (sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)) {
+                    return SaResult.ok().setData(sysProject.getPhoneNumber());
+                }
+
                 String releaseId = sysProject.getReleaseUserId();
                 SysUser releaseProjectUser = this.getSysUserByUserId(releaseId);
 
@@ -480,6 +520,48 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         }
 
         return sysProject;
+    }
+
+    @Override
+    public String getPhoneNumberByProjectUUID(String uuid) {
+
+        String phoneNumber = null;
+
+        String loginId = (String) StpUtil.getLoginId();
+        SysUser sysUser = getSysUser(loginId);
+
+
+        QueryWrapper<SysProject> queryWrapper =  new QueryWrapper<>();
+        queryWrapper.eq("p_uuid",uuid);
+        SysProject sysProject = sysProjectMapper.selectOne(queryWrapper);
+
+        ProjectHelp projectHelp = ProjectHelp.builder()
+                .hpId(UUID.randomUUID().toString())
+                .projectId(sysProject.getPId())
+                .pUUID(sysProject.getUuid())
+                .hpNumber(3)
+                .createUserId(sysUser.getUserId())
+                .hpCreateNickName(sysUser.getNickName())
+                .pContent(sysProject.getContent())
+                .pPrice(sysProject.getPrice())
+                .pReleaseUserId(sysProject.getReleaseUserId())
+                .hpStatus(1)
+                .ipTerritory(sysProject.getIpAddress())
+                .projectCreateNickName(sysProject.getNickname())
+                .build();
+        projectHelpMapper.insert(projectHelp);
+
+
+        if(sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)){
+            phoneNumber = sysProject.getPhoneNumber();
+        }
+        if(!sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)){
+            SysUser releaseUser =  getSysUserByUserId(sysProject.getReleaseUserId());
+            phoneNumber = releaseUser.getPhoneNumber();
+
+        }
+
+        return phoneNumber;
     }
 
     /**

@@ -42,4 +42,7 @@ public class ProjectHelpBo {
 
     private Data updateTime;
 
+
+    private String dropshipping;
+
 }

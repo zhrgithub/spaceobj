@@ -66,6 +66,10 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     @Autowired
     private SysProjectService sysProjectService;
 
+
+    // 属于代发项目
+    public static final String DROPSHIPPING_TRUE = "1";
+
     /**
      * 根据账户获取用户信息，异常则返回null
      *
@@ -198,14 +202,20 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
             if (resultList.size() > 0) {
                 return SaResult.ok().setData(resultList.get(0));
             }
+
             //  没有创建过，则创建
             ProjectHelp projectHelp = ProjectHelp.builder().hpId(UUID.randomUUID().toString()).pUUID(sysProject.getUuid()).createUserId(sysUser.getUserId()).hpNumber(0).pContent(sysProject.getContent()).pPrice(sysProject.getPrice()).pReleaseUserId(sysProject.getReleaseUserId()).hpStatus(0).hpCreateNickName(sysUser.getNickName()).ipTerritory(sysUser.getIpTerritory()).projectCreateNickName(sysProject.getNickname()).projectId(sysProject.getPId()).build();
+            if(sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)){
+                projectHelp.setDropshipping(DROPSHIPPING_TRUE);
+            }
+
             // 创建项目助力信息，并同步到缓存
             int insertResult = projectHelpMapper.insert(projectHelp);
             if (insertResult == 0) {
                 return SaResult.error("创建失败");
             } else {
-                redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), projectHelp);
+                ProjectHelp ph =  projectHelpMapper.selectById(projectHelp.getHpId());
+                redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), ph);
             }
             // 消息队列通知用户服务对该用户的创建次数减一
             sysUser.setCreateProjectHelpTimes(sysUser.getCreateProjectHelpTimes() - 1);

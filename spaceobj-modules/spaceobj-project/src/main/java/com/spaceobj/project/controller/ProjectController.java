@@ -97,5 +97,12 @@ public class ProjectController {
         BeanConvertToTargetUtils.copyNotNullProperties(projectSearchDto, projectSearchBo);
         return sysProjectService.queryListAdmin(projectSearchBo);
     }
+    @PostMapping(value = "getPhoneNumberByProjectUUID")
+    public SaResult getPhoneNumberByProjectUUID(
+            @Validated(GetPhoneNumberByProjectUUID.class)
+            ProjectSearchDto projectSearchDto) {
+        return new SaResult().setData(sysProjectService.getPhoneNumberByProjectUUID(projectSearchDto.getPUUID()));
+
+    }
 
 }

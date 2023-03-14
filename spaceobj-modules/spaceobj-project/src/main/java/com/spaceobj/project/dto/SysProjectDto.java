@@ -77,4 +77,9 @@ public class SysProjectDto implements Serializable {
             groups = {UpdateProjectGroup.class})
     private long version;
 
+    private String phoneNumber;
+
+    private String dropshipping;
+
+
 }

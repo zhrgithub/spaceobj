@@ -69,4 +69,12 @@ public class ProjectHelp {
     @TableField(value = "project_id")
     private long projectId;
 
+
+    /**
+     * 是否代发
+     */
+    @TableField(value = "dropshipping")
+    private String dropshipping;
+
+
 }

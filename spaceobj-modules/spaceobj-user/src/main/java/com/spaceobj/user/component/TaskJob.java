@@ -16,6 +16,16 @@ import org.springframework.stereotype.Component;
 @Component("taskJob")
 public class TaskJob {
 
+    public static final int RELEASE_PROJECT_TIMES = 10;
+
+    public static final int PROJECT_HELP_TIMES = 3;
+
+    public static final int SEND_CODE_TIMES = 3;
+
+    public static final int CREATE_PROJECT_HELP_TIMES = 3;
+
+    public static final int EDIT_INFO_TIMES = 3;
+
     Logger LOG = LoggerFactory.getLogger(TaskJob.class);
 
     @Autowired
@@ -26,7 +36,7 @@ public class TaskJob {
     public void updateUserInfoEveryDay() {
 
         try {
-            SysUserBo sysUserBo = SysUserBo.builder().releaseProjectTimes(10).projectHelpTimes(10).sendCodeTimes(3).createProjectHelpTimes(3).build();
+            SysUserBo sysUserBo = SysUserBo.builder().releaseProjectTimes(RELEASE_PROJECT_TIMES).projectHelpTimes(PROJECT_HELP_TIMES).sendCodeTimes(SEND_CODE_TIMES).createProjectHelpTimes(CREATE_PROJECT_HELP_TIMES).build();
             sysUserService.updateAll(sysUserBo);
         } catch (Exception e) {
             ExceptionUtil.exceptionToString(e);
@@ -38,7 +48,7 @@ public class TaskJob {
     public void updateUserInfoEveryMonth() {
 
         try {
-            SysUserBo sysUserBo = SysUserBo.builder().editInfoTimes(3).build();
+            SysUserBo sysUserBo = SysUserBo.builder().editInfoTimes(EDIT_INFO_TIMES).build();
             sysUserService.updateAll(sysUserBo);
         } catch (Exception e) {
             ExceptionUtil.exceptionToString(e);

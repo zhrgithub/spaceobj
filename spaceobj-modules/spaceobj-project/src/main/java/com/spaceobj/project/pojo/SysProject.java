@@ -67,4 +67,16 @@ public class SysProject implements Serializable {
     @TableField(value = "version")
     private long version;
 
+    /**
+     * 是否代发
+     */
+    @TableField(value = "dropshipping")
+    private String dropshipping;
+
+    /**
+     * 联系方式
+     */
+    @TableField(value = "phone_number")
+    private String phoneNumber;
+
 }

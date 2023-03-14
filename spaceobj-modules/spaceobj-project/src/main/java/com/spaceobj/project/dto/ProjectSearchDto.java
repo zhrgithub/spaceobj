@@ -1,11 +1,13 @@
 package com.spaceobj.project.dto;
 
+import com.spaceobj.project.group.GetPhoneNumberByProjectUUID;
 import com.spaceobj.project.group.ProjectSearchAdmin;
 import com.spaceobj.project.group.ProjectSearchCustomer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
 
@@ -37,5 +39,13 @@ public class ProjectSearchDto {
 
     /** 项目id */
     private Long pId;
+
+    /**
+     * 项目的uuid
+     */
+    @NotBlank(message = "项目uuid是必填项",
+            groups = {GetPhoneNumberByProjectUUID.class})
+
+    private String pUUID;
 
 }
