@@ -17,7 +17,7 @@
 
     <!-- 定义日志文件 输出位置 -->
     <property name="log.home_dir" value="log"/>
-    <property name="log.app_name" value="spaceobj-gateway"/>
+    <property name="log.app_name" value="gateway"/>
     <!-- 日志最大的历史 30天 -->
     <property name="log.maxHistory" value="30"/>
     <property name="log.maxSize" value="5MB"/>
