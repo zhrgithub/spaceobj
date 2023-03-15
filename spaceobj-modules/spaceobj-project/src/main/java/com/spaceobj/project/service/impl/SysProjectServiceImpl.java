@@ -204,7 +204,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
     public SaResult findList(ProjectSearchBo projectSearchBo) {
 
         try {
-            if (projectSearchBo.getProjectType() == 1) {
+            if (projectSearchBo.getProjectType() == SEARCH_MY_RELEASED_PROJECT) {
                 String loginId = StpUtil.getLoginId().toString();
                 SysUser sysUser = getSysUser(loginId);
                 projectSearchBo.setUserId(sysUser.getUserId());
@@ -222,7 +222,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 int startNumber = 0;
                 startNumber = (projectSearchBo.getCurrentPage() - 1) * projectSearchBo.getPageSize();
                 if (list.size() > projectSearchBo.getPageSize() * projectSearchBo.getCurrentPage()) {
-                    endNumber = projectSearchBo.getPageSize();
+                    endNumber = projectSearchBo.getPageSize()* projectSearchBo.getCurrentPage();
                 } else {
                     endNumber = list.size();
                 }
