@@ -18,4 +18,6 @@ public class RestData {
     /** APP版本号 */
     public static final Integer version = 1;
 
+
+
 }

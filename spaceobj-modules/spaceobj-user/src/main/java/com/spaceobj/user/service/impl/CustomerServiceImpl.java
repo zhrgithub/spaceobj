@@ -8,6 +8,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.common.core.constant.CommonData;
 import com.spaceobj.common.core.constant.OperationType;
 import com.spaceobj.common.core.utils.BeanConvertToTargetUtils;
 import com.spaceobj.common.core.utils.EmailVerifyCode;
@@ -22,6 +23,7 @@ import com.spaceobj.user.component.QQService;
 import com.spaceobj.user.component.WeChatService;
 import com.spaceobj.user.config.UploadConfigure;
 import com.spaceobj.user.constant.Resource;
+import com.spaceobj.user.constant.RestData;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.CustomerUserService;
@@ -127,8 +129,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser> imp
                 sysUser.setToken(StpUtil.getTokenValue());
                 sysUser.setNickName(loginByWeChatBo.getNickName());
                 sysUser.setOnlineStatus(1);
-                sysUser.setEmail("xxx@xx.com");
-                sysUser.setPhoneNumber("13012340000");
+                sysUser.setEmail(CommonData.DEFAULT_EMAIL);
+                sysUser.setPhoneNumber(CommonData.DEFAULT_MOBILE);
                 int result = sysUserMapper.insert(sysUser);
                 if (result == 0) {
                     return SaResult.error("服务器繁忙");

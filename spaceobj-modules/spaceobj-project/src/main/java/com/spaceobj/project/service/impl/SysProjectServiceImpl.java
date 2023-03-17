@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.common.core.constant.CommonData;
 import com.spaceobj.common.core.dto.SysUser;
 import com.spaceobj.common.core.utils.ExceptionUtil;
 import com.spaceobj.common.core.utils.RsaUtils;
@@ -107,6 +108,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             String loginId = (String) StpUtil.getLoginId();
             SysUser sysUser = getSysUser(loginId);
             if (StringUtils.isEmpty(sysUser.getEmail()) || StringUtils.isEmpty(sysUser.getPhoneNumber())) {
+                return SaResult.error("请设置邮箱和手机号");
+            }
+
+            if (sysUser.getEmail().equals(CommonData.DEFAULT_EMAIL)|| sysUser.getPhoneNumber().equals(CommonData.DEFAULT_MOBILE)) {
                 return SaResult.error("请设置邮箱和手机号");
             }
             if (sysUser.getReleaseProjectTimes() <= 0) {

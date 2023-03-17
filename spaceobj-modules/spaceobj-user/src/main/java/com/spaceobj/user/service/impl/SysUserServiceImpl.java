@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.spaceobj.common.core.constant.CommonData;
 import com.spaceobj.common.core.dto.UserPermission;
 import com.spaceobj.common.core.utils.BeanConvertToTargetUtils;
 import com.spaceobj.common.core.utils.ExceptionUtil;
@@ -19,6 +20,7 @@ import com.spaceobj.common.redis.constant.RedisKey;
 import com.spaceobj.common.redis.service.RedisService;
 import com.spaceobj.user.bo.ReceiveEmailBo;
 import com.spaceobj.user.bo.SysUserBo;
+import com.spaceobj.user.constant.RestData;
 import com.spaceobj.user.mapper.SysUserMapper;
 import com.spaceobj.user.pojo.SysUser;
 import com.spaceobj.user.service.SysUserService;
@@ -66,10 +68,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 for (SysUser obj : sysUserList) {
                     // 如果电话、邮箱为空，那么设置内容为xxx
                     if(StringUtils.isEmpty( obj.getPhoneNumber())){
-                        obj.setPhoneNumber("13012340000");
+                        obj.setPhoneNumber(CommonData.DEFAULT_MOBILE);
                     }
                     if(StringUtils.isEmpty( obj.getEmail())){
-                        obj.setEmail("xxx@xx.com");
+                        obj.setEmail(CommonData.DEFAULT_EMAIL);
                     }
                     // 更新缓存
                     redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, obj.getAccount(), obj);
@@ -135,6 +137,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
                 List<SysUser> sysUserList = sysUserMapper.selectList(queryWrapper);
                 for (SysUser obj : sysUserList) {
+                    // 如果电话、邮箱为空，那么设置内容为xxx
+                    if(StringUtils.isEmpty( obj.getPhoneNumber())){
+                        obj.setPhoneNumber(CommonData.DEFAULT_MOBILE);
+                    }
+                    if(StringUtils.isEmpty( obj.getEmail())){
+                        obj.setEmail(CommonData.DEFAULT_EMAIL);
+                    }
                     // 更新缓存
                     redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, obj.getAccount(), obj);
                 }
