@@ -60,6 +60,21 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         try {
             QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
 
+            boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
+            if(flag){
+                List<SysUser> sysUserList = sysUserMapper.selectList(queryWrapper);
+                for (SysUser obj : sysUserList) {
+                    // 如果电话、邮箱为空，那么设置内容为xxx
+                    if(StringUtils.isEmpty( obj.getPhoneNumber())){
+                        obj.setPhoneNumber("13012340000");
+                    }
+                    if(StringUtils.isEmpty( obj.getEmail())){
+                        obj.setEmail("xxx@xx.com");
+                    }
+                    // 更新缓存
+                    redisService.setCacheMapValue(RedisKey.SYS_USER_LIST, obj.getAccount(), obj);
+                }
+            }
             if (StringUtils.isNotBlank(sysUserBo.getContent())) {
                 queryWrapper.like("phone_number", sysUserBo.getContent()).or().like("nick_name", sysUserBo.getContent()).or().like("account", sysUserBo.getContent()).or().like("username", sysUserBo.getContent()).or().like("id_card_num", sysUserBo.getContent()).or().like("email", sysUserBo.getContent());
             }

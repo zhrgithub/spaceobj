@@ -127,6 +127,8 @@ public class CustomerServiceImpl extends ServiceImpl<SysUserMapper, SysUser> imp
                 sysUser.setToken(StpUtil.getTokenValue());
                 sysUser.setNickName(loginByWeChatBo.getNickName());
                 sysUser.setOnlineStatus(1);
+                sysUser.setEmail("xxx@xx.com");
+                sysUser.setPhoneNumber("13012340000");
                 int result = sysUserMapper.insert(sysUser);
                 if (result == 0) {
                     return SaResult.error("服务器繁忙");
