@@ -81,4 +81,6 @@ public class SysUser implements Serializable {
 
     private String auditMsg;
 
+    private Integer viewVideoAdvertiseTimes;
+
 }

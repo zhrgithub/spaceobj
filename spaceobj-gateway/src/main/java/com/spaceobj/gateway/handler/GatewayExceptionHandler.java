@@ -38,7 +38,7 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
         }
         String msg;
         if (ex instanceof NotFoundException) {
-            msg = "服务未找到";
+            msg = "网络异常，请稍后重试，好不好！";
         } else if (ex instanceof ResponseStatusException) {
             ResponseStatusException responseStatusException = (ResponseStatusException) ex;
             msg = responseStatusException.getMessage();
@@ -46,7 +46,7 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
             msg = "图片不得超过200kb";
             ex.printStackTrace();
         } else {
-            msg = "内部服务器错误";
+            msg = "网络异常，请稍后重试，好不好！";
             ex.printStackTrace();
         }
 

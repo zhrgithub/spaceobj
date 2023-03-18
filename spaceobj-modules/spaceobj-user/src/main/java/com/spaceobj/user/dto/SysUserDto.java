@@ -113,4 +113,6 @@ public class SysUserDto implements Serializable {
     /** 审核内容 */
     private String auditMsg;
 
+    private Integer viewVideoAdvertiseTimes;
+
 }

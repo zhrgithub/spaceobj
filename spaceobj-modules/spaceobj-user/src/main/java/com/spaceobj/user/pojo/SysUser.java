@@ -131,6 +131,12 @@ public class SysUser implements Serializable {
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime updateTime;
 
+  /**
+   * 今天剩余浏览视频广告次数
+   */
+  @TableField(value = "view_video_advertise_times")
+  private Integer viewVideoAdvertiseTimes;
+
 
 
 }

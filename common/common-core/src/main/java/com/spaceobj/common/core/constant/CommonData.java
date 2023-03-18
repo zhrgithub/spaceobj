@@ -7,8 +7,8 @@ package com.spaceobj.common.core.constant;
 public interface CommonData {
 
 
-    public static final String DEFAULT_MOBILE = "13012340000";
+    public static final String DEFAULT_MOBILE = "130xxxxxxxx";
 
-    public static final String DEFAULT_EMAIL = "xxx@xx.com";
+    public static final String DEFAULT_EMAIL = "xxx@163.com";
 
 }

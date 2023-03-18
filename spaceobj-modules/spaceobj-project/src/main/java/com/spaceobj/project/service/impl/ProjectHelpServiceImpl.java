@@ -172,16 +172,17 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
             String loginId = StpUtil.getLoginId().toString();
             SysUser sysUser = getSysUser(loginId);
             if (StringUtils.isEmpty(sysUser.getEmail()) || StringUtils.isEmpty(sysUser.getPhoneNumber())) {
-                return SaResult.error("请到个人中心设置邮箱和联系电话");
+                return SaResult.error("请到个人中心设置邮箱和联系方式");
             }
-            if (!Pattern.matches(RegexPool.EMAIL, sysUser.getEmail())) {
-                return SaResult.error("请到个人中心设置邮箱和联系电话");
-            }
+            // if (!Pattern.matches(RegexPool.EMAIL, sysUser.getEmail())) {
+            //     return SaResult.error("请到个人中心设置邮箱和联系方式");
+            // }
 
             // 如果用户的创建剩余次数小于10次，提醒明天再来
             if (sysUser.getCreateProjectHelpTimes() <= 0) {
                 return SaResult.error("今日分享链接创建已上限，是否看广告获取！").setCode(888);
             }
+
             // 判断项目中是否有该项目的id
             // 根据前端传递过来的项目id，判断项目列表中是否有该项目
             SysProject sysProject = sysProjectService.getProjectByUUID(projectHelpBo.getPUUID());

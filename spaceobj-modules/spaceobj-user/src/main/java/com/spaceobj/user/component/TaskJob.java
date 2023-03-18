@@ -22,9 +22,11 @@ public class TaskJob {
 
     public static final int SEND_CODE_TIMES = 3;
 
-    public static final int CREATE_PROJECT_HELP_TIMES = 3;
+    public static final int CREATE_PROJECT_HELP_TIMES = 20;
 
     public static final int EDIT_INFO_TIMES = 3;
+
+    public static final int VIEW_VIDEO_ADVERTISE_TIMES = 3;
 
     Logger LOG = LoggerFactory.getLogger(TaskJob.class);
 
@@ -36,7 +38,7 @@ public class TaskJob {
     public void updateUserInfoEveryDay() {
 
         try {
-            SysUserBo sysUserBo = SysUserBo.builder().releaseProjectTimes(RELEASE_PROJECT_TIMES).projectHelpTimes(PROJECT_HELP_TIMES).sendCodeTimes(SEND_CODE_TIMES).createProjectHelpTimes(CREATE_PROJECT_HELP_TIMES).build();
+            SysUserBo sysUserBo = SysUserBo.builder().releaseProjectTimes(RELEASE_PROJECT_TIMES).projectHelpTimes(PROJECT_HELP_TIMES).sendCodeTimes(SEND_CODE_TIMES).createProjectHelpTimes(CREATE_PROJECT_HELP_TIMES).viewVideoAdvertiseTimes(VIEW_VIDEO_ADVERTISE_TIMES).build();
             sysUserService.updateAll(sysUserBo);
         } catch (Exception e) {
             ExceptionUtil.exceptionToString(e);

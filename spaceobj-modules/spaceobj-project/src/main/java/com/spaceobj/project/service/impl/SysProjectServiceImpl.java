@@ -107,13 +107,15 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             // 校验当前提交次数是否超过最大次数
             String loginId = (String) StpUtil.getLoginId();
             SysUser sysUser = getSysUser(loginId);
-            if (StringUtils.isEmpty(sysUser.getEmail()) || StringUtils.isEmpty(sysUser.getPhoneNumber())) {
-                return SaResult.error("请设置邮箱和手机号");
+
+            if (sysUser.getEmail().equals(CommonData.DEFAULT_EMAIL)) {
+                return SaResult.error("请到个人中心设置您的邮箱");
             }
 
-            if (sysUser.getEmail().equals(CommonData.DEFAULT_EMAIL)|| sysUser.getPhoneNumber().equals(CommonData.DEFAULT_MOBILE)) {
-                return SaResult.error("请设置邮箱和手机号");
+            if (sysUser.getPhoneNumber().equals(CommonData.DEFAULT_MOBILE)) {
+                return SaResult.error("请到个人中心设置您的联系方式");
             }
+
             if (sysUser.getReleaseProjectTimes() <= 0) {
                 return SaResult.error("今天发布次数已上线");
             }
@@ -126,6 +128,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             sysProject.setUuid(uuid);
             // 设置成审核中
             sysProject.setStatus(0);
+            // 如果是管理员发布，不需要审核
+            if (sysUser.getUserType().equals("root")) {
+                sysProject.setStatus(1);
+            }
+
             sysProject.setReleaseUserId(sysUser.getUserId());
             sysProject.setCreateTime(LocalDateTime.now());
             int result = sysProjectMapper.insert(sysProject);
@@ -165,9 +172,9 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                     // 修改的项目设置成待审核
                     sysProject.setStatus(0);
                 }
-
                 // 根据项目id和version修改数据,每次修改都让版本号+1,用于处理并发修改业务
                 int result = this.updateResult(sysProject);
+
                 if (result == 0) {
                     LOG.error("项目更新失败{}" + sysProject.getUuid());
                     //  如果修改失败，那么根据id查询最新的版本号再次修改
@@ -227,7 +234,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 int startNumber = 0;
                 startNumber = (projectSearchBo.getCurrentPage() - 1) * projectSearchBo.getPageSize();
                 if (list.size() > projectSearchBo.getPageSize() * projectSearchBo.getCurrentPage()) {
-                    endNumber = projectSearchBo.getPageSize()* projectSearchBo.getCurrentPage();
+                    endNumber = projectSearchBo.getPageSize() * projectSearchBo.getCurrentPage();
                 } else {
                     endNumber = list.size();
                 }
@@ -237,6 +244,11 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 if (startNumber < list.size()) {
                     list = list.subList(startNumber, endNumber);
                 }
+
+                //电话号码脱敏
+                for (int i = 0; i < list.size(); i++) {
+                    list.get(i).setPhoneNumber(null);
+                }
             }
             if (projectSearchBo.getProjectType() == SEARCH_MY_RELEASED_PROJECT) {
                 // 查询自己发布的信息,根据项目创建人id查询项目
@@ -245,11 +257,6 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 Page<SysProject> page = new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
                 IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
                 list = iPage.getRecords();
-            }
-
-            // 数据脱敏
-            for (int i = 0; i < list.size(); i++) {
-                list.get(i).setPhoneNumber(null);
             }
             return SaResult.ok().setData(list);
         } catch (NotLoginException e) {
@@ -386,6 +393,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             }
             // 如果项目发布人id和userId相同，直接返回用户联系方式
             if (sysProject.getReleaseUserId().equals(getPhoneNumberBo.getUserId())) {
+                // 如果是代发，那么返回项目的电话号
+                if (sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)) {
+                    return SaResult.ok().setData(sysProject.getPhoneNumber());
+                }
                 return SaResult.ok().setData(sysUser.getPhoneNumber());
             }
 
@@ -534,6 +545,14 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
         String loginId = (String) StpUtil.getLoginId();
         SysUser sysUser = getSysUser(loginId);
 
+        // 每日广告流量次数上限，请分享好友获取
+        if (sysUser.getViewVideoAdvertiseTimes() == 0) {
+            return "今天浏览广告次数上限，分享好友获取吧！";
+        }
+        // 修改用户广告浏览次数减一
+        sysUser.setViewVideoAdvertiseTimes(sysUser.getViewVideoAdvertiseTimes() - 1);
+        kafkaSender.send(sysUser, KafKaTopics.UPDATE_USER);
+
         QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("p_uuid", uuid);
         SysProject sysProject = sysProjectMapper.selectOne(queryWrapper);
@@ -545,7 +564,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             projectHelpMapper.insert(projectHelp);
         }
 
-        if(!ObjectUtils.isEmpty(projectHelp)){
+        if (!ObjectUtils.isEmpty(projectHelp)) {
             projectHelp.setHpStatus(1);
             projectHelp.setHpNumber(3);
             projectHelpService.updateProjectHelp(projectHelp);

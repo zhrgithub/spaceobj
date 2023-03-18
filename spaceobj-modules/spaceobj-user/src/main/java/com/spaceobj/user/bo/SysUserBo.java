@@ -102,4 +102,6 @@ public class SysUserBo implements Serializable {
     /** 微信验证code */
     private String code;
 
+    private Integer viewVideoAdvertiseTimes;
+
 }
