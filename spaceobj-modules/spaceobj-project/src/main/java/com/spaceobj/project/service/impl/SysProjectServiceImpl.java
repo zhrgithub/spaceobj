@@ -472,7 +472,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             }
 
             // 需要获取助力链接
-            return SaResult.error("分享好友后获取").setCode(202);
+            return SaResult.error("分享好友或看广告获取").setCode(202);
         } catch (Exception e) {
 
             ExceptionUtil.exceptionToString(e);
@@ -547,7 +547,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
 
         // 每日广告流量次数上限，请分享好友获取
         if (sysUser.getViewVideoAdvertiseTimes() == 0) {
-            return "今天浏览广告次数上限，分享好友获取吧！";
+            return "今天浏览广告次数上限！";
         }
         // 修改用户广告浏览次数减一
         sysUser.setViewVideoAdvertiseTimes(sysUser.getViewVideoAdvertiseTimes() - 1);
