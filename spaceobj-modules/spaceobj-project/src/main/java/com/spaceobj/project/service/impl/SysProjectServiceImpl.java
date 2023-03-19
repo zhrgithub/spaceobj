@@ -35,6 +35,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -224,24 +225,34 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             List<SysProject> list = getSysProjectList();
             // 查询首页信息
             if (projectSearchBo.getProjectType() == SEARCH_INDEX_PROJECT_TYPE) {
+                String searchContent = projectSearchBo.getContent();
                 list = list.stream().filter(p -> {
-                    if (!ObjectUtils.isEmpty(projectSearchBo.getContent())) {
-                        return !ObjectUtils.isEmpty(p) && p.getStatus() == EXAMINATION_PASSED && p.getContent().contains(projectSearchBo.getContent());
+                    if (!ObjectUtils.isEmpty(searchContent) && !ObjectUtils.isEmpty(p) && p.getStatus() == EXAMINATION_PASSED) {
+                        String price = p.getPrice().toString();
+                        String pid = String.valueOf(p.getPId());
+                        String content = p.getContent();
+                        return content.contains(searchContent) || price.contains(searchContent) || pid.contains(searchContent);
                     }
                     return p.getStatus() == EXAMINATION_PASSED;
                 }).collect(Collectors.toList());
                 int endNumber = 0;
                 int startNumber = 0;
-                startNumber = (projectSearchBo.getCurrentPage() - 1) * projectSearchBo.getPageSize();
-                if (list.size() > projectSearchBo.getPageSize() * projectSearchBo.getCurrentPage()) {
-                    endNumber = projectSearchBo.getPageSize() * projectSearchBo.getCurrentPage();
+
+                int currentPageSize = projectSearchBo.getCurrentPage();
+                int pageSize = projectSearchBo.getPageSize();
+
+                // 起始位置索引
+                startNumber = (currentPageSize - 1) * pageSize;
+                // 如果列表总长度大于结束位置的索引,那么选择结束位置的索引，否则选择列表最后的索引位置
+                if (list.size() > (pageSize * currentPageSize - 1)) {
+                    endNumber = pageSize * currentPageSize - 1;
                 } else {
                     endNumber = list.size();
                 }
+                // 如果起始位置大于列表总长度，那么返回空列表
                 if (startNumber > list.size()) {
-                    list.clear();
-                }
-                if (startNumber < list.size()) {
+                    list = new ArrayList<>();
+                } else {
                     list = list.subList(startNumber, endNumber);
                 }
 
