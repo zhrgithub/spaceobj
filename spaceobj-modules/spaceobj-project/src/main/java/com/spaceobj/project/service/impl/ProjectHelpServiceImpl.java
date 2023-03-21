@@ -30,6 +30,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -65,7 +67,6 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
     @Autowired
     private SysProjectService sysProjectService;
-
 
     // 属于代发项目
     public static final String DROPSHIPPING_TRUE = "1";
@@ -206,7 +207,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
 
             //  没有创建过，则创建
             ProjectHelp projectHelp = ProjectHelp.builder().hpId(UUID.randomUUID().toString()).pUUID(sysProject.getUuid()).createUserId(sysUser.getUserId()).hpNumber(0).pContent(sysProject.getContent()).pPrice(sysProject.getPrice()).pReleaseUserId(sysProject.getReleaseUserId()).hpStatus(0).hpCreateNickName(sysUser.getNickName()).ipTerritory(sysUser.getIpTerritory()).projectCreateNickName(sysProject.getNickname()).projectId(sysProject.getPId()).build();
-            if(sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)){
+            if (sysProject.getDropshipping().equals(DROPSHIPPING_TRUE)) {
                 projectHelp.setDropshipping(DROPSHIPPING_TRUE);
             }
 
@@ -215,7 +216,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
             if (insertResult == 0) {
                 return SaResult.error("创建失败");
             } else {
-                ProjectHelp ph =  projectHelpMapper.selectById(projectHelp.getHpId());
+                ProjectHelp ph = projectHelpMapper.selectById(projectHelp.getHpId());
                 redisService.setCacheMapValue(RedisKey.PROJECT_HELP_LIST, projectHelp.getHpId(), ph);
             }
             // 消息队列通知用户服务对该用户的创建次数减一
@@ -281,6 +282,7 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
     @Override
     public int updateProjectHelp(ProjectHelp projectHelp) {
 
+        logger.info(projectHelp.toString());
         QueryWrapper<ProjectHelp> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("hp_id", projectHelp.getHpId());
         queryWrapper.eq("version", projectHelp.getVersion());
@@ -342,21 +344,30 @@ public class ProjectHelpServiceImpl extends ServiceImpl<ProjectHelpMapper, Proje
             list = listCaChe.stream().filter(hp -> {
                 return !ObjectUtils.isEmpty(hp) && hp.getCreateUserId().equals(sysUser.getUserId());
             }).collect(Collectors.toList());
+
+            list = list.stream().sorted(Comparator.comparing(ProjectHelp::getProjectId).reversed()).collect(Collectors.toList());
+
             // 实现分页查询
             int endNumber = 0;
             int startNumber = 0;
-            startNumber = (projectHelpBo.getCurrentPage() - 1) * projectHelpBo.getPageSize();
-            if (list.size() > projectHelpBo.getPageSize() * projectHelpBo.getCurrentPage()) {
-                endNumber = projectHelpBo.getPageSize();
+
+            int currentPageSize = projectHelpBo.getCurrentPage();
+            int pageSize = projectHelpBo.getPageSize();
+
+            // 起始位置索引
+            startNumber = (currentPageSize - 1) * pageSize;
+            // 如果列表总长度大于结束位置的索引,那么选择结束位置的索引，否则选择列表最后的索引位置
+            if (list.size() > (pageSize * currentPageSize)) {
+                endNumber = pageSize * currentPageSize;
             } else {
                 endNumber = list.size();
             }
+            // 如果起始位置大于列表总长度，那么返回空列表
             if (startNumber > list.size()) {
-                list.clear();
-                return SaResult.ok().setData(list);
+                list = new ArrayList<>();
+            } else {
+                list = list.subList(startNumber, endNumber);
             }
-            list = list.subList(startNumber, endNumber);
-
             return SaResult.ok().setData(list);
         } catch (Exception e) {
             ExceptionUtil.exceptionToString(e);

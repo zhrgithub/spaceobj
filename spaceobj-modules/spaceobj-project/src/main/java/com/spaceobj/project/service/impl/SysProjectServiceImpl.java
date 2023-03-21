@@ -130,7 +130,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             // 设置成审核中
             sysProject.setStatus(0);
             // 如果是管理员发布，不需要审核
-            if (sysUser.getUserType().equals("root")) {
+            if (!StringUtils.isEmpty(sysUser.getUserType())&&sysUser.getUserType().equals("root")) {
                 sysProject.setStatus(1);
             }
 
@@ -141,7 +141,10 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 return SaResult.error("新增失败");
             }
             // 刷新缓存
-            redisService.setCacheMapValue(RedisKey.PROJECT_LIST, uuid, sysProject);
+            QueryWrapper<SysProject>  sysProjectQueryWrapper = new QueryWrapper<>();
+            sysProjectQueryWrapper.eq("p_uuid", sysProject.getUuid());
+            SysProject sysProjectQuery =  sysProjectMapper.selectOne(sysProjectQueryWrapper);
+            redisService.setCacheMapValue(RedisKey.PROJECT_LIST, uuid, sysProjectQuery);
             return SaResult.ok("提交成功");
         } catch (Exception e) {
             ExceptionUtil.exceptionToString(e);
@@ -244,8 +247,8 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
                 // 起始位置索引
                 startNumber = (currentPageSize - 1) * pageSize;
                 // 如果列表总长度大于结束位置的索引,那么选择结束位置的索引，否则选择列表最后的索引位置
-                if (list.size() > (pageSize * currentPageSize - 1)) {
-                    endNumber = pageSize * currentPageSize - 1;
+                if (list.size() > (pageSize * currentPageSize)) {
+                    endNumber = pageSize * currentPageSize;
                 } else {
                     endNumber = list.size();
                 }
@@ -264,7 +267,7 @@ public class SysProjectServiceImpl extends ServiceImpl<SysProjectMapper, SysProj
             if (projectSearchBo.getProjectType() == SEARCH_MY_RELEASED_PROJECT) {
                 // 查询自己发布的信息,根据项目创建人id查询项目
                 QueryWrapper<SysProject> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("p_release_user_id", projectSearchBo.getUserId()).orderByDesc("create_time");
+                queryWrapper.eq("p_release_user_id", projectSearchBo.getUserId()).ne("p_status",3).orderByDesc("create_time");
                 Page<SysProject> page = new Page<>(projectSearchBo.getCurrentPage(), projectSearchBo.getPageSize());
                 IPage<SysProject> iPage = sysProjectMapper.selectPage(page, queryWrapper);
                 list = iPage.getRecords();

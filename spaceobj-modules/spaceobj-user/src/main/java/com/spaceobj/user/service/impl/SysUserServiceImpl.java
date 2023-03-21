@@ -61,6 +61,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         List<SysUser> list = null;
         try {
             QueryWrapper<SysUser> queryWrapper = new QueryWrapper();
+            queryWrapper.orderByDesc("create_time");
 
             boolean flag = redisService.hasKey(RedisKey.SYS_USER_LIST);
             if(flag){
@@ -78,7 +79,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 }
             }
             if (StringUtils.isNotBlank(sysUserBo.getContent())) {
-                queryWrapper.like("phone_number", sysUserBo.getContent()).or().like("nick_name", sysUserBo.getContent()).or().like("account", sysUserBo.getContent()).or().like("username", sysUserBo.getContent()).or().like("id_card_num", sysUserBo.getContent()).or().like("email", sysUserBo.getContent());
+                queryWrapper.like("phone_number", sysUserBo.getContent())
+                        .or().like("nick_name", sysUserBo.getContent())
+                        .or().like("account", sysUserBo.getContent())
+                        .or().like("username", sysUserBo.getContent())
+                        .or().like("id_card_num", sysUserBo.getContent())
+                        .or().like("email", sysUserBo.getContent())
+                        .or().like("ip_territory",sysUserBo.getIpTerritory());
             }
             if (ObjectUtils.isNotEmpty(sysUserBo.getRealNameStatus())) {
                 queryWrapper.or().eq("real_name_status", sysUserBo.getRealNameStatus());
