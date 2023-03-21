@@ -85,7 +85,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                         .or().like("username", sysUserBo.getContent())
                         .or().like("id_card_num", sysUserBo.getContent())
                         .or().like("email", sysUserBo.getContent())
-                        .or().like("ip_territory",sysUserBo.getIpTerritory());
+                        .or().like("ip_territory",sysUserBo.getContent());
             }
             if (ObjectUtils.isNotEmpty(sysUserBo.getRealNameStatus())) {
                 queryWrapper.or().eq("real_name_status", sysUserBo.getRealNameStatus());
