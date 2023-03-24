@@ -13,10 +13,10 @@ public class RestData {
     public static final String DOWNLOAD_URL = "https://www.spaceobj.com/downloadApp";
 
     /** 上线开关 */
-    public static final Integer ONLINE = 0;
+    public static final Integer ONLINE = 1;
 
     /** APP版本号 */
-    public static final Integer version = 1;
+    public static final Integer version = 999;
 
 
 
