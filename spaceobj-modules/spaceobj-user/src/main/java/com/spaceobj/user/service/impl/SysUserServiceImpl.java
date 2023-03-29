@@ -112,8 +112,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             if (sysUserBo.getDisableStatus() == 1) {
                 StpUtil.kickout(sysUserBo.getAccount());
                 StpUtil.disable(sysUserBo.getAccount(), -1);
-            } else {
-                StpUtil.untieDisable(sysUserBo.getAccount());
             }
             int result = sysUserMapper.updateById(sysUser);
             if (result == 0) {

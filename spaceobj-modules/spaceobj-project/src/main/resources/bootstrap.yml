@@ -3,6 +3,6 @@ server:
 # 应用名称
 spring:
   profiles:
-    active: local
+    active: prod
   application:
     name: spaceobj-project

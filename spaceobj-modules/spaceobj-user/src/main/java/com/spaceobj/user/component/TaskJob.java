@@ -26,7 +26,7 @@ public class TaskJob {
 
     public static final int EDIT_INFO_TIMES = 3;
 
-    public static final int VIEW_VIDEO_ADVERTISE_TIMES = 3;
+    public static final int VIEW_VIDEO_ADVERTISE_TIMES = 1;
 
     Logger LOG = LoggerFactory.getLogger(TaskJob.class);
 
