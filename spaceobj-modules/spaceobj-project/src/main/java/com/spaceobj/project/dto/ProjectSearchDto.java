@@ -45,7 +45,6 @@ public class ProjectSearchDto {
      */
     @NotBlank(message = "项目uuid是必填项",
             groups = {GetPhoneNumberByProjectUUID.class})
-
     private String pUUID;
 
 }
